@@ -36,6 +36,19 @@ public class UserController {
         }
     }
 
+    @GetMapping("/by-email")
+    public User getUserById(@RequestParam String email){
+        System.out.println("Getting user by email: " + email);
+
+        Optional<User> user = userService.findUserByEmail(email);
+
+        if(user.isPresent()) {
+            return user.get();
+        }else{
+            throw new NoSuchElementException("User not found with email: " + email);
+        }
+    }
+
     @PostMapping
     public User createUser(@RequestBody User user){
         System.out.println("Creating user: " + user);
