@@ -1,129 +1,12 @@
 // Global variables
 let currentUser = null;
-let isAuthenticated = false;
 
 // Initialize the app when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Friend Availability App loaded');
-    checkAuthStatus(); // Check authentication on load
     setupEventListeners();
     loadUsers(); // Load users on startup
 });
-
-// Check authentication status
-async function checkAuthStatus() {
-    try {
-        const response = await fetch('/api/auth/status', {
-            method: 'GET',
-            credentials: 'include', // IMPORTANT: Always include credentials
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const status = await response.json();
-            console.log('Auth Status:', status);
-
-            isAuthenticated = status.loggedIn;
-            updateUIBasedOnAuth(status);
-
-            // If authenticated, get full user info
-            if (isAuthenticated) {
-                await getUserInfo();
-            }
-        }
-    } catch (error) {
-        console.error('Error checking auth status:', error);
-    }
-}
-
-// Get current user information
-async function getUserInfo() {
-    try {
-        const response = await fetch('/api/auth/user', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const userInfo = await response.json();
-            console.log('User Info:', userInfo);
-            currentUser = userInfo;
-            displayUserInfo(userInfo);
-        }
-    } catch (error) {
-        console.error('Error getting user info:', error);
-    }
-}
-
-// Update UI based on authentication status
-function updateUIBasedOnAuth(status) {
-    const authStatusDiv = document.getElementById('authStatus') || createAuthStatusDiv();
-
-    if (status.loggedIn) {
-        authStatusDiv.innerHTML = `
-            <div class="auth-info">
-                <span>Logged in as: <strong>${status.name || 'User'}</strong></span>
-                <button onclick="handleLogout()" class="btn btn-secondary">Logout</button>
-            </div>
-        `;
-    } else {
-        authStatusDiv.innerHTML = `
-            <div class="auth-info">
-                <span>Not logged in</span>
-                <button onclick="handleLogin()" class="btn btn-primary">Login with Google</button>
-            </div>
-        `;
-    }
-}
-
-// Create auth status div if it doesn't exist
-function createAuthStatusDiv() {
-    const header = document.querySelector('header');
-    const authStatusDiv = document.createElement('div');
-    authStatusDiv.id = 'authStatus';
-    authStatusDiv.className = 'auth-status';
-    header.appendChild(authStatusDiv);
-    return authStatusDiv;
-}
-
-// Display user information
-function displayUserInfo(userInfo) {
-    if (userInfo.authenticated) {
-        console.log('Authenticated user:', userInfo.name);
-        // You can add more UI updates here
-    }
-}
-
-// Handle login
-function handleLogin() {
-    window.location.href = '/oauth2/authorization/google';
-}
-
-// Handle logout
-async function handleLogout() {
-    try {
-        const response = await fetch('/logout', {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }
-        });
-
-        if (response.ok || response.redirected) {
-            window.location.href = '/index.html?logout=success';
-        }
-    } catch (error) {
-        console.error('Error during logout:', error);
-    }
-}
 
 // Set up all event listeners
 function setupEventListeners() {
@@ -165,11 +48,7 @@ async function loadUsers() {
 
     try {
         const response = await fetch('/api/users', {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json'
-            }
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -220,8 +99,7 @@ async function handleCreateUser(event) {
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ name, email }),
             credentials: 'include'
@@ -257,11 +135,6 @@ async function handleCreateUser(event) {
 async function handleSendRequest(event) {
     event.preventDefault();
 
-    if (!isAuthenticated) {
-        showMessage('Please login to send friend requests', 'error');
-        return;
-    }
-
     const fromUserId = document.getElementById('fromUserId').value;
     const toUserId = document.getElementById('toUserId').value;
 
@@ -270,10 +143,7 @@ async function handleSendRequest(event) {
     try {
         const response = await fetch(`/api/friends/request?fromUserId=${fromUserId}&toUserId=${toUserId}`, {
             method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json'
-            }
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -295,11 +165,6 @@ async function handleSendRequest(event) {
 
 // Load all friend data for a specific user
 async function loadFriendData() {
-    if (!isAuthenticated) {
-        showMessage('Please login to view friend data', 'error');
-        return;
-    }
-
     const userId = document.getElementById('currentUserId').value;
 
     if (!userId) {
@@ -314,14 +179,8 @@ async function loadFriendData() {
     try {
         // Load friends and pending requests in parallel
         const [friendsResponse, requestsResponse] = await Promise.all([
-            fetch(`/api/friends/${userId}`, {
-                credentials: 'include',
-                headers: { 'Accept': 'application/json' }
-            }),
-            fetch(`/api/friends/${userId}/pending`, {
-                credentials: 'include',
-                headers: { 'Accept': 'application/json' }
-            })
+            fetch(`/api/friends/${userId}`, { credentials: 'include' }),
+            fetch(`/api/friends/${userId}/pending`, { credentials: 'include' })
         ]);
 
         if (!friendsResponse.ok || !requestsResponse.ok) {
@@ -338,7 +197,7 @@ async function loadFriendData() {
 
     } catch (error) {
         console.error('Error loading friend data:', error);
-        friendsData.innerHTML = '<div class="error">Failed to load friend data. Please login first.</div>';
+        friendsData.innerHTML = '<div class="error">Failed to load friend data</div>';
     }
 }
 
@@ -394,11 +253,6 @@ function displayFriendData(friends, pendingRequests) {
 
 // Respond to friend request (accept or reject)
 async function respondToRequest(friendshipId, action) {
-    if (!isAuthenticated) {
-        showMessage('Please login to respond to friend requests', 'error');
-        return;
-    }
-
     const userId = document.getElementById('currentUserId').value;
 
     if (!userId) {
@@ -411,10 +265,7 @@ async function respondToRequest(friendshipId, action) {
     try {
         const response = await fetch(`/api/friends/${friendshipId}/${action}?userId=${userId}`, {
             method: 'PUT',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json'
-            }
+            credentials: 'include'
         });
 
         if (!response.ok) {
@@ -473,38 +324,14 @@ function formatDate(dateString) {
 }
 
 // Debug function to log API responses
-async function debugAPI() {
+function debugAPI() {
     console.log('=== API Debug Information ===');
     console.log('Base URL:', window.location.origin);
     console.log('Users endpoint:', '/api/users');
     console.log('Friends endpoint:', '/api/friends');
-    console.log('Auth endpoint:', '/api/auth');
-
-    // Test auth status
-    try {
-        const authResponse = await fetch('/api/auth/status', {
-            credentials: 'include',
-            headers: { 'Accept': 'application/json' }
-        });
-        const authStatus = await authResponse.json();
-        console.log('Auth Status Response:', authStatus);
-
-        // Also check debug endpoint
-        const debugResponse = await fetch('/api/auth/debug', {
-            credentials: 'include',
-            headers: { 'Accept': 'application/json' }
-        });
-        const debugInfo = await debugResponse.json();
-        console.log('Debug Info:', debugInfo);
-    } catch (error) {
-        console.log('Auth Debug Error:', error);
-    }
 
     // Test if API is reachable
-    fetch('/api/users', {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-    })
+    fetch('/api/users', { credentials: 'include' })
         .then(response => {
             console.log('API Status:', response.ok ? 'Working' : 'Error');
             console.log('Response status:', response.status);
@@ -514,18 +341,5 @@ async function debugAPI() {
         });
 }
 
-// Check for login/logout success messages in URL
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('login') === 'success') {
-    showMessage('Successfully logged in with Google!', 'success');
-    // Clean URL
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
-if (urlParams.get('logout') === 'success') {
-    showMessage('Successfully logged out!', 'success');
-    // Clean URL
-    window.history.replaceState({}, document.title, window.location.pathname);
-}
-
-// Run debug on page load
+// Run debug on page load (can be removed in production)
 debugAPI();
