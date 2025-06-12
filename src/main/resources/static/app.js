@@ -1,7 +1,5 @@
-// Global variables
 let currentUser = null;
 
-// Initialize the app when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Friend Availability App loaded');
     setupEventListeners();
@@ -35,10 +33,6 @@ function showSection(sectionName) {
 
     console.log('Switched to section:', sectionName);
 }
-
-// ============================================
-// USER MANAGEMENT FUNCTIONS
-// ============================================
 
 // Load all users from API
 async function loadUsers() {
@@ -80,13 +74,24 @@ function displayUsers(users) {
             <p><strong>ID:</strong> ${user.id}</p>
             <p><strong>Email:</strong> ${user.email}</p>
             <p><strong>Google ID:</strong> ${user.googleId || 'Not set'}</p>
+            <button class="delete-user-btn" data-userid="${user.id}">Delete User</button>
         </div>
     `).join('');
 
     usersList.innerHTML = usersHTML;
+
+    document.querySelectorAll('.delete-user-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const userId = button.dataset.userid;
+            // Add a confirmation popup before deleting
+            if (confirm(`Are you sure you want to delete this user?`)) {
+                deleteUser(userId);
+            }
+        });
+    });
+
 }
 
-// Handle create user form submission
 async function handleCreateUser(event) {
     event.preventDefault();
 
@@ -127,11 +132,36 @@ async function handleCreateUser(event) {
     }
 }
 
-// ============================================
-// FRIEND MANAGEMENT FUNCTIONS
-// ============================================
+async function deleteUser(userId){
 
-// Handle send friend request form submission
+    console.log("Deleting user with id: " + userId);
+
+    try{
+        await fetch(`/api/friends/${userId}/all`, {
+            method: 'DELETE',
+        });
+
+        const response = await fetch(`/api/users/${userId}`,{
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        showMessage('User deleted successfully!', 'success');
+        loadUsers();
+
+    }catch(error){
+        console.error('Error deleting user:', error);
+        showMessage('Failed to delete user. Please try again.', 'error');
+    }
+}
+
 async function handleSendRequest(event) {
     event.preventDefault();
 
@@ -201,9 +231,37 @@ async function loadFriendData() {
     }
 }
 
+async function removeFriendship(userId1, userId2) {
+    console.log("Removing friendship between users with id: " + userId1 + " and " + userId2);
+
+    try {
+        const response = await fetch(`api/friends/remove?userId1=${userId1}&userId2=${userId2}`, {
+            method: 'DELETE',
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to remove friendship');
+        }
+
+        const result = await response.text();
+        console.log(result);
+        await loadFriendData();
+        return result;
+
+    } catch (error) {
+        console.error("Error removing friendship:", error);
+        throw error;
+    }
+}
+
+function getCurrentUserId() {
+    return document.getElementById('currentUserId')?.value || null;
+}
+
 // Display friends and pending requests
 function displayFriendData(friends, pendingRequests) {
     const friendsData = document.getElementById('friendsData');
+    const currentUserId = getCurrentUserId();
 
     let html = '';
 
@@ -218,6 +276,11 @@ function displayFriendData(friends, pendingRequests) {
                     <h4>${friend.name}</h4>
                     <p><strong>Email:</strong> ${friend.email}</p>
                     <p><strong>ID:</strong> ${friend.id}</p>
+                    <button class="remove-friendship-btn" 
+                            data-userid1="${currentUserId}" 
+                            data-userid2="${friend.id}">
+                            Remove Friend
+                    </button>
                 </div>
             `;
         });
@@ -249,6 +312,18 @@ function displayFriendData(friends, pendingRequests) {
     }
 
     friendsData.innerHTML = html;
+
+    document.querySelectorAll('.remove-friendship-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const userId1 = button.getAttribute('data-userid1');
+            const userId2 = button.getAttribute('data-userid2');
+
+            if (confirm(`Are you sure you want to delete this friendship?`)) {
+                removeFriendship(userId1, userId2);
+            }
+        });
+    });
+
 }
 
 // Respond to friend request (accept or reject)
@@ -286,10 +361,6 @@ async function respondToRequest(friendshipId, action) {
         showMessage(`Failed to ${action} friend request: ${error.message}`, 'error');
     }
 }
-
-// ============================================
-// UTILITY FUNCTIONS
-// ============================================
 
 // Show success/error messages to user
 function showMessage(message, type) {

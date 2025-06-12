@@ -134,4 +134,12 @@ public class FriendService {
         }
         return removed;
     }
+
+    public void removeAllFriendshipsForUser(Long userId) {
+        friendships.removeIf(f ->
+                f.getUserId().equals(userId) || f.getFriendId().equals(userId)
+        );
+        System.out.println("All friendships removed for user " + userId);
+    }
+
 }

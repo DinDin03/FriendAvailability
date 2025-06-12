@@ -57,4 +57,12 @@ public class FriendController {
             return "No friendship found between users " + userId1 + " and " + userId2;
         }
     }
+
+    @DeleteMapping("/{userId}/all")
+    public String removeAllFriendshipsForUser(@PathVariable Long userId) {
+        System.out.println("Removing all friendships for user " + userId);
+        friendService.removeAllFriendshipsForUser(userId);
+        return ("All friendships for user " + userId + " have been removed.");
+    }
+
 }
