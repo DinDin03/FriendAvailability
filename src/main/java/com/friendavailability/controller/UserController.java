@@ -45,16 +45,10 @@ public class UserController {
     @PutMapping("/{id}")
     public User updateUser(@PathVariable Long id, @RequestBody User updatedUser){
         System.out.println("Updating user: " + updatedUser);
-        Optional<User> existingUser = userService.findUserById(id);
-        if(existingUser.isPresent()) {
-            User user = existingUser.get();
-            user.setName(updatedUser.getName());
-            user.setEmail(updatedUser.getEmail());
-            return user;
-        }else{
-            throw new NoSuchElementException("User with id not found id: " + id);
-        }
+        return userService.updateUser(id, updatedUser.getName(), updatedUser.getEmail())
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
     }
+
 
     @DeleteMapping("/{id}")
     public String deleteUser(@PathVariable Long id){

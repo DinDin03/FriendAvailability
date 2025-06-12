@@ -60,5 +60,17 @@ public class UserService {
         System.out.println("User with id " + id + " not found");
         return false;
     }
+
+    public Optional<User> updateUser(Long id, String name, String email) {
+        Optional<User> userOpt = findUserById(id);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            user.setName(name);
+            user.setEmail(email);
+            return Optional.of(user);
+        }
+        return Optional.empty();
+    }
+
 }
 
