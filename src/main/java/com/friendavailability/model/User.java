@@ -1,9 +1,9 @@
 package com.friendavailability.model;
 
 public class User {
-    private Long id;
-    private String name;
-    private String email;
+    private Long id; //stores the internal id of the user
+    private String name; //stores the name of the user
+    private String email; //stores the email of the user
     private String googleId;
 
     public User() {}
