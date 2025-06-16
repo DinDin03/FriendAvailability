@@ -43,8 +43,8 @@ public class User{
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "google_id", unique = true, length = 255)
-    private String google_id;
+    @Column(name = "googleId", unique = true, length = 255)
+    private String googleId;
 
     @Column(name = "profile_picture_url", length = 500)
     private String profilePictureUrl;
@@ -92,7 +92,7 @@ public class User{
     }
 
     public boolean isGoogleUser() {
-        return this.google_id != null && !this.google_id.trim().isEmpty();
+        return this.googleId != null && !this.googleId.trim().isEmpty();
     }
 
     public boolean hasPassword() {
@@ -109,7 +109,7 @@ public class User{
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", email='" + email + '\'' +
-                ", googleId='" + google_id + '\'' +
+                ", googleId='" + googleId + '\'' +
                 ", isActive=" + isActive +
                 ", emailVerified=" + emailVerified +
                 ", createdAt=" + createdAt +
