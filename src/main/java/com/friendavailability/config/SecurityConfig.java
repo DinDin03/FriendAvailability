@@ -28,6 +28,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/dashboard")
+                        .permitAll()
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("/index.html", true)
                         .failureUrl("/index.html?error=login_failed")

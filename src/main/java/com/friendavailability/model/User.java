@@ -1,66 +1,118 @@
 package com.friendavailability.model;
 
-//defines the user entity 
-public class User {
-    private Long id; //stores the internal id of the user
-    private String name; //stores the name of the user
-    private String email; //stores the email of the user
-    private String googleId; //google id of the user
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 
-    public User() {} //default constructor
+import java.time.LocalDateTime;
+import java.util.List;
 
-    public User(final Long id, final String name, final String email, final String googleId) { //constructor with all fields
-        this.id = id; //set the id
-        this.name = name; //set the name
-        this.email = email; //set the email
-        this.googleId = googleId; //set the google id
+@Entity
+@Table(name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email"),
+                @UniqueConstraint(columnNames = "google_id")
+        },
+        indexes = {
+                @Index(name = "idx_user_email", columnList = "email"),
+                @Index(name = "idx_user_google_id", columnList = "google_id")
+        }
+)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class User{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Long id;
+
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
+
+    @Email(message = "Please provide a valid email address")
+    @NotBlank(message = "Email is required")
+    @Column(name = "email", nullable = false, unique = true, length = 255)
+    private String email;
+
+    @Column(name = "google_id", unique = true, length = 255)
+    private String google_id;
+
+    @Column(name = "profile_picture_url", length = 500)
+    private String profilePictureUrl;
+
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
+
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @Column(name = "email_verified", nullable = false)
+    @Builder.Default
+    private Boolean emailVerified = false;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at", nullable = false)
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<Friend> friendships;
+
+
+    @PrePersist
+    protected void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
+
+        if (this.isActive == null) {
+            this.isActive = true;
+        }
+        if (this.emailVerified == null) {
+            this.emailVerified = false;
+        }
     }
 
-    public User(String alice, String mail) { //constructor with name and email
-        this.email = mail; //set the email
-        this.name = alice; //set the name
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getId() { //get the id
-        return id; //return the id
+    public boolean isGoogleUser() {
+        return this.google_id != null && !this.google_id.trim().isEmpty();
     }
 
-    public void setId(Long id) { //set the id
-        this.id = id;
+    public boolean hasPassword() {
+        return this.passwordHash != null && !this.passwordHash.trim().isEmpty();
     }
 
-    public String getName() {
-        return name; //return the name
-    }
-
-    public void setName(String name) { //set the name
-        this.name = name; //set the name
-    }
-
-    public String getEmail() {
-        return email; //return the email
-    }
-
-    public void setEmail(String email) { //set the email
-        this.email = email; //set the email
-    }
-
-    public String getGoogleId() {
-        return googleId; //return the google id
-    }
-
-    public void setGoogleId(String googleId) { //set the google id
-        this.googleId = googleId; //set the google id
+    public String getDisplayName() {
+        return (name != null && !name.trim().isEmpty()) ? name : email;
     }
 
     @Override
-    public String toString() { //return the string representation of the user
-        return "User{" + //return the string representation of the user
-                "id=" + id + //return the id
+    public String toString() {
+        return "User{" +
+                "id=" + id +
                 ", name='" + name + '\'' +
-                ", email='" + email + '\'' + //return the email
-                ", googleId='" + googleId + '\'' + //return the google id
-                '}'; //return the string representation of the user
+                ", email='" + email + '\'' +
+                ", googleId='" + google_id + '\'' +
+                ", isActive=" + isActive +
+                ", emailVerified=" + emailVerified +
+                ", createdAt=" + createdAt +
+                '}';
     }
 }
-
