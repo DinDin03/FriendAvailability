@@ -7,8 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-
-import javax.sound.midi.SysexMessage;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,29 +57,35 @@ public class UserController{
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody User user){
-        System.out.println("Creating user: " + user);
-        try{
-            User createdUser = userService.createUser(user.getName(), user.getEmail());
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
-        }catch(RuntimeException e){
-            System.err.println("Error creating user: " + e.getMessage());
-            if(e.getMessage().contains("already exists")){
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            }else{
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    public ResponseEntity<User> createUser(@Valid @RequestBody CreateUserRequest request) {
+        System.out.println("POST /api/users - Creating user: " + request);
+
+        try {
+            User user;
+            if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+                user = userService.createUserWithPassword(
+                        request.getName(),
+                        request.getEmail(),
+                        request.getPassword()
+                );
+            } else {
+                user = userService.createUser(request.getName(), request.getEmail());
             }
-        }catch(Exception e){
-            System.err.println("Unexpected error creating user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.CREATED).body(user);
+        } catch (RuntimeException e) {
+            System.err.println("Business logic error creating user: " + e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            System.err.println("Error creating user: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user){
-        System.out.println("Updating user with Id " + id + ": " + user);
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserRequest request){
+        System.out.println("Updating user with Id " + id + ": " + request);
         try{
-            Optional<User> updatedUser = userService.updateUser(id, user.getName(), user.getEmail());
+            Optional<User> updatedUser = userService.updateUser(id, request.getName(), request.getEmail());
             return updatedUser.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         }catch(RuntimeException e){
             System.err.println("Error updating user: " + e.getMessage());
@@ -113,5 +117,70 @@ public class UserController{
         }
     }
 
+    public static class CreateUserRequest {
+        @jakarta.validation.constraints.NotBlank(message = "Name is required")
+        private String name;
 
+        @jakarta.validation.constraints.NotBlank(message = "Email is required")
+        @jakarta.validation.constraints.Email(message = "Valid email is required")
+        private String email;
+
+        private String password;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+
+        @Override
+        public String toString() {
+            return "CreateUserRequest{name='" + name + "', email='" + email + "', hasPassword=" + (password != null) + "}";
+        }
+    }
+
+    public static class UpdateUserRequest {
+        private String name;     // Optional - only update if provided
+        private String email;    // Optional - only update if provided
+
+        // Getters and setters
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        @Override
+        public String toString() {
+            return "UpdateUserRequest{name='" + name + "', email='" + email + "'}";
+        }
+    }
 }
