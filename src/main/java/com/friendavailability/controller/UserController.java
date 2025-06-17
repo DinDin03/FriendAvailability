@@ -1,77 +1,115 @@
+
 package com.friendavailability.controller;
 
 import com.friendavailability.model.User;
 import com.friendavailability.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+
+import javax.sound.midi.SysexMessage;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
-@RestController //marks the class as a Spring REST controller
-@RequestMapping("/api/users") //maps the class to the /api/users endpoint
-public class UserController { //defines the user controller
-    private final UserService userService; //stores the user service
+@RestController
+@RequestMapping("/api/users")
+public class UserController{
+    private final UserService userService;
 
-    public UserController(UserService userService) { //constructor with user service
-        this.userService = userService; //set the user service
-        System.out.println("UserController created and connected to UserService"); //print the message
+    public UserController(UserService userService) {
+        this.userService = userService;
+        System.out.println("UserController created and connected to UserService");
     }
 
     @GetMapping
-    public List<User> getAllUsers(){ //get all users
-        System.out.println("Getting all users"); //print the message
-        return userService.findAllUsers(); //return the users
+    public ResponseEntity<List<User>> getAllUsers(){
+        System.out.println("Getting all users");
+        try{
+            List<User> users = userService.findAllUsers();
+            return ResponseEntity.ok(users);
+        }catch(Exception err){
+            System.err.println("Error getting all users: " + err.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id){ //get a user by id
-        System.out.println("Getting user by id: " + id); //print the message
-
-        Optional<User> user = userService.findUserById(id); //find the user by id
-
-        if(user.isPresent()) { //check if the user is found
-            return user.get(); //return the user
-        }else{
-            throw new NoSuchElementException("User not found with id: " + id); //throw an exception if the user is not found
+    public ResponseEntity<User> getUserById(@PathVariable Long id){
+        System.out.println("Getting user with id: " + id);
+        try{
+            Optional<User> user = userService.findUserById(id);
+            return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        }catch(Exception err){
+            System.err.println("Error getting user by id " + id + ": " + err.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @GetMapping("/by-email")
-    public User getUserById(@RequestParam String email){
-        System.out.println("Getting user by email: " + email);
-
-        Optional<User> user = userService.findUserByEmail(email);
-
-        if(user.isPresent()) { //check if the user is found
-            return user.get(); //return the user
-        }else{
-            throw new NoSuchElementException("User not found with email: " + email); //throw an exception if the user is not found
+    public ResponseEntity<User> getUserByEmail(@RequestParam String email){
+        System.out.println("Getting user with email " + email);
+        try{
+            Optional<User> user = userService.findUserByEmail(email);
+            return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        }catch(Exception e){
+            System.out.println("Error getting user by email: " + email + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user){ //create a user
-        System.out.println("Creating user: " + user); //print the message
-        return userService.createUser(user.getName(), user.getEmail()); //create a user
+    public ResponseEntity<User> createUser(@Valid @RequestBody User user){
+        System.out.println("Creating user: " + user);
+        try{
+            User createdUser = userService.createUser(user.getName(), user.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        }catch(RuntimeException e){
+            System.err.println("Error creating user: " + e.getMessage());
+            if(e.getMessage().contains("already exists")){
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }else{
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+        }catch(Exception e){
+            System.err.println("Unexpected error creating user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User updatedUser){ //update a user
-        System.out.println("Updating user: " + updatedUser); //print the message
-        return userService.updateUser(id, updatedUser.getName(), updatedUser.getEmail())
-                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id)); //throw an exception if the user is not found
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user){
+        System.out.println("Updating user with Id " + id + ": " + user);
+        try{
+            Optional<User> updatedUser = userService.updateUser(id, user.getName(), user.getEmail());
+            return updatedUser.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+        }catch(RuntimeException e){
+            System.err.println("Error updating user: " + e.getMessage());
+            if(e.getMessage().contains("already exists")){
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }else{
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+        }catch(Exception e){
+            System.err.println("Unexpected error updating user: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
-
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable Long id){ //delete a user by id
-        System.out.println("Delete user with id " + id); //print the message
-        boolean deleted = userService.deleteUserById(id); //delete a user by id
+    public ResponseEntity<String> deleteUser(@PathVariable Long id){
+        System.out.println("Deleting user with id: " + id);
+        try{
+            boolean deleted = userService.deleteUserById(id);
 
-        if(deleted){ //check if the user is deleted
-            return "Deleted user with id " + id; //return the message
-        }else{
-            throw new NoSuchElementException("User with id " + id + " not found"); //throw an exception if the user is not found
+            if(deleted){
+                return ResponseEntity.ok("User with id " + id + " deleted");
+            }else{
+                return ResponseEntity.notFound().build();
+            }
+        }catch(Exception e){
+            System.err.println("Error deleting user with id " + id + ": " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
