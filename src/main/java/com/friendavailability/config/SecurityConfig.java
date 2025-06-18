@@ -17,27 +17,41 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+
+    // Constructor injection - Spring will automatically inject the @Service bean
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+        this.customOAuth2UserService = customOAuth2UserService;
+        System.out.println("✅ SecurityConfig created with CustomOAuth2UserService injected");
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        System.out.println("🔧 Configuring SecurityFilterChain with custom OAuth2 service");
+
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
+                        // Allow static resources and login pages
                         .requestMatchers("/", "/index.html", "/style.css", "/app.js").permitAll()
                         .requestMatchers("/oauth2/**", "/login/**").permitAll()
-                        .requestMatchers("/api/**").permitAll()
+
+                        // API endpoints require authentication
+                        .requestMatchers("/api/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/dashboard")
+                        .defaultSuccessUrl("/index.html", true)
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .defaultSuccessUrl("/index.html", true)
                         .failureUrl("/index.html?error=login_failed")
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService())
+                                .userService(customOAuth2UserService)  // Use the injected service with proper dependencies
                         )
                 )
                 .logout(logout -> logout
@@ -68,10 +82,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
-    }
-
-    @Bean
-    public CustomOAuth2UserService customOAuth2UserService() {
-        return new CustomOAuth2UserService();
     }
 }
