@@ -1,5 +1,6 @@
 package com.friendavailability.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -48,16 +49,16 @@ public class Friend {
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // JPA relationship to User entity
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JsonIgnore
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "friend_id", insertable = false, updatable = false)
+    @JsonIgnore
     private User friend;
 
-    // Constructors for backward compatibility
     public Friend(Long userId, Long friendId) {
         this.userId = userId;
         this.friendId = friendId;

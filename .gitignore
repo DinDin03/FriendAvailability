@@ -32,6 +32,13 @@ build/
 ### VS Code ###
 .vscode/
 
-# Environment-specific configuration files
-application-dev.properties
-application-prod.properties
+
+*.local.properties
+application-local.properties
+application-*.properties
+*.env
+.env.*
+
+# Database credentials
+**/application-local.properties
+**/application-prod.properties
