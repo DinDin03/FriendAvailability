@@ -19,7 +19,6 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
 
-    // Constructor injection - Spring will automatically inject the @Service bean
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
         this.customOAuth2UserService = customOAuth2UserService;
         System.out.println("✅ SecurityConfig created with CustomOAuth2UserService injected");
@@ -51,7 +50,7 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/index.html", true)
                         .failureUrl("/index.html?error=login_failed")
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)  // Use the injected service with proper dependencies
+                                .oidcUserService(customOAuth2UserService)
                         )
                 )
                 .logout(logout -> logout

@@ -63,6 +63,28 @@ public class UserService {
         return savedUser;
     }
 
+    public User createUserWithGoogle(String name, String email, String googleId) {
+        System.out.println("Creating user with Google OAuth: name=" + name + ", email=" + email + ", googleId=" + googleId);
+
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("User with email " + email + " already exists");
+        }
+        if (userRepository.existsByGoogleId(googleId)) {
+            throw new RuntimeException("Google ID " + googleId + " is already linked to another user");
+        }
+        User newUser = User.builder()
+                .name(name)
+                .email(email)
+                .googleId(googleId)
+                .isActive(true)
+                .emailVerified(true)
+                .build();
+
+        User savedUser = userRepository.save(newUser);
+        System.out.println("Created Google OAuth user: " + savedUser);
+        return savedUser;
+    }
+
     public List<User> findAllUsers(){
         System.out.println("Finding all users");
         List<User> users = userRepository.findAll();
