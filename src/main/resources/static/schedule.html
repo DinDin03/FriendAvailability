@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule Meetup - LinkUp</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard">
+<!-- Header Navigation -->
+<header class="dashboard-header">
+  <nav class="dashboard-nav">
+    <div class="nav-brand">
+      <h2>📅 LinkUp</h2>
+    </div>
+    <div class="nav-center">
+      <a href="dashboard.html" class="nav-btn">Dashboard</a>
+      <a href="friends.html" class="nav-btn">Friends</a>
+      <a href="availability.html" class="nav-btn">Calendar</a>
+      <a href="schedule.html" class="nav-btn active">Schedule</a>
+      <a href="profile.html" class="nav-btn">Profile</a>
+    </div>
+    <div class="nav-user">
+      <div class="user-info">
+        <span id="userName">Loading...</span>
+        <img id="userAvatar" src="" alt="Profile" class="user-avatar">
+      </div>
+      <button onclick="logout()" class="btn btn-outline btn-small">Logout</button>
+    </div>
+  </nav>
+</header>
+
+<div class="dashboard-container">
+  <!-- Page Header -->
+  <div class="section-header">
+    <h1>Schedule a Meetup</h1>
+    <p>Find the perfect time when you and your friends are all available</p>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <div class="stat-number" id="totalFriends">0</div>
+        <div class="stat-label">Total Friends</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <div class="stat-number" id="selectedFriends">0</div>
+        <div class="stat-label">Selected Friends</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏰</div>
+      <div class="stat-content">
+        <div class="stat-number" id="commonSlots">0</div>
+        <div class="stat-label">Common Free Slots</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📅</div>
+      <div class="stat-content">
+        <div class="stat-number" id="searchDays">7</div>
+        <div class="stat-label">Days Searched</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Friend Selection -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Step 1: Select Friends</h3>
+      <p class="card-subtitle">Choose which friends you want to meet with</p>
+    </div>
+    <div class="card-body">
+      <div class="friend-selection">
+        <div class="search-container">
+          <input type="text" id="friendSearchInput" placeholder="Search friends..." class="search-input">
+          <button onclick="loadFriends()" class="btn btn-secondary btn-small">Refresh</button>
+        </div>
+        <div id="friendsGrid" class="friends-selection-grid">
+          <div class="loading">Loading your friends...</div>
+        </div>
+        <div class="selection-summary">
+          <div id="selectedFriendsDisplay" class="selected-friends">
+            <span class="selection-label">Selected:</span>
+            <span class="selection-count">None selected</span>
+          </div>
+          <button onclick="clearSelection()" class="btn btn-outline btn-small">Clear All</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Time Preferences -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Step 2: Set Time Preferences</h3>
+      <p class="card-subtitle">When do you want to meet?</p>
+    </div>
+    <div class="card-body">
+      <div class="time-preferences">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="searchStartDate">Search From</label>
+            <input type="date" id="searchStartDate" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="searchEndDate">Search Until</label>
+            <input type="date" id="searchEndDate" class="form-input">
+          </div>
+          <div class="form-group">
+            <label for="meetingDuration">Meeting Duration</label>
+            <select id="meetingDuration" class="form-input">
+              <option value="30">30 minutes</option>
+              <option value="60" selected>1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+              <option value="240">4 hours</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="preferredStartTime">Preferred Start Time</label>
+            <select id="preferredStartTime" class="form-input">
+              <option value="">Any time</option>
+              <option value="06:00">6:00 AM</option>
+              <option value="07:00">7:00 AM</option>
+              <option value="08:00">8:00 AM</option>
+              <option value="09:00" selected>9:00 AM</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">1:00 PM</option>
+              <option value="14:00">2:00 PM</option>
+              <option value="15:00">3:00 PM</option>
+              <option value="16:00">4:00 PM</option>
+              <option value="17:00">5:00 PM</option>
+              <option value="18:00">6:00 PM</option>
+              <option value="19:00">7:00 PM</option>
+              <option value="20:00">8:00 PM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="preferredEndTime">Preferred End Time</label>
+            <select id="preferredEndTime" class="form-input">
+              <option value="">Any time</option>
+              <option value="10:00">10:00 AM</option>
+              <option value="11:00">11:00 AM</option>
+              <option value="12:00">12:00 PM</option>
+              <option value="13:00">1:00 PM</option>
+              <option value="14:00">2:00 PM</option>
+              <option value="15:00">3:00 PM</option>
+              <option value="16:00">4:00 PM</option>
+              <option value="17:00" selected>5:00 PM</option>
+              <option value="18:00">6:00 PM</option>
+              <option value="19:00">7:00 PM</option>
+              <option value="20:00">8:00 PM</option>
+              <option value="21:00">9:00 PM</option>
+              <option value="22:00">10:00 PM</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="dayPreferences">Days of Week</label>
+            <div class="day-selector">
+              <label class="day-option"><input type="checkbox" value="1" checked> Mon</label>
+              <label class="day-option"><input type="checkbox" value="2" checked> Tue</label>
+              <label class="day-option"><input type="checkbox" value="3" checked> Wed</label>
+              <label class="day-option"><input type="checkbox" value="4" checked> Thu</label>
+              <label class="day-option"><input type="checkbox" value="5" checked> Fri</label>
+              <label class="day-option"><input type="checkbox" value="6"> Sat</label>
+              <label class="day-option"><input type="checkbox" value="0"> Sun</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button onclick="findCommonTime()" class="btn btn-primary">🔍 Find Common Free Time</button>
+          <button onclick="resetPreferences()" class="btn btn-secondary">Reset Preferences</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Results -->
+  <div class="card" id="resultsCard" style="display: none;">
+    <div class="card-header">
+      <h3>Step 3: Available Time Slots</h3>
+      <div class="results-summary">
+        <span id="resultsCount">0 time slots found</span>
+        <button onclick="exportResults()" class="btn btn-outline btn-small">Export Results</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="commonTimeSlotsContainer" class="time-slots-container">
+        <!-- Results will be displayed here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Suggestions -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Quick Suggestions</h3>
+      <p class="card-subtitle">Common meeting scenarios</p>
+    </div>
+    <div class="card-body">
+      <div class="quick-suggestions">
+        <button onclick="setQuickSearch('coffee')" class="suggestion-btn">
+          <span class="suggestion-icon">☕</span>
+          <span class="suggestion-label">Coffee Chat</span>
+          <span class="suggestion-detail">30 min, 9-11 AM</span>
+        </button>
+        <button onclick="setQuickSearch('lunch')" class="suggestion-btn">
+          <span class="suggestion-icon">🍽️</span>
+          <span class="suggestion-label">Lunch Meeting</span>
+          <span class="suggestion-detail">1 hour, 12-2 PM</span>
+        </button>
+        <button onclick="setQuickSearch('evening')" class="suggestion-btn">
+          <span class="suggestion-icon">🌆</span>
+          <span class="suggestion-label">Evening Hangout</span>
+          <span class="suggestion-detail">2 hours, 6-9 PM</span>
+        </button>
+        <button onclick="setQuickSearch('weekend')" class="suggestion-btn">
+          <span class="suggestion-icon">🎉</span>
+          <span class="suggestion-label">Weekend Fun</span>
+          <span class="suggestion-detail">3 hours, Sat-Sun</span>
+        </button>
+        <button onclick="setQuickSearch('study')" class="suggestion-btn">
+          <span class="suggestion-icon">📚</span>
+          <span class="suggestion-label">Study Session</span>
+          <span class="suggestion-detail">2 hours, 2-6 PM</span>
+        </button>
+        <button onclick="setQuickSearch('workout')" class="suggestion-btn">
+          <span class="suggestion-icon">💪</span>
+          <span class="suggestion-label">Workout Together</span>
+          <span class="suggestion-detail">1 hour, 7-9 AM</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Searches -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Searches</h3>
+      <button onclick="clearSearchHistory()" class="btn btn-outline btn-small">Clear History</button>
+    </div>
+    <div id="recentSearchesContainer" class="recent-searches">
+      <div class="empty-state">No recent searches</div>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule Event Modal -->
+<div id="scheduleEventModal" class="modal">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h3>Schedule This Meetup</h3>
+      <button class="modal-close" onclick="closeModal('scheduleEventModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="scheduleEventForm" class="event-form">
+        <input type="hidden" id="selectedTimeSlot">
+
+        <div class="selected-slot-summary">
+          <h4>Selected Time Slot</h4>
+          <div id="slotSummary" class="slot-summary">
+            <!-- Will be filled by JavaScript -->
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="eventTitle">Event Title *</label>
+          <input type="text" id="eventTitle" placeholder="Coffee meetup, Study session..." required>
+        </div>
+
+        <div class="form-group">
+          <label for="eventDescription">Description</label>
+          <textarea id="eventDescription" placeholder="What's this meetup about?" rows="3"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="eventLocation">Location</label>
+          <input type="text" id="eventLocation" placeholder="Coffee shop, Library, Zoom meeting...">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventReminder">Reminder</label>
+            <select id="eventReminder">
+              <option value="15">15 minutes before</option>
+              <option value="30" selected>30 minutes before</option>
+              <option value="60">1 hour before</option>
+              <option value="120">2 hours before</option>
+              <option value="1440">1 day before</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="notifyFriends" checked>
+              <span>Notify selected friends</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="attendees-section">
+          <h4>Attendees</h4>
+          <div id="attendeesList" class="attendees-list">
+            <!-- Will be filled with selected friends -->
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" onclick="closeModal('scheduleEventModal')" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">📅 Create Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Friend Availability Modal -->
+<div id="friendAvailabilityModal" class="modal">
+  <div class="modal-content modal-large">
+    <div class="modal-header">
+      <h3>Friend's Availability</h3>
+      <button class="modal-close" onclick="closeModal('friendAvailabilityModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="friend-info-header">
+        <div id="friendInfoDisplay" class="friend-info">
+          <!-- Friend info will be displayed here -->
+        </div>
+      </div>
+      <div class="availability-controls">
+        <div class="date-range-selector">
+          <label for="friendStartDate">From:</label>
+          <input type="date" id="friendStartDate">
+          <label for="friendEndDate">To:</label>
+          <input type="date" id="friendEndDate">
+          <button onclick="loadFriendAvailability()" class="btn btn-primary btn-small">Load</button>
+        </div>
+      </div>
+      <div id="friendAvailabilityContainer" class="friend-availability-container">
+        <div class="loading">Select date range and click Load</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Results Modal -->
+<div id="exportModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Export Results</h3>
+      <button class="modal-close" onclick="closeModal('exportModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="export-options">
+        <h4>Export Format</h4>
+        <div class="format-options">
+          <label class="format-option">
+            <input type="radio" name="exportFormat" value="json" checked>
+            <span>JSON (for developers)</span>
+          </label>
+          <label class="format-option">
+            <input type="radio" name="exportFormat" value="csv">
+            <span>CSV (for spreadsheets)</span>
+          </label>
+          <label class="format-option">
+            <input type="radio" name="exportFormat" value="text">
+            <span>Plain Text</span>
+          </label>
+        </div>
+        <div class="export-actions">
+          <button onclick="performExport()" class="btn btn-primary">Download</button>
+          <button onclick="copyResultsToClipboard()" class="btn btn-secondary">Copy to Clipboard</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Finding common free time...</p>
+  </div>
+</div>
+
+<!-- Message Container -->
+<div id="messageContainer" class="message-container"></div>
+
+<!-- Include JavaScript -->
+<script src="shared.js"></script>
+<script src="schedule.js"></script>
+</body>
+</html>

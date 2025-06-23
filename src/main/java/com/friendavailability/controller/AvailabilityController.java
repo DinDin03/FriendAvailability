@@ -72,11 +72,7 @@ public class AvailabilityController {
                     request.getReminderMinutes()
             );
 
-            if (result.isPresent()) {
-                return ResponseEntity.ok(result.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+            return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
 
         } catch (RuntimeException e) {
             System.err.println("Business logic error updating availability: " + e.getMessage());

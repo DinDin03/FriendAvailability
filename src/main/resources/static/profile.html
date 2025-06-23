@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile & Settings - LinkUp</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard">
+<!-- Header Navigation -->
+<header class="dashboard-header">
+    <nav class="dashboard-nav">
+        <div class="nav-brand">
+            <h2>📅 LinkUp</h2>
+        </div>
+        <div class="nav-center">
+            <a href="dashboard.html" class="nav-btn">Dashboard</a>
+            <a href="friends.html" class="nav-btn">Friends</a>
+            <a href="availability.html" class="nav-btn">Calendar</a>
+            <a href="schedule.html" class="nav-btn">Schedule</a>
+            <a href="profile.html" class="nav-btn active">Profile</a>
+        </div>
+        <div class="nav-user">
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+                <img id="userAvatar" src="" alt="Profile" class="user-avatar">
+            </div>
+            <button onclick="logout()" class="btn btn-outline btn-small">Logout</button>
+        </div>
+    </nav>
+</header>
+
+<div class="dashboard-container">
+    <!-- Page Header -->
+    <div class="section-header">
+        <h1>Profile & Settings</h1>
+        <p>Manage your account, preferences, and privacy settings</p>
+    </div>
+
+    <!-- Account Overview -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Account Overview</h3>
+            <span class="card-subtitle" id="memberSince">Member since: Loading...</span>
+        </div>
+        <div class="card-body">
+            <div class="account-overview">
+                <div class="profile-picture-section">
+                    <div class="profile-picture-container">
+                        <img id="profilePicture" src="" alt="Profile Picture" class="profile-picture">
+                        <button class="change-picture-btn" onclick="changePicture()">📷</button>
+                    </div>
+                    <input type="file" id="pictureInput" accept="image/*" style="display: none;">
+                </div>
+                <div class="account-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalFriends">0</span>
+                        <span class="stat-label">Friends</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalEvents">0</span>
+                        <span class="stat-label">Events</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalMeetups">0</span>
+                        <span class="stat-label">Meetups Scheduled</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="daysActive">0</span>
+                        <span class="stat-label">Days Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Profile Information</h3>
+            <button onclick="editProfile()" class="btn btn-secondary btn-small" id="editProfileBtn">Edit</button>
+        </div>
+        <div class="card-body">
+            <form id="profileForm" class="profile-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="profileName">Display Name</label>
+                        <input type="text" id="profileName" class="form-input" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileEmail">Email Address</label>
+                        <input type="email" id="profileEmail" class="form-input" readonly>
+                        <small class="form-help">Email cannot be changed</small>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="profileTimezone">Timezone</label>
+                        <select id="profileTimezone" class="form-input" disabled>
+                            <option value="UTC">UTC (Coordinated Universal Time)</option>
+                            <option value="America/New_York">Eastern Time (US & Canada)</option>
+                            <option value="America/Chicago">Central Time (US & Canada)</option>
+                            <option value="America/Denver">Mountain Time (US & Canada)</option>
+                            <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                            <option value="Europe/London">London</option>
+                            <option value="Europe/Paris">Paris</option>
+                            <option value="Asia/Tokyo">Tokyo</option>
+                            <option value="Australia/Sydney">Sydney</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileLanguage">Language</label>
+                        <select id="profileLanguage" class="form-input" disabled>
+                            <option value="en">English</option>
+                            <option value="es">Spanish</option>
+                            <option value="fr">French</option>
+                            <option value="de">German</option>
+                            <option value="ja">Japanese</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profileBio">Bio (Optional)</label>
+                    <textarea id="profileBio" class="form-input" rows="3" placeholder="Tell your friends a little about yourself..." readonly></textarea>
+                </div>
+
+                <div class="form-actions" id="profileFormActions" style="display: none;">
+                    <button type="button" onclick="cancelProfileEdit()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Privacy & Sharing Settings -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Privacy & Sharing</h3>
+            <p class="card-subtitle">Control what information your friends can see</p>
+        </div>
+        <div class="card-body">
+            <div class="privacy-settings">
+                <div class="setting-group">
+                    <h4>Availability Sharing</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="shareAvailability" class="setting-checkbox">
+                            <span class="setting-title">Allow friends to see my availability</span>
+                        </label>
+                        <p class="setting-description">Friends can see when you're free or busy (but not event details unless specified below)</p>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="shareEventTitles" class="setting-checkbox">
+                            <span class="setting-title">Show event titles to friends</span>
+                        </label>
+                        <p class="setting-description">Friends can see what your events are called (e.g., "Team Meeting", "Doctor Appointment")</p>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="shareEventDetails" class="setting-checkbox">
+                            <span class="setting-title">Show event details to friends</span>
+                        </label>
+                        <p class="setting-description">Friends can see event descriptions and locations</p>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h4>Profile Visibility</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="shareEmail" class="setting-checkbox">
+                            <span class="setting-title">Show my email to friends</span>
+                        </label>
+                        <p class="setting-description">Friends can see your email address in their friends list</p>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="shareLastSeen" class="setting-checkbox">
+                            <span class="setting-title">Show when I was last active</span>
+                        </label>
+                        <p class="setting-description">Friends can see when you last used LinkUp</p>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h4>Discovery</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="allowDiscovery" class="setting-checkbox">
+                            <span class="setting-title">Allow others to find me</span>
+                        </label>
+                        <p class="setting-description">Other users can find and send you friend requests</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Preferences -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Notifications</h3>
+            <p class="card-subtitle">Choose what notifications you want to receive</p>
+        </div>
+        <div class="card-body">
+            <div class="notification-settings">
+                <div class="setting-group">
+                    <h4>Friend Activity</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="notifyFriendRequests" class="setting-checkbox">
+                            <span class="setting-title">New friend requests</span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="notifyFriendAccepted" class="setting-checkbox">
+                            <span class="setting-title">Friend request accepted</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h4>Schedule Updates</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="notifyMeetingInvites" class="setting-checkbox">
+                            <span class="setting-title">Meeting invitations</span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="notifyScheduleChanges" class="setting-checkbox">
+                            <span class="setting-title">Schedule changes from friends</span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="notifyReminders" class="setting-checkbox">
+                            <span class="setting-title">Event reminders</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <h4>Delivery Method</h4>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="radio" name="notificationMethod" value="email" class="setting-radio">
+                            <span class="setting-title">Email notifications</span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="radio" name="notificationMethod" value="browser" class="setting-radio">
+                            <span class="setting-title">Browser notifications</span>
+                        </label>
+                    </div>
+
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="radio" name="notificationMethod" value="both" class="setting-radio">
+                            <span class="setting-title">Both email and browser</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connected Accounts -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Connected Accounts</h3>
+            <p class="card-subtitle">Manage your connected services</p>
+        </div>
+        <div class="card-body">
+            <div class="connected-accounts">
+                <div class="account-connection">
+                    <div class="connection-info">
+                        <div class="connection-icon">
+                            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="24" height="24">
+                        </div>
+                        <div class="connection-details">
+                            <h4>Google Account</h4>
+                            <p id="googleAccountStatus">Connected: <span id="googleEmail">Loading...</span></p>
+                            <small>Used for authentication and calendar sync</small>
+                        </div>
+                    </div>
+                    <div class="connection-actions">
+                        <button onclick="manageGoogleConnection()" class="btn btn-outline btn-small">Manage</button>
+                    </div>
+                </div>
+
+                <div class="account-connection disabled">
+                    <div class="connection-info">
+                        <div class="connection-icon">
+                            <span class="icon-placeholder">📅</span>
+                        </div>
+                        <div class="connection-details">
+                            <h4>Google Calendar</h4>
+                            <p>Not connected</p>
+                            <small>Connect to automatically sync your availability</small>
+                        </div>
+                    </div>
+                    <div class="connection-actions">
+                        <button onclick="connectGoogleCalendar()" class="btn btn-primary btn-small">Connect</button>
+                    </div>
+                </div>
+
+                <div class="account-connection disabled">
+                    <div class="connection-info">
+                        <div class="connection-icon">
+                            <span class="icon-placeholder">📧</span>
+                        </div>
+                        <div class="connection-details">
+                            <h4>Email Integration</h4>
+                            <p>Coming soon</p>
+                            <small>Send calendar invites and notifications via email</small>
+                        </div>
+                    </div>
+                    <div class="connection-actions">
+                        <button class="btn btn-outline btn-small" disabled>Coming Soon</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data & Privacy -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Data & Privacy</h3>
+            <p class="card-subtitle">Control your data and understand your privacy</p>
+        </div>
+        <div class="card-body">
+            <div class="data-privacy-options">
+                <div class="privacy-option">
+                    <h4>📁 Export Your Data</h4>
+                    <p>Download a copy of all your data including events, friends, and settings</p>
+                    <button onclick="exportUserData()" class="btn btn-secondary">Download Data</button>
+                </div>
+
+                <div class="privacy-option">
+                    <h4>🔒 Privacy Policy</h4>
+                    <p>Learn how we protect and use your information</p>
+                    <button onclick="viewPrivacyPolicy()" class="btn btn-outline">View Policy</button>
+                </div>
+
+                <div class="privacy-option">
+                    <h4>📊 Usage Analytics</h4>
+                    <p>Help us improve LinkUp by sharing anonymous usage data</p>
+                    <label class="setting-label">
+                        <input type="checkbox" id="allowAnalytics" class="setting-checkbox">
+                        <span>Allow usage analytics</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone -->
+    <div class="card danger-zone">
+        <div class="card-header">
+            <h3>⚠️ Danger Zone</h3>
+            <p class="card-subtitle">Irreversible actions - proceed with caution</p>
+        </div>
+        <div class="card-body">
+            <div class="danger-actions">
+                <div class="danger-action">
+                    <div class="danger-info">
+                        <h4>Clear All Data</h4>
+                        <p>Remove all your events, availability, and settings (keeps account and friends)</p>
+                    </div>
+                    <button onclick="clearAllData()" class="btn btn-warning">Clear Data</button>
+                </div>
+
+                <div class="danger-action">
+                    <div class="danger-info">
+                        <h4>Delete Account</h4>
+                        <p>Permanently delete your account and all associated data. This cannot be undone.</p>
+                    </div>
+                    <button onclick="deleteAccount()" class="btn btn-danger">Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Information -->
+    <div class="card">
+        <div class="card-header">
+            <h3>About LinkUp</h3>
+        </div>
+        <div class="card-body">
+            <div class="app-info">
+                <div class="app-version">
+                    <h4>Version Information</h4>
+                    <p><strong>App Version:</strong> 1.0.0-beta</p>
+                    <p><strong>Build:</strong> 2025.01.23</p>
+                    <p><strong>Last Updated:</strong> January 23, 2025</p>
+                </div>
+
+                <div class="app-links">
+                    <h4>Resources</h4>
+                    <a href="#" onclick="showHelp()" class="app-link">📖 Help & Documentation</a>
+                    <a href="#" onclick="showFeedback()" class="app-link">💬 Send Feedback</a>
+                    <a href="#" onclick="showChangelog()" class="app-link">📝 What's New</a>
+                    <a href="#" onclick="showSupport()" class="app-link">🔧 Technical Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Picture Modal -->
+<div id="changePictureModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Change Profile Picture</h3>
+            <button class="modal-close" onclick="closeModal('changePictureModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="picture-options">
+                <div class="current-picture">
+                    <h4>Current Picture</h4>
+                    <img id="currentPicturePreview" src="" alt="Current" class="picture-preview">
+                </div>
+
+                <div class="picture-upload">
+                    <h4>Upload New Picture</h4>
+                    <div class="upload-area" onclick="document.getElementById('pictureInput').click()">
+                        <div class="upload-placeholder">
+                            <span class="upload-icon">📷</span>
+                            <p>Click to select a picture</p>
+                            <small>JPG, PNG, or GIF (max 5MB)</small>
+                        </div>
+                        <img id="newPicturePreview" src="" alt="Preview" class="picture-preview" style="display: none;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="closeModal('changePictureModal')" class="btn btn-secondary">Cancel</button>
+                <button onclick="savePicture()" class="btn btn-primary" id="savePictureBtn" disabled>Save Picture</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+    <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Updating settings...</p>
+    </div>
+</div>
+
+<!-- Message Container -->
+<div id="messageContainer" class="message-container"></div>
+
+<!-- Include JavaScript -->
+<script src="shared.js"></script>
+<script src="profile.js"></script>
+</body>
+</html>
