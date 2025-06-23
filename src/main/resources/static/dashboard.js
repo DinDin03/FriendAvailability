@@ -1690,3 +1690,160 @@ console.log('   - Periodic background updates');
 console.log('   - Comprehensive error handling');
 console.log('   - Keyboard shortcuts and accessibility');
 console.log('📚 This demonstrates key backend concepts for your Atlassian internship!');
+
+// === Dashboard Button/Feature Implementations ===
+
+// Set calendar to today
+function setToday() {
+    try {
+        const today = new Date();
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        if (startDateInput && endDateInput) {
+            const iso = today.toISOString().split('T')[0];
+            startDateInput.value = iso;
+            endDateInput.value = iso;
+            // Optionally reload calendar events for today
+            if (typeof loadDashboardData === 'function') loadDashboardData();
+        }
+        showSuccessMessage('Showing today\'s schedule.');
+    } catch (e) {
+        showErrorMessage('Could not set calendar to today.');
+    }
+}
+
+// Set calendar to this week
+function setThisWeek() {
+    try {
+        const today = new Date();
+        const start = new Date(today);
+        start.setDate(today.getDate() - today.getDay()); // Sunday
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6); // Saturday
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        if (startDateInput && endDateInput) {
+            startDateInput.value = start.toISOString().split('T')[0];
+            endDateInput.value = end.toISOString().split('T')[0];
+            if (typeof loadDashboardData === 'function') loadDashboardData();
+        }
+        showSuccessMessage('Showing this week\'s schedule.');
+    } catch (e) {
+        showErrorMessage('Could not set calendar to this week.');
+    }
+}
+
+// Show create event modal
+function showCreateEventModal() {
+    const modal = document.getElementById('createEventModal');
+    if (modal) {
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('modal-open');
+        // Focus first input
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input, select, textarea');
+            if (firstInput) firstInput.focus();
+        }, 200);
+    }
+}
+
+// Close modal by ID
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('modal-open');
+    }
+}
+
+// Load selected friend's availability
+async function loadFriendAvailability() {
+    try {
+        const select = document.getElementById('friendSelect');
+        const friendId = select && select.value;
+        const scheduleDiv = document.getElementById('friendSchedule');
+        if (!friendId) {
+            if (scheduleDiv) scheduleDiv.innerHTML = '<div class="error">Please select a friend.</div>';
+            return;
+        }
+        if (scheduleDiv) scheduleDiv.innerHTML = '<div class="loading">Loading friend\'s availability...</div>';
+        const response = await fetch(`/api/availability/${friendId}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to load availability');
+        const events = await response.json();
+        // Render events (simple list)
+        if (scheduleDiv) {
+            if (!events || events.length === 0) {
+                scheduleDiv.innerHTML = '<div class="empty-state">No availability found.</div>';
+            } else {
+                scheduleDiv.innerHTML = '<ul>' + events.map(ev => `<li><b>${ev.title || 'Event'}</b>: ${formatDate(ev.startTime)} - ${formatDate(ev.endTime)}</li>`).join('') + '</ul>';
+            }
+        }
+    } catch (e) {
+        showErrorMessage('Could not load friend\'s availability.');
+    }
+}
+
+// Export user data as JSON
+async function exportData() {
+    try {
+        if (!currentUser) throw new Error('No user loaded');
+        showSuccessMessage('Exporting your data...');
+        const response = await fetch(`/api/users/${currentUser.id}/export`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Failed to export data');
+        const data = await response.json();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `friend-availability-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showSuccessMessage('Your data has been exported.');
+    } catch (e) {
+        showErrorMessage('Could not export your data.');
+    }
+}
+
+// Delete account with confirmation
+async function deleteAccount() {
+    try {
+        if (!currentUser) throw new Error('No user loaded');
+        const confirmText = 'DELETE';
+        const userInput = prompt(`Type '${confirmText}' to confirm account deletion. This cannot be undone.`);
+        if (userInput !== confirmText) {
+            showMessage('Account deletion cancelled.', 'info');
+            return;
+        }
+        showSuccessMessage('Deleting your account...');
+        const response = await fetch(`/api/users/${currentUser.id}`, {
+            method: 'DELETE',
+            credentials: 'include'
+        });
+        if (!response.ok) throw new Error('Failed to delete account');
+        showSuccessMessage('Account deleted. Redirecting...');
+        setTimeout(() => { window.location.href = '/index.html'; }, 1500);
+    } catch (e) {
+        showErrorMessage('Could not delete your account.');
+    }
+}
+
+// Attach to window for HTML access
+window.setToday = setToday;
+window.setThisWeek = setThisWeek;
+window.showCreateEventModal = showCreateEventModal;
+window.closeModal = closeModal;
+window.loadFriendAvailability = loadFriendAvailability;
+window.exportData = exportData;
+window.deleteAccount = deleteAccount;

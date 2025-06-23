@@ -1541,19 +1541,22 @@ function showLoadingOverlay(message = 'Loading...') {
     if (!overlay) {
         overlay = document.createElement('div');
         overlay.id = 'loadingOverlay';
-        overlay.className = 'loading-overlay';
-        overlay.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p id="loadingMessage">${message}</p>
-            </div>
-        `;
+        overlay.style.position = 'fixed';
+        overlay.style.top = 0;
+        overlay.style.left = 0;
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.background = 'rgba(255,255,255,0.85)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = 9999;
+        overlay.innerHTML = `<div style="text-align:center;"><div class='spinner' style='margin-bottom:16px;'></div><p style='font-size:1.2rem;color:#4f3ca3;'>${message}</p></div>`;
         document.body.appendChild(overlay);
     } else {
-        document.getElementById('loadingMessage').textContent = message;
+        overlay.querySelector('p').textContent = message;
+        overlay.style.display = 'flex';
     }
-
-    overlay.style.display = 'flex';
 }
 
 function hideLoadingOverlay() {

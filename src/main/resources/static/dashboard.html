@@ -3,316 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - LinkUp</title>
+    <title>Dashboard - Friend Availability</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<!-- Dashboard Header -->
-<header class="dashboard-header">
-    <nav class="dashboard-nav">
-        <div class="nav-brand">
-            <h2>📅 LinkUp</h2>
-        </div>
-        <div class="nav-center">
-            <button onclick="showSection('calendar')" class="nav-btn active">Calendar</button>
-            <button onclick="showSection('friends')" class="nav-btn">Friends</button>
-            <button onclick="showSection('settings')" class="nav-btn">Settings</button>
-        </div>
-        <div class="nav-user">
-            <div class="user-info">
-                <span id="userName">Loading...</span>
-                <img id="userAvatar" src="" alt="Profile" class="user-avatar">
+<body class="dashboard">
+    <!-- Modern Dashboard Header -->
+    <header class="dashboard-header">
+        <nav class="dashboard-nav">
+            <div class="nav-brand">
+                <h2>📅 Friend Availability</h2>
             </div>
-            <button onclick="logout()" class="btn btn-outline btn-small">Logout</button>
-        </div>
-    </nav>
-</header>
-
-<div class="dashboard-container">
-    <!-- Calendar Section -->
-    <div id="calendar" class="section active">
-        <div class="section-header">
-            <h1>My Calendar</h1>
-            <p>Manage your availability and see when you're free</p>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-icon">📅</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="totalEvents">-</div>
-                    <div class="stat-label">Total Events</div>
+            <div class="nav-center">
+                <button onclick="showSection('calendar')" class="nav-btn active">Calendar</button>
+                <button onclick="showSection('friends')" class="nav-btn">Friends</button>
+                <button onclick="showSection('settings')" class="nav-btn">Settings</button>
+            </div>
+            <div class="nav-user">
+                <div class="user-info">
+                    <span id="userName">Loading...</span>
+                    <img id="userAvatar" src="" alt="Profile" class="user-avatar">
                 </div>
+                <button onclick="logout()" class="btn btn-outline btn-small">Logout</button>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">🟢</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="freeSlots">-</div>
-                    <div class="stat-label">Free Time Slots</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🔴</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="busySlots">-</div>
-                    <div class="stat-label">Busy Times</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">👥</div>
-                <div class="stat-content">
-                    <div class="stat-number" id="friendCount">-</div>
-                    <div class="stat-label">Friends</div>
-                </div>
-            </div>
-        </div>
+        </nav>
+    </header>
 
-        <!-- Calendar Controls -->
-        <div class="calendar-controls">
-            <div class="date-controls">
-                <button id="prevWeek" class="btn btn-outline">← Previous</button>
-                <div class="date-range">
-                    <input type="date" id="startDate" />
-                    <span>to</span>
-                    <input type="date" id="endDate" />
-                </div>
-                <button id="nextWeek" class="btn btn-outline">Next →</button>
+    <!-- Dashboard Hero Section -->
+    <section class="section" style="margin-top: 32px; margin-bottom: 0; background: #fff8ed; box-shadow: none; text-align: center;">
+        <h1 style="font-size:2.2rem; color:#b89b6a; font-weight:800; margin-bottom: 0.5rem;">Welcome to Your Dashboard</h1>
+        <p style="color:#7c6a4d; font-size:1.15rem; max-width: 600px; margin: 0 auto;">Effortlessly coordinate schedules, manage your availability, and connect with friends. All your planning, in one beautiful place.</p>
+    </section>
+
+    <main class="dashboard-container">
+        <!-- Calendar Section -->
+        <section id="calendar" class="section active" aria-labelledby="calendar-header">
+            <div class="section-header">
+                <h2 id="calendar-header">My Calendar</h2>
+                <p>Manage your availability and see when you're free</p>
             </div>
-
-            <div class="view-controls">
-                <button onclick="setToday()" class="btn btn-secondary">Today</button>
-                <button onclick="setThisWeek()" class="btn btn-secondary">This Week</button>
-                <button onclick="showCreateEventModal()" class="btn btn-primary">+ Add Event</button>
-            </div>
-        </div>
-
-        <!-- Calendar Display -->
-        <div class="calendar-view">
-            <div id="calendarGrid" class="calendar-grid">
-                <!-- Calendar will be generated here -->
-            </div>
-
-            <!-- Schedule List View -->
-            <div class="schedule-list">
-                <h3>Your Schedule</h3>
-                <div id="scheduleList" class="schedule-items">
-                    <div class="loading">Loading your schedule...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- What's Next Widget -->
-        <div class="whats-next">
-            <h3>What's Next?</h3>
-            <div id="upcomingEvents" class="upcoming-events">
-                <div class="loading">Loading upcoming events...</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Friends Section -->
-    <div id="friends" class="section">
-        <div class="section-header">
-            <h1>Friends</h1>
-            <p>Manage your connections and see their availability</p>
-        </div>
-
-        <!-- Friend Requests -->
-        <div class="requests-section">
-            <h3>Friend Requests</h3>
-            <div id="pendingRequests" class="request-list">
-                <!-- Pending requests will be loaded here -->
-            </div>
-        </div>
-
-        <!-- Add Friends -->
-        <div class="add-friends-section">
-            <h3>Add Friends</h3>
-            <div class="form-container">
-                <form id="sendRequestForm">
-                    <div class="form-row">
-                        <input type="email" id="friendEmail" placeholder="Friend's email address" required>
-                        <button type="submit" class="btn btn-primary">Send Request</button>
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="totalEvents">-</div>
+                        <div class="stat-label">Total Events</div>
                     </div>
-                </form>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🟢</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="freeSlots">-</div>
+                        <div class="stat-label">Free Time Slots</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔴</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="busySlots">-</div>
+                        <div class="stat-label">Busy Times</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-number" id="friendCount">-</div>
+                        <div class="stat-label">Friends</div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- Friends List -->
-        <div class="friends-section">
-            <h3>Your Friends</h3>
-            <div id="friendsList" class="friends-grid">
-                <!-- Friends will be loaded here -->
+            <div class="calendar-controls">
+                <div class="date-controls">
+                    <button id="prevWeek" class="btn btn-outline">← Previous</button>
+                    <div class="date-range">
+                        <input type="date" id="startDate" />
+                        <span>to</span>
+                        <input type="date" id="endDate" />
+                    </div>
+                    <button id="nextWeek" class="btn btn-outline">Next →</button>
+                </div>
+                <div class="view-controls">
+                    <button onclick="setToday()" class="btn btn-secondary">Today</button>
+                    <button onclick="setThisWeek()" class="btn btn-secondary">This Week</button>
+                    <button onclick="showCreateEventModal()" class="btn btn-primary">+ Add Event</button>
+                </div>
             </div>
-        </div>
-
-        <!-- Friend Availability -->
-        <div class="friend-availability">
-            <h3>Friend Availability</h3>
-            <div class="friend-selector">
-                <select id="friendSelect">
-                    <option value="">Select a friend to see their availability</option>
-                </select>
-                <button onclick="loadFriendAvailability()" class="btn btn-secondary">View Schedule</button>
+            <div class="calendar-view">
+                <div id="calendarGrid" class="calendar-grid">
+                    <!-- Calendar will be generated here -->
+                </div>
+                <div class="schedule-list">
+                    <h3>Your Schedule</h3>
+                    <div id="scheduleList" class="schedule-items">
+                        <div class="loading">Loading your schedule...</div>
+                    </div>
+                </div>
             </div>
-            <div id="friendSchedule" class="friend-schedule-view">
-                <!-- Friend's availability will be shown here -->
+            <div class="whats-next">
+                <h3>What's Next?</h3>
+                <div id="upcomingEvents" class="upcoming-events">
+                    <div class="loading">Loading upcoming events...</div>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Settings Section -->
-    <div id="settings" class="section">
-        <div class="section-header">
-            <h1>Settings</h1>
-            <p>Manage your account and preferences</p>
-        </div>
-
-        <!-- Profile Settings -->
-        <div class="settings-group">
-            <h3>Profile Information</h3>
-            <div class="form-container">
-                <form id="profileForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="profileName">Display Name</label>
-                            <input type="text" id="profileName" placeholder="Your name">
+        <!-- Friends Section -->
+        <section id="friends" class="section" aria-labelledby="friends-header">
+            <div class="section-header">
+                <h2 id="friends-header">Friends</h2>
+                <p>Manage your connections and see their availability</p>
+            </div>
+            <div class="requests-section">
+                <h3>Friend Requests</h3>
+                <div id="pendingRequests" class="request-list"></div>
+            </div>
+            <div class="add-friends-section">
+                <h3>Add Friends</h3>
+                <div class="form-container">
+                    <form id="sendRequestForm">
+                        <div class="form-row">
+                            <input type="email" id="friendEmail" placeholder="Friend's email address" required>
+                            <button type="submit" class="btn btn-primary">Send Request</button>
                         </div>
-                        <div class="form-group">
-                            <label for="profileEmail">Email</label>
-                            <input type="email" id="profileEmail" placeholder="your@email.com" readonly>
+                    </form>
+                </div>
+            </div>
+            <div class="friends-section">
+                <h3>Your Friends</h3>
+                <div id="friendsList" class="friends-grid"></div>
+            </div>
+            <div class="friend-availability">
+                <h3>Friend Availability</h3>
+                <div class="friend-selector">
+                    <select id="friendSelect">
+                        <option value="">Select a friend to see their availability</option>
+                    </select>
+                    <button onclick="loadFriendAvailability()" class="btn btn-secondary">View Schedule</button>
+                </div>
+                <div id="friendSchedule" class="friend-schedule-view"></div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="section" aria-labelledby="settings-header">
+            <div class="section-header">
+                <h2 id="settings-header">Settings</h2>
+                <p>Manage your account and preferences</p>
+            </div>
+            <div class="settings-group">
+                <h3>Profile Information</h3>
+                <div class="form-container">
+                    <form id="profileForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="profileName">Display Name</label>
+                                <input type="text" id="profileName" placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label for="profileEmail">Email</label>
+                                <input type="email" id="profileEmail" placeholder="your@email.com" readonly>
+                            </div>
                         </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update Profile</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- Privacy Settings -->
-        <div class="settings-group">
-            <h3>Privacy & Sharing</h3>
-            <div class="form-container">
-                <div class="setting-item">
-                    <label class="setting-label">
-                        <input type="checkbox" id="shareAvailability" checked>
-                        <span>Allow friends to see my availability</span>
-                    </label>
-                    <p class="setting-description">Friends can see when you're free or busy</p>
-                </div>
-
-                <div class="setting-item">
-                    <label class="setting-label">
-                        <input type="checkbox" id="showEventDetails" checked>
-                        <span>Show event details to friends</span>
-                    </label>
-                    <p class="setting-description">Friends can see event titles and locations</p>
-                </div>
-
-                <div class="setting-item">
-                    <label class="setting-label">
-                        <input type="checkbox" id="allowNotifications" checked>
-                        <span>Email notifications</span>
-                    </label>
-                    <p class="setting-description">Get notified about friend requests and events</p>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
                 </div>
             </div>
-        </div>
-
-        <!-- Account Actions -->
-        <div class="settings-group danger-zone">
-            <h3>Account</h3>
-            <div class="form-container">
-                <button onclick="exportData()" class="btn btn-secondary">Export My Data</button>
-                <button onclick="deleteAccount()" class="btn btn-danger">Delete Account</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Create Event Modal -->
-<div id="createEventModal" class="modal">
-    <div class="modal-content modal-large">
-        <div class="modal-header">
-            <h3>Create New Event</h3>
-            <button class="modal-close" onclick="closeModal('createEventModal')">&times;</button>
-        </div>
-        <div class="modal-body">
-            <form id="createEventForm" class="event-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="eventTitle">Event Title</label>
-                        <input type="text" id="eventTitle" placeholder="Team meeting, Coffee with Sarah..." required>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventType">Type</label>
-                        <select id="eventType">
-                            <option value="busy">🔴 Busy (not available)</option>
-                            <option value="free">🟢 Available (free time)</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="eventStartTime">Start Time</label>
-                        <input type="datetime-local" id="eventStartTime" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventEndTime">End Time</label>
-                        <input type="datetime-local" id="eventEndTime" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="eventDescription">Description (optional)</label>
-                    <textarea id="eventDescription" placeholder="Meeting agenda, notes..." rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="eventLocation">Location (optional)</label>
-                    <input type="text" id="eventLocation" placeholder="Conference room, Starbucks downtown...">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="eventAllDay">
-                            <span>All day event</span>
+            <div class="settings-group">
+                <h3>Privacy & Sharing</h3>
+                <div class="form-container">
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="shareAvailability" checked>
+                            <span>Allow friends to see my availability</span>
                         </label>
+                        <p class="setting-description">Friends can see when you're free or busy</p>
                     </div>
-                    <div class="form-group">
-                        <label for="eventReminder">Reminder</label>
-                        <select id="eventReminder">
-                            <option value="0">No reminder</option>
-                            <option value="5">5 minutes before</option>
-                            <option value="15" selected>15 minutes before</option>
-                            <option value="30">30 minutes before</option>
-                            <option value="60">1 hour before</option>
-                        </select>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="showEventDetails" checked>
+                            <span>Show event details to friends</span>
+                        </label>
+                        <p class="setting-description">Friends can see event titles and locations</p>
+                    </div>
+                    <div class="setting-item">
+                        <label class="setting-label">
+                            <input type="checkbox" id="allowNotifications" checked>
+                            <span>Email notifications</span>
+                        </label>
+                        <p class="setting-description">Get notified about friend requests and events</p>
                     </div>
                 </div>
+            </div>
+            <div class="settings-group danger-zone">
+                <h3>Account</h3>
+                <div class="form-container">
+                    <button onclick="exportData()" class="btn btn-secondary">Export My Data</button>
+                    <button onclick="deleteAccount()" class="btn btn-danger">Delete Account</button>
+                </div>
+            </div>
+        </section>
+    </main>
 
-                <div class="form-actions">
-                    <button type="button" onclick="closeModal('createEventModal')" class="btn btn-secondary">Cancel</button>
+    <!-- Create Event Modal -->
+    <div id="createEventModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="createEventModalTitle">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="createEventModalTitle">Create New Event</h3>
+                <button class="modal-close" onclick="closeModal('createEventModal')" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createEventForm" class="event-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventTitle">Event Title</label>
+                            <input type="text" id="eventTitle" placeholder="Team meeting, Coffee with Sarah..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventType">Type</label>
+                            <select id="eventType">
+                                <option value="busy">🔴 Busy (not available)</option>
+                                <option value="free">🟢 Free (available)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventStart">Start</label>
+                            <input type="datetime-local" id="eventStart" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventEnd">End</label>
+                            <input type="datetime-local" id="eventEnd" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="eventLocation">Location</label>
+                            <input type="text" id="eventLocation" placeholder="Optional">
+                        </div>
+                        <div class="form-group">
+                            <label for="eventDescription">Description</label>
+                            <input type="text" id="eventDescription" placeholder="Optional">
+                        </div>
+                    </div>
                     <button type="submit" class="btn btn-primary">Create Event</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Loading States -->
-<div id="loadingOverlay" class="loading-overlay" style="display: none;">
-    <div class="loading-spinner">
-        <div class="spinner"></div>
-        <p>Loading...</p>
-    </div>
-</div>
+    <!-- Modern Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2025 Friend Availability. All rights reserved.</p>
+        </div>
+    </footer>
 
-<!-- Success/Error Messages -->
-<div id="messageContainer" class="message-container"></div>
-
-<script src="dashboard.js"></script>
+    <script src="dashboard.js"></script>
 </body>
 </html>

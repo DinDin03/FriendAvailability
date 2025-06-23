@@ -3,279 +3,56 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LinkUp - Friend Availability Made Easy</title>
+  <title>Friend Availability App</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<!-- Landing Page Header -->
-<header class="landing-header">
-  <nav class="landing-nav">
-    <div class="nav-brand">
-      <h2>📅 LinkUp</h2>
+  <header class="main-header">
+    <div class="container">
+      <h1 class="app-title">Friend Availability</h1>
+      <p class="subtitle">Effortlessly coordinate schedules and find the perfect time to meet your friends.</p>
     </div>
-    <div class="nav-links">
-      <button onclick="showLoginModal()" class="btn btn-outline">Login</button>
-      <button onclick="showRegisterModal()" class="btn btn-primary">Sign Up</button>
-    </div>
-  </nav>
-</header>
+  </header>
 
-<!-- Hero Section -->
-<section class="hero">
-  <div class="hero-content">
-    <h1>Never miss a hangout again</h1>
-    <p class="hero-subtitle">
-      Coordinate schedules with friends effortlessly. See when everyone's free,
-      plan meetups, and spend more time together.
-    </p>
-
-    <!-- Main CTA Buttons -->
-    <div class="hero-buttons">
-      <a href="/oauth2/authorization/google" class="btn btn-google">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
-        Continue with Google
-      </a>
-      <button onclick="showRegisterModal()" class="btn btn-primary btn-large">
-        Get Started Free
-      </button>
-    </div>
-
-    <p class="hero-note">✨ Always free for personal use</p>
-  </div>
-
-  <!-- Hero Visual -->
-  <div class="hero-visual">
-    <div class="calendar-preview">
-      <div class="preview-header">
-        <h4>Your Smart Calendar</h4>
-      </div>
-      <div class="preview-schedule">
-        <div class="time-slot free">
-          <span class="time">9:00 AM</span>
-          <span class="event">🟢 Available</span>
+  <main>
+    <section class="hero-section">
+      <div class="container hero-content">
+        <div class="hero-text">
+          <h2>Connect. Schedule. Meet.</h2>
+          <p>Friend Availability helps you and your friends easily share your schedules, see when everyone is free, and plan get-togethers without the hassle.</p>
+          <a href="/oauth2/authorization/google" class="btn btn-google">
+            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
+            Login / Sign up with Google
+          </a>
         </div>
-        <div class="time-slot busy">
-          <span class="time">10:00 AM</span>
-          <span class="event">📅 Team Meeting</span>
-        </div>
-        <div class="time-slot free">
-          <span class="time">11:00 AM</span>
-          <span class="event">🟢 Free for coffee!</span>
-        </div>
-        <div class="time-slot busy">
-          <span class="time">2:00 PM</span>
-          <span class="event">🍽️ Lunch with Sarah</span>
-        </div>
-        <div class="time-slot free">
-          <span class="time">3:00 PM</span>
-          <span class="event">🟢 Available</span>
+        <div class="hero-image">
+          <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80" alt="Friends scheduling" style="max-width: 100%; border-radius: 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-<!-- Features Section -->
-<section class="features">
-  <div class="container">
-    <h2>Why LinkUp?</h2>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🤖</div>
-        <h3>Smart Free Time Detection</h3>
-        <p>Automatically shows when you're available between meetings and events. No manual scheduling needed!</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">👥</div>
-        <h3>Friend Coordination</h3>
-        <p>Connect with friends and see overlapping free time. Plan hangouts when everyone's actually available.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">📱</div>
-        <h3>Simple & Clean</h3>
-        <p>Beautiful, intuitive interface that makes scheduling feel effortless. No complicated features you don't need.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>Privacy First</h3>
-        <p>Your schedule stays private. Share only what you want with the people you choose.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">⚡</div>
-        <h3>Instant Sync</h3>
-        <p>Updates in real-time. When your schedule changes, your friends see it immediately.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon">🎯</div>
-        <h3>Built for Friends</h3>
-        <p>Designed specifically for social coordination. Perfect for study groups, meetups, and hangouts.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- How It Works Section -->
-<section class="how-it-works">
-  <div class="container">
-    <h2>How It Works</h2>
-    <div class="steps">
-      <div class="step">
-        <div class="step-number">1</div>
-        <h3>Add Your Schedule</h3>
-        <p>Add your meetings, classes, and commitments. LinkUp automatically finds your free time.</p>
-      </div>
-
-      <div class="step">
-        <div class="step-number">2</div>
-        <h3>Connect Friends</h3>
-        <p>Send friend requests to people you want to coordinate with. Build your social circle.</p>
-      </div>
-
-      <div class="step">
-        <div class="step-number">3</div>
-        <h3>Find Common Time</h3>
-        <p>See when you and your friends are all free. Plan the perfect time to meet up!</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Call to Action -->
-<section class="cta">
-  <div class="container">
-    <h2>Ready to coordinate better?</h2>
-    <p>Join thousands of friends who never miss a hangout</p>
-    <div class="cta-buttons">
-      <a href="/oauth2/authorization/google" class="btn btn-google btn-large">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
-        Sign up with Google
-      </a>
-      <button onclick="showRegisterModal()" class="btn btn-primary btn-large">
-        Create Free Account
-      </button>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer class="landing-footer">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-brand">
-        <h3>📅 LinkUp</h3>
-        <p>Making friend coordination effortless</p>
-      </div>
-      <div class="footer-links">
-        <div class="footer-column">
-          <h4>Product</h4>
-          <a href="#features">Features</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#pricing">Pricing</a>
+    <section class="features-section">
+      <div class="container features-grid">
+        <div class="feature-card">
+          <h3>Smart Scheduling</h3>
+          <p>See when your friends are available and find the best time for everyone with just a few clicks.</p>
         </div>
-        <div class="footer-column">
-          <h4>Support</h4>
-          <a href="#help">Help Center</a>
-          <a href="#contact">Contact</a>
-          <a href="#privacy">Privacy</a>
+        <div class="feature-card">
+          <h3>Google Calendar Integration</h3>
+          <p>Sync your events and never double-book. All your plans in one place, always up to date.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Privacy First</h3>
+          <p>You control what you share. Only your friends can see your availability, not your private events.</p>
         </div>
       </div>
+    </section>
+  </main>
+
+  <footer class="main-footer">
+    <div class="container">
+      <p>&copy; 2025 Friend Availability. All rights reserved.</p>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 LinkUp. Built with ❤️ for better friendships.</p>
-    </div>
-  </div>
-</footer>
-
-<!-- Login Modal -->
-<div id="loginModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Welcome back!</h3>
-      <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <!-- Google OAuth Button -->
-      <a href="/oauth2/authorization/google" class="btn btn-google btn-full">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
-        Continue with Google
-      </a>
-
-      <div class="divider">
-        <span>or</span>
-      </div>
-
-      <!-- Traditional Login Form -->
-      <form id="loginForm" class="auth-form">
-        <div class="form-group">
-          <input type="email" id="loginEmail" placeholder="Email address" required>
-        </div>
-        <div class="form-group">
-          <input type="password" id="loginPassword" placeholder="Password" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">Sign In</button>
-      </form>
-
-      <p class="auth-switch">
-        Don't have an account?
-        <a href="#" onclick="switchToRegister()">Sign up here</a>
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- Register Modal -->
-<div id="registerModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Create your account</h3>
-      <button class="modal-close" onclick="closeModal('registerModal')">&times;</button>
-    </div>
-    <div class="modal-body">
-      <!-- Google OAuth Button -->
-      <a href="/oauth2/authorization/google" class="btn btn-google btn-full">
-        <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
-        Sign up with Google
-      </a>
-
-      <div class="divider">
-        <span>or</span>
-      </div>
-
-      <!-- Traditional Registration Form -->
-      <form id="registerForm" class="auth-form">
-        <div class="form-group">
-          <input type="text" id="registerName" placeholder="Full name" required>
-        </div>
-        <div class="form-group">
-          <input type="email" id="registerEmail" placeholder="Email address" required>
-        </div>
-        <div class="form-group">
-          <input type="password" id="registerPassword" placeholder="Password (8+ characters)" required minlength="8">
-        </div>
-        <button type="submit" class="btn btn-primary btn-full">Create Account</button>
-      </form>
-
-      <p class="auth-switch">
-        Already have an account?
-        <a href="#" onclick="switchToLogin()">Sign in here</a>
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- Loading Overlay -->
-<div id="loadingOverlay" class="loading-overlay" style="display: none;">
-  <div class="loading-spinner">
-    <div class="spinner"></div>
-    <p>Setting up your account...</p>
-  </div>
-</div>
-
-<script src="landing.js"></script>
+  </footer>
 </body>
 </html>
