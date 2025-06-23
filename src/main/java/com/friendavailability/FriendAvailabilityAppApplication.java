@@ -12,6 +12,6 @@ public class FriendAvailabilityAppApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(FriendAvailabilityAppApplication.class, args);
 		System.out.println("Friend Availability App is running!");
-		System.out.println("Visit: http://localhost:8080/oauth2/authorization/google");
+		System.out.println("Visit: http://localhost:8080");
 	}
 }

@@ -70,8 +70,8 @@ public interface AvailabilityRepository extends JpaRepository<Availability, Long
     @Query("SELECT a FROM Availability a WHERE a.user.id = :userId AND a.startTime <= :now AND a.endTime >= :now ORDER BY a.startTime")
     List<Availability> findCurrentEvents(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
-    @Query("SELECT a FROM Availability a WHERE a.user.id = :userId AND a.reminderMinutes IS NOT NULL AND (a.startTime - INTERVAL a.reminderMinutes MINUTE) <= :now AND a.startTime > :now")
-    List<Availability> findEventsWithDueReminders(@Param("userId") Long userId, @Param("now") LocalDateTime now);
+//    @Query("SELECT a FROM Availability a WHERE a.user.id = :userId AND a.reminderMinutes IS NOT NULL AND (a.startTime - INTERVAL a.reminderMinutes MINUTE) <= :now AND a.startTime > :now")
+//    List<Availability> findEventsWithDueReminders(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     List<Availability> findByUserIdAndLocationContainingIgnoreCaseOrderByStartTime(Long userId, String location);
     List<Availability> findByUserIdAndTitleContainingIgnoreCaseOrderByStartTime(Long userId, String title);
