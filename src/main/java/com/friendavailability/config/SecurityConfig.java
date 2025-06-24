@@ -10,7 +10,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,7 +21,7 @@ public class SecurityConfig {
 
     public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
         this.customOAuth2UserService = customOAuth2UserService;
-        System.out.println("✅ SecurityConfig created with CustomOAuth2UserService injected");
+        System.out.println("SecurityConfig created with CustomOAuth2UserService injected");
     }
 
     @Bean
@@ -33,13 +32,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        // Allow static resources and login pages
-                        .requestMatchers("/", "/index.html", "/style.css", "/app.js").permitAll()
+                        .requestMatchers("/", "/index.html", "/style.css", "/app.js", "/dashboard.html", "/api/auth/**" ).permitAll()
                         .requestMatchers("/oauth2/**", "/login/**").permitAll()
-
-                        // API endpoints require authentication
                         .requestMatchers("/api/**").authenticated()
-
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
