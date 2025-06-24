@@ -3,56 +3,1785 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Friend Availability App</title>
-  <link rel="stylesheet" href="style.css">
+  <title>LinkUp - Schedule meetups with friends, effortlessly</title>
+  <meta name="description" content="LinkUp helps you coordinate schedules with friends, find common free time slots, and schedule meetups efficiently.">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* ===== CSS VARIABLES (Modern approach for theming) ===== */
+    :root {
+      /* Atlassian-inspired color palette */
+      --primary-blue: #0052CC;
+      --secondary-blue: #0065FF;
+      --light-blue: #E6F3FF;
+      --dark-blue: #003884;
+
+      /* Supporting colors */
+      --white: #FFFFFF;
+      --gray-50: #F8F9FA;
+      --gray-100: #F1F2F4;
+      --gray-300: #DFE1E6;
+      --gray-500: #8993A4;
+      --gray-700: #5E6C84;
+      --gray-900: #172B4D;
+
+      /* Success & error states */
+      --success: #00875A;
+      --error: #DE350B;
+      --warning: #FF8B00;
+
+      /* Typography */
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-3xl: 1.875rem;
+      --font-size-4xl: 2.25rem;
+
+      /* Spacing */
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+      --spacing-3xl: 4rem;
+
+      /* Border radius */
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ===== RESET & BASE STYLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-family);
+      line-height: 1.6;
+      color: var(--gray-900);
+      background-color: var(--white);
+      font-size: var(--font-size-base);
+    }
+
+    /* ===== HEADER & NAVIGATION ===== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--gray-100);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .logo {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--primary-blue);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .logo i {
+      font-size: var(--font-size-2xl);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: var(--spacing-xl);
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--gray-700);
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary-blue);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--primary-blue);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--dark-blue);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-secondary {
+      background: var(--white);
+      color: var(--primary-blue);
+      border: 2px solid var(--primary-blue);
+    }
+
+    .btn-secondary:hover {
+      background: var(--light-blue);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gray-700);
+      border: 1px solid var(--gray-300);
+    }
+
+    .btn-outline:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-500);
+    }
+
+    .btn-google {
+      background: var(--white);
+      color: var(--gray-700);
+      border: 1px solid var(--gray-300);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-google:hover {
+      box-shadow: var(--shadow-md);
+      background: var(--gray-50);
+    }
+
+    .btn-lg {
+      padding: var(--spacing-md) var(--spacing-xl);
+      font-size: var(--font-size-base);
+    }
+
+    /* ===== HERO SECTION ===== */
+    .hero {
+      padding: calc(70px + var(--spacing-3xl)) var(--spacing-xl) var(--spacing-3xl);
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
+      text-align: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hero-content {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: var(--font-size-4xl);
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: var(--font-size-lg);
+      color: var(--gray-700);
+      margin-bottom: var(--spacing-2xl);
+      line-height: 1.5;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ===== MAIN CONTENT SECTIONS ===== */
+    .section {
+      padding: var(--spacing-3xl) var(--spacing-xl);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: var(--spacing-2xl);
+    }
+
+    .section-title h2 {
+      font-size: var(--font-size-3xl);
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .section-title p {
+      font-size: var(--font-size-lg);
+      color: var(--gray-700);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ===== HOW IT WORKS ===== */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-2xl);
+      margin-top: var(--spacing-2xl);
+    }
+
+    .step {
+      text-align: center;
+      padding: var(--spacing-xl);
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .step:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .step-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--spacing-lg);
+      background: var(--light-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-blue);
+      font-size: var(--font-size-2xl);
+    }
+
+    .step h3 {
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+      margin-bottom: var(--spacing-md);
+      color: var(--gray-900);
+    }
+
+    .step p {
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+
+    /* ===== FEATURES GRID ===== */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-2xl);
+    }
+
+    .feature {
+      padding: var(--spacing-xl);
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      border: 1px solid var(--gray-100);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature:hover {
+      border-color: var(--primary-blue);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-icon {
+      color: var(--primary-blue);
+      font-size: var(--font-size-2xl);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .feature h3 {
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: var(--spacing-sm);
+      color: var(--gray-900);
+    }
+
+    .feature p {
+      color: var(--gray-700);
+      line-height: 1.5;
+    }
+
+    /* ===== REVIEWS SECTION ===== */
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: var(--spacing-xl);
+      margin-top: var(--spacing-2xl);
+    }
+
+    .review {
+      padding: var(--spacing-xl);
+      border-radius: var(--radius-lg);
+      background: var(--white);
+      box-shadow: var(--shadow-sm);
+      border-left: 4px solid var(--primary-blue);
+    }
+
+    .review-content {
+      font-style: italic;
+      color: var(--gray-700);
+      margin-bottom: var(--spacing-lg);
+      line-height: 1.6;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-md);
+    }
+
+    .review-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--light-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-blue);
+      font-weight: 600;
+    }
+
+    .review-info h4 {
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .review-info p {
+      font-size: var(--font-size-sm);
+      color: var(--gray-500);
+    }
+
+    .stars {
+      color: #fbbf24;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    /* ===== CTA SECTION ===== */
+    .cta {
+      background: var(--primary-blue);
+      color: var(--white);
+      text-align: center;
+    }
+
+    .cta h2 {
+      color: var(--white);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .cta p {
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: var(--gray-900);
+      color: var(--white);
+      padding: var(--spacing-2xl) var(--spacing-xl) var(--spacing-xl);
+      text-align: center;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--spacing-xl);
+      justify-content: center;
+      margin-bottom: var(--spacing-xl);
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-bottom {
+      padding-top: var(--spacing-xl);
+      border-top: 1px solid var(--gray-700);
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* ===== MODAL STYLES ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-content {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      padding: var(--spacing-2xl);
+      width: 90%;
+      max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideIn 0.3s ease;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: var(--spacing-lg);
+      right: var(--spacing-lg);
+      background: none;
+      border: none;
+      font-size: var(--font-size-xl);
+      color: var(--gray-500);
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .modal-close:hover {
+      color: var(--gray-900);
+    }
+
+    .modal-title {
+      font-size: var(--font-size-2xl);
+      font-weight: 600;
+      margin-bottom: var(--spacing-xl);
+      text-align: center;
+      color: var(--gray-900);
+    }
+
+    /* ===== FORM STYLES ===== */
+    .form-group {
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: var(--spacing-sm);
+      font-weight: 500;
+      color: var(--gray-900);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: var(--spacing-md);
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-base);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+    }
+
+    .form-divider {
+      margin: var(--spacing-xl) 0;
+      text-align: center;
+      position: relative;
+      color: var(--gray-500);
+    }
+
+    .form-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--gray-300);
+    }
+
+    .form-divider span {
+      background: var(--white);
+      padding: 0 var(--spacing-md);
+    }
+
+    .form-actions {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .form-link {
+      text-align: center;
+      margin-top: var(--spacing-lg);
+    }
+
+    .form-link a {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .form-link a:hover {
+      text-decoration: underline;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+      .nav {
+        padding: 0 var(--spacing-md);
+      }
+
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: calc(70px + var(--spacing-xl)) var(--spacing-md) var(--spacing-xl);
+      }
+
+      .hero h1 {
+        font-size: var(--font-size-3xl);
+      }
+
+      .section {
+        padding: var(--spacing-xl) var(--spacing-md);
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .steps-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+      }
+
+      .modal-content {
+        margin: var(--spacing-md);
+        padding: var(--spacing-lg);
+      }
+    }
+
+    /* ===== UTILITY CLASSES ===== */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+
+    .mt-auto {
+      margin-top: auto;
+    }
+  </style>
 </head>
 <body>
-  <header class="main-header">
-    <div class="container">
-      <h1 class="app-title">Friend Availability</h1>
-      <p class="subtitle">Effortlessly coordinate schedules and find the perfect time to meet your friends.</p>
-    </div>
-  </header>
+<!-- Header Navigation -->
+<header class="header">
+  <nav class="nav">
+    <a href="#" class="logo">
+      <i class="fas fa-calendar-check"></i>
+      LinkUp
+    </a>
 
-  <main>
-    <section class="hero-section">
-      <div class="container hero-content">
-        <div class="hero-text">
-          <h2>Connect. Schedule. Meet.</h2>
-          <p>Friend Availability helps you and your friends easily share your schedules, see when everyone is free, and plan get-togethers without the hassle.</p>
-          <a href="/oauth2/authorization/google" class="btn btn-google">
-            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" width="20" height="20">
-            Login / Sign up with Google
-          </a>
-        </div>
-        <div class="hero-image">
-          <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80" alt="Friends scheduling" style="max-width: 100%; border-radius: 1rem; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How it Works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#reviews">Reviews</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <button class="btn btn-outline" onclick="openLoginModal()">Sign In</button>
+      <button class="btn btn-primary" onclick="openSignupModal()">Get Started</button>
+    </div>
+  </nav>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-content">
+    <h1>Schedule meetups with friends, effortlessly</h1>
+    <p>Stop the endless "when are you free?" messages. LinkUp helps you coordinate schedules, find common free time slots, and plan gatherings that work for everyone.</p>
+
+    <div class="hero-actions">
+      <button class="btn btn-primary btn-lg" onclick="openSignupModal()">
+        <i class="fas fa-rocket"></i>
+        Start Scheduling
+      </button>
+      <button class="btn btn-google btn-lg" onclick="loginWithGoogle()">
+        <i class="fab fa-google"></i>
+        Continue with Google
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="section">
+  <div class="section-title">
+    <h2>How LinkUp Works</h2>
+    <p>Get from chaos to coordinated in three simple steps</p>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step">
+      <div class="step-icon">
+        <i class="fas fa-users"></i>
+      </div>
+      <h3>1. Connect with Friends</h3>
+      <p>Create your profile and connect with friends using their email or by sharing your unique LinkUp code.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-icon">
+        <i class="fas fa-calendar-alt"></i>
+      </div>
+      <h3>2. Share Your Availability</h3>
+      <p>Mark when you're free directly in LinkUp or sync with your Google Calendar for automatic updates.</p>
+    </div>
+
+    <div class="step">
+      <div class="step-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <h3>3. Find Common Time</h3>
+      <p>Our smart algorithm finds overlapping free time slots among your friend group and suggests the best meeting times.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="section">
+  <div class="section-title">
+    <h2>Everything You Need to Stay Connected</h2>
+    <p>Powerful features designed to make scheduling social events a breeze</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature">
+      <div class="feature-icon">
+        <i class="fas fa-sync-alt"></i>
+      </div>
+      <h3>Google Calendar Sync</h3>
+      <p>Automatically sync your existing calendar so your availability is always up-to-date without extra work.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">
+        <i class="fas fa-users-cog"></i>
+      </div>
+      <h3>Friend Circles</h3>
+      <p>Create different groups for work friends, college buddies, or family to keep your scheduling organized.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">
+        <i class="fas fa-mobile-alt"></i>
+      </div>
+      <h3>Mobile Friendly</h3>
+      <p>Access LinkUp from any device with our responsive web design that works seamlessly on phones and tablets.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h3>Privacy First</h3>
+      <p>Your calendar data stays secure with enterprise-grade encryption and you control who sees your availability.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">
+        <i class="fas fa-bell"></i>
+      </div>
+      <h3>Smart Notifications</h3>
+      <p>Get notified when friends update their availability or when new common time slots become available.</p>
+    </div>
+
+    <div class="feature">
+      <div class="feature-icon">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <h3>Schedule Analytics</h3>
+      <p>See patterns in your group's availability and discover the best times for regular meetups.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Reviews Section -->
+<section id="reviews" class="section">
+  <div class="section-title">
+    <h2>What People Are Saying</h2>
+    <p>Join thousands of users who've simplified their social scheduling</p>
+  </div>
+
+  <div class="reviews-grid">
+    <div class="review">
+      <div class="stars">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="review-content">
+        "LinkUp has been a game-changer for our friend group! We used to spend hours trying to coordinate game nights, now it takes minutes to find a time that works for everyone."
+      </div>
+      <div class="review-author">
+        <div class="review-avatar">AS</div>
+        <div class="review-info">
+          <h4>Alex Smith</h4>
+          <p>University Student</p>
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="features-section">
-      <div class="container features-grid">
-        <div class="feature-card">
-          <h3>Smart Scheduling</h3>
-          <p>See when your friends are available and find the best time for everyone with just a few clicks.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Google Calendar Integration</h3>
-          <p>Sync your events and never double-book. All your plans in one place, always up to date.</p>
-        </div>
-        <div class="feature-card">
-          <h3>Privacy First</h3>
-          <p>You control what you share. Only your friends can see your availability, not your private events.</p>
+    <div class="review">
+      <div class="stars">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="review-content">
+        "As someone who organizes a lot of team events, LinkUp has saved me countless hours. The Google Calendar integration means I don't have to manually update my availability."
+      </div>
+      <div class="review-author">
+        <div class="review-avatar">MJ</div>
+        <div class="review-info">
+          <h4>Maria Johnson</h4>
+          <p>Project Manager</p>
         </div>
       </div>
-    </section>
-  </main>
-
-  <footer class="main-footer">
-    <div class="container">
-      <p>&copy; 2025 Friend Availability. All rights reserved.</p>
     </div>
-  </footer>
+
+    <div class="review">
+      <div class="stars">
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+        <i class="fas fa-star"></i>
+      </div>
+      <div class="review-content">
+        "Finally, no more endless group chats trying to find a time for dinner! LinkUp makes it so easy to see when everyone's free and plan accordingly."
+      </div>
+      <div class="review-author">
+        <div class="review-avatar">DL</div>
+        <div class="review-info">
+          <h4>David Lee</h4>
+          <p>Software Engineer</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="section cta">
+  <h2>Ready to Stop the Scheduling Chaos?</h2>
+  <p>Join thousands of users who've simplified their social scheduling with LinkUp</p>
+  <div class="hero-actions">
+    <button class="btn btn-secondary btn-lg" onclick="openSignupModal()">
+      <i class="fas fa-calendar-plus"></i>
+      Get Started Free
+    </button>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#terms">Terms of Service</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="#help">Help</a>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 LinkUp. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Login Modal -->
+<div id="loginModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+
+    <h2 class="modal-title">Welcome Back</h2>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label for="loginEmail" class="form-label">Email Address</label>
+        <input
+                type="email"
+                id="loginEmail"
+                class="form-input"
+                placeholder="Enter your email"
+                required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="loginPassword" class="form-label">Password</label>
+        <input
+                type="password"
+                id="loginPassword"
+                class="form-input"
+                placeholder="Enter your password"
+                required
+        >
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fas fa-sign-in-alt"></i>
+          Sign In
+        </button>
+      </div>
+    </form>
+
+    <div class="form-divider">
+      <span>or</span>
+    </div>
+
+    <button class="btn btn-google btn-lg" onclick="loginWithGoogle()">
+      <i class="fab fa-google"></i>
+      Continue with Google
+    </button>
+
+    <div class="form-link">
+      <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up here</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div id="signupModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('signupModal')">&times;</button>
+
+    <h2 class="modal-title">Join LinkUp</h2>
+
+    <form id="signupForm" onsubmit="handleSignup(event)">
+      <div class="form-group">
+        <label for="signupName" class="form-label">Full Name</label>
+        <input
+                type="text"
+                id="signupName"
+                class="form-input"
+                placeholder="Enter your full name"
+                required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="signupEmail" class="form-label">Email Address</label>
+        <input
+                type="email"
+                id="signupEmail"
+                class="form-input"
+                placeholder="Enter your email"
+                required
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="signupPassword" class="form-label">Password</label>
+        <input
+                type="password"
+                id="signupPassword"
+                class="form-input"
+                placeholder="Create a strong password"
+                required
+                minlength="8"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword" class="form-label">Confirm Password</label>
+        <input
+                type="password"
+                id="confirmPassword"
+                class="form-input"
+                placeholder="Confirm your password"
+                required
+        >
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fas fa-user-plus"></i>
+          Create Account
+        </button>
+      </div>
+    </form>
+
+    <div class="form-divider">
+      <span>or</span>
+    </div>
+
+    <button class="btn btn-google btn-lg" onclick="loginWithGoogle()">
+      <i class="fab fa-google"></i>
+      Sign up with Google
+    </button>
+
+    <div class="form-link">
+      <p>Already have an account? <a href="#" onclick="switchToLogin()">Sign in here</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- Success/Error Message Container -->
+<div id="messageContainer"></div>
+
+<script>
+  // ===== JAVASCRIPT FOR LANDING PAGE FUNCTIONALITY =====
+
+  /**
+   * GLOBAL STATE MANAGEMENT
+   *
+   * In backend development, state management is crucial for:
+   * - Tracking user authentication status
+   * - Managing form validation states
+   * - Controlling UI interactions
+   * - Preventing race conditions and duplicate requests
+   */
+  let appState = {
+    isLoading: false,
+    currentModal: null,
+    loginAttempts: 0,
+    lastError: null
+  };
+
+  /**
+   * CONFIGURATION CONSTANTS
+   *
+   * These would typically come from:
+   * - Environment variables (in Spring Boot: application.properties)
+   * - Configuration classes (@ConfigurationProperties)
+   * - Feature flags for A/B testing
+   */
+  const CONFIG = {
+    API_BASE_URL: '/api',
+    MAX_LOGIN_ATTEMPTS: 5,
+    PASSWORD_MIN_LENGTH: 8,
+    MESSAGE_DISPLAY_TIME: 5000,
+    ANIMATION_DURATION: 300
+  };
+
+  // ===== MODAL MANAGEMENT =====
+
+  /**
+   * OPEN MODAL FUNCTION
+   *
+   * This demonstrates:
+   * - DOM manipulation
+   * - Event handling
+   * - State management
+   * - Accessibility considerations (focus management)
+   */
+  function openModal(modalId) {
+    console.log(`Opening modal: ${modalId}`);
+
+    // Close any existing modal first
+    if (appState.currentModal) {
+      closeModal(appState.currentModal);
+    }
+
+    const modal = document.getElementById(modalId);
+    if (!modal) {
+      console.error(`Modal not found: ${modalId}`);
+      return;
+    }
+
+    // Update application state
+    appState.currentModal = modalId;
+
+    // Show modal with animation
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+
+    // Focus on first input for accessibility
+    setTimeout(() => {
+      const firstInput = modal.querySelector('input');
+      if (firstInput) {
+        firstInput.focus();
+      }
+    }, CONFIG.ANIMATION_DURATION);
+  }
+
+  /**
+   * CLOSE MODAL FUNCTION
+   *
+   * Properly cleanup modal state and restore page functionality
+   */
+  function closeModal(modalId) {
+    console.log(`Closing modal: ${modalId}`);
+
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+
+    // Hide modal
+    modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scrolling
+
+    // Clear application state
+    appState.currentModal = null;
+
+    // Clear form data for security
+    const forms = modal.querySelectorAll('form');
+    forms.forEach(form => form.reset());
+  }
+
+  // ===== MODAL CONVENIENCE FUNCTIONS =====
+
+  function openLoginModal() {
+    openModal('loginModal');
+  }
+
+  function openSignupModal() {
+    openModal('signupModal');
+  }
+
+  function switchToSignup() {
+    closeModal('loginModal');
+    setTimeout(() => openSignupModal(), 200);
+  }
+
+  function switchToLogin() {
+    closeModal('signupModal');
+    setTimeout(() => openLoginModal(), 200);
+  }
+
+  // ===== AUTHENTICATION HANDLERS =====
+
+  /**
+   * HANDLE LOGIN FORM SUBMISSION
+   *
+   * This demonstrates:
+   * - Form handling and validation
+   * - Asynchronous API calls
+   * - Error handling patterns
+   * - Security considerations (CSRF, rate limiting)
+   * - User feedback and loading states
+   */
+  async function handleLogin(event) {
+    event.preventDefault();
+
+    // Prevent multiple simultaneous submissions
+    if (appState.isLoading) {
+      console.log('Login already in progress');
+      return;
+    }
+
+    // Rate limiting check
+    if (appState.loginAttempts >= CONFIG.MAX_LOGIN_ATTEMPTS) {
+      showErrorMessage('Too many login attempts. Please try again later.');
+      return;
+    }
+
+    // Get form data
+    const formData = {
+      email: document.getElementById('loginEmail').value.trim(),
+      password: document.getElementById('loginPassword').value
+    };
+
+    // Basic client-side validation
+    if (!validateLoginForm(formData)) {
+      return;
+    }
+
+    // Set loading state
+    appState.isLoading = true;
+    showLoadingMessage('Signing you in...');
+
+    try {
+      // Make API call to your Spring Boot backend
+      const result = await performLogin(formData);
+
+      if (result.success) {
+        showSuccessMessage('Login successful! Redirecting...');
+
+        // Reset login attempts
+        appState.loginAttempts = 0;
+
+        // Close modal and redirect
+        closeModal('loginModal');
+
+        // Redirect to dashboard after brief delay
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1500);
+
+      } else {
+        appState.loginAttempts++;
+        showErrorMessage(result.error || 'Login failed. Please try again.');
+
+        // Clear password field for security
+        document.getElementById('loginPassword').value = '';
+      }
+
+    } catch (error) {
+      console.error('Login error:', error);
+      appState.loginAttempts++;
+      showErrorMessage('Network error. Please check your connection and try again.');
+    } finally {
+      appState.isLoading = false;
+      hideLoadingMessage();
+    }
+  }
+
+  /**
+   * HANDLE SIGNUP FORM SUBMISSION
+   *
+   * Similar to login but with additional validation requirements
+   */
+  async function handleSignup(event) {
+    event.preventDefault();
+
+    if (appState.isLoading) return;
+
+    // Get form data
+    const formData = {
+      name: document.getElementById('signupName').value.trim(),
+      email: document.getElementById('signupEmail').value.trim(),
+      password: document.getElementById('signupPassword').value,
+      confirmPassword: document.getElementById('confirmPassword').value
+    };
+
+    // Validate signup form
+    if (!validateSignupForm(formData)) {
+      return;
+    }
+
+    appState.isLoading = true;
+    showLoadingMessage('Creating your account...');
+
+    try {
+      const result = await performSignup(formData);
+
+      if (result.success) {
+        showSuccessMessage('Account created successfully! Redirecting...');
+        closeModal('signupModal');
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 1500);
+
+      } else {
+        showErrorMessage(result.error || 'Signup failed. Please try again.');
+      }
+
+    } catch (error) {
+      console.error('Signup error:', error);
+      showErrorMessage('Network error. Please check your connection and try again.');
+    } finally {
+      appState.isLoading = false;
+      hideLoadingMessage();
+    }
+  }
+
+  /**
+   * GOOGLE OAUTH LOGIN
+   *
+   * This redirects to your Spring Boot OAuth2 endpoint
+   */
+  function loginWithGoogle() {
+    console.log('Initiating Google OAuth login');
+    showLoadingMessage('Redirecting to Google...');
+
+    // Redirect to your Spring Boot OAuth2 endpoint
+    // This should match your SecurityConfig OAuth2 setup
+    window.location.href = '/oauth2/authorization/google';
+  }
+
+  // ===== FORM VALIDATION =====
+
+  /**
+   * VALIDATE LOGIN FORM
+   *
+   * Client-side validation for better UX.
+   * Note: Server-side validation is still required for security!
+   */
+  function validateLoginForm(formData) {
+    if (!formData.email) {
+      showErrorMessage('Please enter your email address.');
+      return false;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      showErrorMessage('Please enter a valid email address.');
+      return false;
+    }
+
+    if (!formData.password) {
+      showErrorMessage('Please enter your password.');
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * VALIDATE SIGNUP FORM
+   *
+   * More comprehensive validation for new account creation
+   */
+  function validateSignupForm(formData) {
+    if (!formData.name || formData.name.length < 2) {
+      showErrorMessage('Please enter your full name (at least 2 characters).');
+      return false;
+    }
+
+    if (!formData.email) {
+      showErrorMessage('Please enter your email address.');
+      return false;
+    }
+
+    if (!isValidEmail(formData.email)) {
+      showErrorMessage('Please enter a valid email address.');
+      return false;
+    }
+
+    if (!formData.password) {
+      showErrorMessage('Please enter a password.');
+      return false;
+    }
+
+    if (formData.password.length < CONFIG.PASSWORD_MIN_LENGTH) {
+      showErrorMessage(`Password must be at least ${CONFIG.PASSWORD_MIN_LENGTH} characters long.`);
+      return false;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      showErrorMessage('Passwords do not match.');
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * EMAIL VALIDATION HELPER
+   *
+   * Basic email format validation using regex
+   */
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  // ===== API COMMUNICATION =====
+
+  /**
+   * PERFORM LOGIN API CALL
+   *
+   * This would call your Spring Boot backend API.
+   * For now, it shows the structure you'll need.
+   */
+  async function performLogin(formData) {
+    try {
+      // TODO: Implement this endpoint in your Spring Boot backend
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest' // CSRF protection
+        },
+        credentials: 'include', // Include session cookies
+        body: JSON.stringify(formData)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          success: true,
+          user: data.user,
+          redirectUrl: data.redirectUrl || '/dashboard.html'
+        };
+      } else {
+        const errorData = await response.json();
+        return {
+          success: false,
+          error: errorData.message || 'Login failed'
+        };
+      }
+
+    } catch (error) {
+      // For now, since traditional login isn't implemented yet
+      if (error.name === 'TypeError' || error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: 'Traditional login not yet implemented. Please use "Continue with Google".'
+        };
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * PERFORM SIGNUP API CALL
+   *
+   * Similar structure for user registration
+   */
+  async function performSignup(formData) {
+    try {
+      // TODO: Implement this endpoint in your Spring Boot backend
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          success: true,
+          user: data.user,
+          redirectUrl: data.redirectUrl || '/dashboard.html'
+        };
+      } else {
+        const errorData = await response.json();
+        return {
+          success: false,
+          error: errorData.message || 'Registration failed'
+        };
+      }
+
+    } catch (error) {
+      // For now, since traditional signup isn't implemented yet
+      if (error.name === 'TypeError' || error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: 'Traditional signup not yet implemented. Please use "Sign up with Google".'
+        };
+      }
+
+      throw error;
+    }
+  }
+
+  // ===== USER FEEDBACK MESSAGES =====
+
+  /**
+   * MESSAGE DISPLAY SYSTEM
+   *
+   * These functions provide user feedback for different states:
+   * - Success messages (green)
+   * - Error messages (red)
+   * - Loading states (blue)
+   * - Warning messages (orange)
+   */
+  function showMessage(message, type = 'info', duration = CONFIG.MESSAGE_DISPLAY_TIME) {
+    // Remove any existing messages
+    clearMessages();
+
+    const container = document.getElementById('messageContainer');
+    if (!container) return;
+
+    const messageEl = document.createElement('div');
+    messageEl.className = `message message-${type}`;
+    messageEl.innerHTML = `
+                <div class="message-content">
+                    <i class="fas ${getMessageIcon(type)}"></i>
+                    <span>${message}</span>
+                    <button class="message-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+
+    // Add styles for messages
+    if (!document.getElementById('messageStyles')) {
+      const styles = document.createElement('style');
+      styles.id = 'messageStyles';
+      styles.textContent = `
+                    #messageContainer {
+                        position: fixed;
+                        top: 80px;
+                        right: 20px;
+                        z-index: 3000;
+                        max-width: 400px;
+                    }
+
+                    .message {
+                        margin-bottom: 10px;
+                        border-radius: var(--radius-md);
+                        box-shadow: var(--shadow-lg);
+                        animation: slideInRight 0.3s ease;
+                    }
+
+                    .message-content {
+                        padding: var(--spacing-md);
+                        display: flex;
+                        align-items: center;
+                        gap: var(--spacing-sm);
+                    }
+
+                    .message-success {
+                        background: var(--success);
+                        color: white;
+                    }
+
+                    .message-error {
+                        background: var(--error);
+                        color: white;
+                    }
+
+                    .message-warning {
+                        background: var(--warning);
+                        color: white;
+                    }
+
+                    .message-info {
+                        background: var(--primary-blue);
+                        color: white;
+                    }
+
+                    .message-close {
+                        background: none;
+                        border: none;
+                        color: inherit;
+                        cursor: pointer;
+                        margin-left: auto;
+                        padding: 4px;
+                        border-radius: 4px;
+                        opacity: 0.8;
+                    }
+
+                    .message-close:hover {
+                        opacity: 1;
+                        background: rgba(255, 255, 255, 0.2);
+                    }
+
+                    @keyframes slideInRight {
+                        from {
+                            transform: translateX(100%);
+                            opacity: 0;
+                        }
+                        to {
+                            transform: translateX(0);
+                            opacity: 1;
+                        }
+                    }
+
+                    @media (max-width: 768px) {
+                        #messageContainer {
+                            right: 10px;
+                            left: 10px;
+                            max-width: none;
+                        }
+                    }
+                `;
+      document.head.appendChild(styles);
+    }
+
+    container.appendChild(messageEl);
+
+    // Auto-remove after duration
+    if (duration > 0) {
+      setTimeout(() => {
+        if (messageEl.parentNode) {
+          messageEl.remove();
+        }
+      }, duration);
+    }
+  }
+
+  function getMessageIcon(type) {
+    const icons = {
+      success: 'fa-check-circle',
+      error: 'fa-exclamation-circle',
+      warning: 'fa-exclamation-triangle',
+      info: 'fa-info-circle'
+    };
+    return icons[type] || 'fa-info-circle';
+  }
+
+  function showSuccessMessage(message) {
+    showMessage(message, 'success');
+  }
+
+  function showErrorMessage(message) {
+    showMessage(message, 'error');
+  }
+
+  function showWarningMessage(message) {
+    showMessage(message, 'warning');
+  }
+
+  function showLoadingMessage(message) {
+    showMessage(message, 'info', 0); // Don't auto-remove loading messages
+  }
+
+  function hideLoadingMessage() {
+    clearMessages();
+  }
+
+  function clearMessages() {
+    const container = document.getElementById('messageContainer');
+    if (container) {
+      container.innerHTML = '';
+    }
+  }
+
+  // ===== EVENT LISTENERS & INITIALIZATION =====
+
+  /**
+   * DOCUMENT READY INITIALIZATION
+   *
+   * This runs when the page loads and sets up:
+   * - Event listeners
+   * - Keyboard shortcuts
+   * - Initial state checks
+   */
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('LinkUp landing page initialized');
+
+    // Set up keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+      // Escape key closes modals
+      if (event.key === 'Escape' && appState.currentModal) {
+        closeModal(appState.currentModal);
+      }
+
+      // Prevent tab from leaving modal
+      if (event.key === 'Tab' && appState.currentModal) {
+        trapTabInModal(event);
+      }
+    });
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      if (event.target.classList.contains('modal')) {
+        closeModal(event.target.id);
+      }
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+
+    // Check if user is already logged in
+    checkExistingAuth();
+  });
+
+  /**
+   * TAB TRAPPING FOR ACCESSIBILITY
+   *
+   * Keeps keyboard navigation within modal
+   */
+  function trapTabInModal(event) {
+    if (!appState.currentModal) return;
+
+    const modal = document.getElementById(appState.currentModal);
+    const focusableElements = modal.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    if (event.shiftKey) {
+      if (document.activeElement === firstElement) {
+        lastElement.focus();
+        event.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement.focus();
+        event.preventDefault();
+      }
+    }
+  }
+
+  /**
+   * CHECK EXISTING AUTHENTICATION
+   *
+   * If user is already logged in, redirect to dashboard
+   */
+  async function checkExistingAuth() {
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/current-user`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const user = await response.json();
+        console.log('User already authenticated, redirecting to dashboard');
+        window.location.href = '/dashboard.html';
+      }
+    } catch (error) {
+      // User not authenticated, stay on landing page
+      console.log('User not authenticated, showing landing page');
+    }
+  }
+
+  // ===== UTILITY FUNCTIONS =====
+
+  /**
+   * DEBOUNCE FUNCTION
+   *
+   * Prevents rapid-fire function calls (useful for search, validation)
+   */
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  /**
+   * SANITIZE INPUT
+   *
+   * Basic input sanitization (server-side validation still required!)
+   */
+  function sanitizeInput(input) {
+    return input.replace(/[<>]/g, '');
+  }
+
+  console.log('LinkUp landing page scripts loaded successfully');
+</script>
 </body>
 </html>

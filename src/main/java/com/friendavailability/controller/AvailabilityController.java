@@ -1,15 +1,13 @@
 package com.friendavailability.controller;
 
+import com.friendavailability.dto.availability.CreateAvailabilityRequest;
+import com.friendavailability.dto.availability.UpdateAvailabilityRequest;
 import com.friendavailability.model.Availability;
 import com.friendavailability.service.AvailabilityService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -252,74 +250,6 @@ public class AvailabilityController {
         } catch (Exception e) {
             System.err.println("Error getting availability statistics for user " + userId + ": " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    @Setter
-    @Getter
-    public static class CreateAvailabilityRequest {
-        @NotNull(message = "User ID is required")
-        private Long userId;
-
-        @NotNull(message = "Start time is required")
-        private LocalDateTime startTime;
-
-        @NotNull(message = "End time is required")
-        private LocalDateTime endTime;
-
-        private String title;
-        private String description;
-        private String location;
-        private Boolean isBusy;
-        private Boolean isAllDay;
-        private Integer reminderMinutes;
-
-        public CreateAvailabilityRequest() {}
-
-        public CreateAvailabilityRequest(Long userId, LocalDateTime startTime, LocalDateTime endTime, String title) {
-            this.userId = userId;
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.title = title;
-        }
-
-        @Override
-        public String toString() {
-            return "CreateAvailabilityRequest{" +
-                    "userId=" + userId +
-                    ", startTime=" + startTime +
-                    ", endTime=" + endTime +
-                    ", title='" + title + '\'' +
-                    ", isBusy=" + isBusy +
-                    ", isAllDay=" + isAllDay +
-                    '}';
-        }
-    }
-
-    @Setter
-    @Getter
-    public static class UpdateAvailabilityRequest {
-        // Getters and Setters
-        private LocalDateTime startTime;
-        private LocalDateTime endTime;
-        private String title;
-        private String description;
-        private String location;
-        private Boolean isBusy;
-        private Boolean isAllDay;
-        private Integer reminderMinutes;
-
-        public UpdateAvailabilityRequest() {}
-
-        @Override
-        public String toString() {
-            return "UpdateAvailabilityRequest{" +
-                    "startTime=" + startTime +
-                    ", endTime=" + endTime +
-                    ", title='" + title + '\'' +
-                    ", isBusy=" + isBusy +
-                    ", isAllDay=" + isAllDay +
-                    '}';
         }
     }
 }
