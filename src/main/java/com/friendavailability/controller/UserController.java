@@ -1,6 +1,7 @@
-
 package com.friendavailability.controller;
 
+import com.friendavailability.dto.user.CreateUserRequest;
+import com.friendavailability.dto.user.UpdateUserRequest;
 import com.friendavailability.model.User;
 import com.friendavailability.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -114,73 +115,6 @@ public class UserController{
         }catch(Exception e){
             System.err.println("Error deleting user with id " + id + ": " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    public static class CreateUserRequest {
-        @jakarta.validation.constraints.NotBlank(message = "Name is required")
-        private String name;
-
-        @jakarta.validation.constraints.NotBlank(message = "Email is required")
-        @jakarta.validation.constraints.Email(message = "Valid email is required")
-        private String email;
-
-        private String password;
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        @Override
-        public String toString() {
-            return "CreateUserRequest{name='" + name + "', email='" + email + "', hasPassword=" + (password != null) + "}";
-        }
-    }
-
-    public static class UpdateUserRequest {
-        private String name;     // Optional - only update if provided
-        private String email;    // Optional - only update if provided
-
-        // Getters and setters
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public String getEmail() {
-            return email;
-        }
-
-        public void setEmail(String email) {
-            this.email = email;
-        }
-
-        @Override
-        public String toString() {
-            return "UpdateUserRequest{name='" + name + "', email='" + email + "'}";
         }
     }
 }
