@@ -32,14 +32,36 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/index.html", "/style.css", "/app.js", "/dashboard.html", "/api/auth/**" ).permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/style.css",
+                                "/app.js",
+                                "/default-ui.css",
+                                "/favicon.ico"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/email/**",
+                                "/check-email.html",
+                                "/email/check-email.html",
+                                "/email/email-verified.html",
+                                "/email/email-verification-failed.html"
+                        ).permitAll()
+
+                        .requestMatchers("/api/auth/**").permitAll()
+
                         .requestMatchers("/oauth2/**", "/login/**").permitAll()
+
+                        .requestMatchers("/dashboard.html").authenticated()
+
                         .requestMatchers("/api/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .defaultSuccessUrl("/index.html", true)
+                        .defaultSuccessUrl("/dashboard.html", true)
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2

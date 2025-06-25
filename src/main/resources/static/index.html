@@ -1213,7 +1213,7 @@
         closeModal('signupModal');
         document.getElementById('signupForm').reset();
 
-        window.location.href = `/check-email.html?email=${encodeURIComponent(formData.email)}`;
+        window.location.href = `email/check-email.html?email=${encodeURIComponent(formData.email)}`;
       } else {
         if (result.errorCode === 'EMAIL_EXISTS') {
           showErrorMessage('An account with this email already exists. Try logging in instead.');

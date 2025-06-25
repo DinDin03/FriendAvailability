@@ -220,11 +220,11 @@ public class AuthController {
                 }
 
                 return ResponseEntity.status(HttpStatus.FOUND)
-                        .header("Location", "/email-verified.html")
+                        .header("Location", "/email/email-verified.html")
                         .build();
             } else {
                 return ResponseEntity.status(HttpStatus.FOUND)
-                        .header("Location", "/email-verification-failed.html?error=" +
+                        .header("Location", "/email/email-verification-failed.html?error=" +
                                 URLEncoder.encode(result.getMessage(), StandardCharsets.UTF_8))
                         .build();
             }
@@ -234,7 +234,7 @@ public class AuthController {
             e.printStackTrace();
 
             return ResponseEntity.status(HttpStatus.FOUND)
-                    .header("Location", "/email-verification-failed.html?error=" +
+                    .header("Location", "/email/email-verification-failed.html?error=" +
                             URLEncoder.encode("An unexpected error occurred during verification. Please try again or contact support.", StandardCharsets.UTF_8))
                     .build();
         }
