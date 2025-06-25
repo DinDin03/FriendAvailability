@@ -91,7 +91,7 @@ public class EmailService {
     }
 
     private String loadTemplate(String templateName) throws Exception {
-        String templatePath = "templates/email/" + templateName;
+        String templatePath = "static/email/" + templateName;
         ClassPathResource resource = new ClassPathResource(templatePath);
 
         if (!resource.exists()) {

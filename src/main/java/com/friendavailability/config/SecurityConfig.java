@@ -32,8 +32,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/index.html", "/style.css", "/app.js", "/dashboard.html", "/api/auth/**" ).permitAll()
-                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                        .requestMatchers("/", "/index.html", "/style.css", "/app.js", "/dashboard.html",
+                                "/api/auth/**", "/email-verified.html", "/email-verification-failed.html", "check-email").permitAll()                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
