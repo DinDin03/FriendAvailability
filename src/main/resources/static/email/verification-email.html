@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email - LinkUp</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 300;
+    }
+    .content {
+      padding: 40px 30px;
+    }
+    .welcome {
+      font-size: 18px;
+      color: #555;
+      margin-bottom: 20px;
+    }
+    .verification-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px 30px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 16px;
+      margin: 20px 0;
+      text-align: center;
+      transition: transform 0.2s;
+    }
+    .verification-button:hover {
+      transform: translateY(-2px);
+    }
+    .button-container {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .alternative-link {
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 20px 0;
+      word-break: break-all;
+      font-family: monospace;
+      font-size: 12px;
+      color: #6c757d;
+    }
+    .security-info {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+    .footer {
+      background-color: #f8f9fa;
+      padding: 20px 30px;
+      text-align: center;
+      color: #6c757d;
+      font-size: 14px;
+      border-top: 1px solid #dee2e6;
+    }
+    .expiry-info {
+      color: #dc3545;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🔗 LinkUp</h1>
+    <p>Welcome to your friend availability platform!</p>
+  </div>
+
+  <div class="content">
+    <div class="welcome">
+      Hi {{userName}}! 👋
+    </div>
+
+    <p>Welcome to <strong>LinkUp</strong>! We're excited to have you join our community where coordinating with friends has never been easier.</p>
+
+    <p>To get started and secure your account, please verify your email address by clicking the button below:</p>
+
+    <div class="button-container">
+      <a href="{{verificationUrl}}" class="verification-button">
+        ✅ Verify My Email Address
+      </a>
+    </div>
+
+    <div class="security-info">
+      <strong>🔒 Security Information:</strong><br>
+      • This verification link will expire in <strong>24 hours</strong><br>
+      • The link can only be used once<br>
+      • If you didn't create this account, you can safely ignore this email
+    </div>
+
+    <p><strong>Can't click the button?</strong> Copy and paste this link into your browser:</p>
+    <div class="alternative-link">{{verificationUrl}}</div>
+
+    <div class="expiry-info">
+      ⏰ This verification link expires in 24 hours
+    </div>
+
+    <p>Once verified, you'll be able to:</p>
+    <ul>
+      <li>🗓️ Sync your calendar availability</li>
+      <li>👥 Connect with friends</li>
+      <li>📅 Find perfect meeting times</li>
+      <li>🔄 Coordinate group activities</li>
+    </ul>
+
+    <p>Questions? Just reply to this email - we're here to help!</p>
+
+    <p>Best regards,<br>
+      <strong>The LinkUp Team</strong></p>
+  </div>
+
+  <div class="footer">
+    <p>This email was sent to {{userEmail}}</p>
+    <p>If you have any questions, contact us at support@linkup.com</p>
+    <p>© 2025 LinkUp. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

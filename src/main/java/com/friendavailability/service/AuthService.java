@@ -48,6 +48,11 @@ public class AuthService {
                 return Optional.empty();
             }
 
+            if (!user.getEmailVerified()) {
+                System.out.println("Login blocked - email not verified for: " + email);
+                return Optional.empty();
+            }
+
             if (!user.getIsActive()) {
                 System.out.println("Account disabled for " + email);
                 return Optional.empty();
