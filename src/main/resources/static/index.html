@@ -1048,12 +1048,6 @@
 
   /**
    * GLOBAL STATE MANAGEMENT
-   *
-   * In backend development, state management is crucial for:
-   * - Tracking user authentication status
-   * - Managing form validation states
-   * - Controlling UI interactions
-   * - Preventing race conditions and duplicate requests
    */
   let appState = {
     isLoading: false,
@@ -1064,11 +1058,6 @@
 
   /**
    * CONFIGURATION CONSTANTS
-   *
-   * These would typically come from:
-   * - Environment variables (in Spring Boot: application.properties)
-   * - Configuration classes (@ConfigurationProperties)
-   * - Feature flags for A/B testing
    */
   const CONFIG = {
     API_BASE_URL: '/api',
@@ -1080,19 +1069,9 @@
 
   // ===== MODAL MANAGEMENT =====
 
-  /**
-   * OPEN MODAL FUNCTION
-   *
-   * This demonstrates:
-   * - DOM manipulation
-   * - Event handling
-   * - State management
-   * - Accessibility considerations (focus management)
-   */
   function openModal(modalId) {
     console.log(`Opening modal: ${modalId}`);
 
-    // Close any existing modal first
     if (appState.currentModal) {
       closeModal(appState.currentModal);
     }
@@ -1103,14 +1082,10 @@
       return;
     }
 
-    // Update application state
     appState.currentModal = modalId;
-
-    // Show modal with animation
     modal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    document.body.style.overflow = 'hidden';
 
-    // Focus on first input for accessibility
     setTimeout(() => {
       const firstInput = modal.querySelector('input');
       if (firstInput) {
@@ -1119,30 +1094,19 @@
     }, CONFIG.ANIMATION_DURATION);
   }
 
-  /**
-   * CLOSE MODAL FUNCTION
-   *
-   * Properly cleanup modal state and restore page functionality
-   */
   function closeModal(modalId) {
     console.log(`Closing modal: ${modalId}`);
 
     const modal = document.getElementById(modalId);
     if (!modal) return;
 
-    // Hide modal
     modal.classList.remove('active');
-    document.body.style.overflow = ''; // Restore scrolling
-
-    // Clear application state
+    document.body.style.overflow = '';
     appState.currentModal = null;
 
-    // Clear form data for security
     const forms = modal.querySelectorAll('form');
     forms.forEach(form => form.reset());
   }
-
-  // ===== MODAL CONVENIENCE FUNCTIONS =====
 
   function openLoginModal() {
     openModal('loginModal');
@@ -1164,69 +1128,52 @@
 
   // ===== AUTHENTICATION HANDLERS =====
 
-  /**
-   * HANDLE LOGIN FORM SUBMISSION
-   *
-   * This demonstrates:
-   * - Form handling and validation
-   * - Asynchronous API calls
-   * - Error handling patterns
-   * - Security considerations (CSRF, rate limiting)
-   * - User feedback and loading states
-   */
   async function handleLogin(event) {
     event.preventDefault();
 
-    // Prevent multiple simultaneous submissions
     if (appState.isLoading) {
       console.log('Login already in progress');
       return;
     }
 
-    // Rate limiting check
     if (appState.loginAttempts >= CONFIG.MAX_LOGIN_ATTEMPTS) {
       showErrorMessage('Too many login attempts. Please try again later.');
       return;
     }
 
-    // Get form data
     const formData = {
       email: document.getElementById('loginEmail').value.trim(),
       password: document.getElementById('loginPassword').value
     };
 
-    // Basic client-side validation
     if (!validateLoginForm(formData)) {
       return;
     }
 
-    // Set loading state
     appState.isLoading = true;
     showLoadingMessage('Signing you in...');
 
     try {
-      // Make API call to your Spring Boot backend
       const result = await performLogin(formData);
 
       if (result.success) {
         showSuccessMessage('Login successful! Redirecting...');
-
-        // Reset login attempts
         appState.loginAttempts = 0;
-
-        // Close modal and redirect
         closeModal('loginModal');
 
-        // Redirect to dashboard after brief delay
         setTimeout(() => {
           window.location.href = '/dashboard.html';
         }, 1500);
 
       } else {
         appState.loginAttempts++;
-        showErrorMessage(result.error || 'Login failed. Please try again.');
 
-        // Clear password field for security
+        if (result.errorCode === 'EMAIL_NOT_VERIFIED') {
+          showEmailNotVerifiedError(formData.email);
+        } else {
+          showErrorMessage(result.error || 'Login failed. Please try again.');
+        }
+
         document.getElementById('loginPassword').value = '';
       }
 
@@ -1240,17 +1187,11 @@
     }
   }
 
-  /**
-   * HANDLE SIGNUP FORM SUBMISSION
-   *
-   * Similar to login but with additional validation requirements
-   */
   async function handleSignup(event) {
     event.preventDefault();
 
     if (appState.isLoading) return;
 
-    // Get form data
     const formData = {
       name: document.getElementById('signupName').value.trim(),
       email: document.getElementById('signupEmail').value.trim(),
@@ -1258,7 +1199,6 @@
       confirmPassword: document.getElementById('confirmPassword').value
     };
 
-    // Validate signup form
     if (!validateSignupForm(formData)) {
       return;
     }
@@ -1270,15 +1210,20 @@
       const result = await performSignup(formData);
 
       if (result.success) {
-        showSuccessMessage('Account created successfully! Redirecting...');
         closeModal('signupModal');
+        document.getElementById('signupForm').reset();
 
-        setTimeout(() => {
-          window.location.href = '/dashboard.html';
-        }, 1500);
-
+        window.location.href = `/check-email.html?email=${encodeURIComponent(formData.email)}`;
       } else {
-        showErrorMessage(result.error || 'Signup failed. Please try again.');
+        if (result.errorCode === 'EMAIL_EXISTS') {
+          showErrorMessage('An account with this email already exists. Try logging in instead.');
+        } else if (result.errorCode === 'EMAIL_SEND_FAILED') {
+          showWarningMessage('Account created but verification email failed to send. Please try logging in.');
+        } else if (result.errorCode === 'RATE_LIMITED') {
+          showErrorMessage('Too many verification email requests. Please wait before trying again.');
+        } else {
+          showErrorMessage(result.error || 'Signup failed. Please try again.');
+        }
       }
 
     } catch (error) {
@@ -1290,28 +1235,203 @@
     }
   }
 
-  /**
-   * GOOGLE OAUTH LOGIN
-   *
-   * This redirects to your Spring Boot OAuth2 endpoint
-   */
+  async function performLogin(formData) {
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        return {
+          success: true,
+          user: data.user,
+          redirectUrl: data.redirectUrl || '/dashboard.html'
+        };
+      } else {
+        return {
+          success: false,
+          error: data.message || 'Login failed',
+          errorCode: data.errorCode
+        };
+      }
+
+    } catch (error) {
+      if (error.name === 'TypeError' || error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: 'Unable to connect to server. Please try again.',
+          errorCode: 'NETWORK_ERROR'
+        };
+      }
+      throw error;
+    }
+  }
+
+  async function performSignup(formData) {
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok || response.status === 201) {
+        return {
+          success: true,
+          message: data.message,
+          requiresVerification: true
+        };
+      } else {
+        return {
+          success: false,
+          error: data.message || 'Registration failed',
+          errorCode: data.errorCode
+        };
+      }
+
+    } catch (error) {
+      if (error.name === 'TypeError' || error.message.includes('fetch')) {
+        return {
+          success: false,
+          error: 'Unable to connect to server. Please try again.',
+          errorCode: 'NETWORK_ERROR'
+        };
+      }
+      throw error;
+    }
+  }
+
   function loginWithGoogle() {
     console.log('Initiating Google OAuth login');
     showLoadingMessage('Redirecting to Google...');
-
-    // Redirect to your Spring Boot OAuth2 endpoint
-    // This should match your SecurityConfig OAuth2 setup
     window.location.href = '/oauth2/authorization/google';
+  }
+
+  // ===== EMAIL VERIFICATION FUNCTIONS =====
+
+  function showEmailVerificationMessage(email) {
+    const message = `
+        <div style="text-align: center; padding: 10px;">
+            <h3 style="color: var(--success); margin-bottom: 15px;">
+                📧 Account Created Successfully!
+            </h3>
+            <p style="margin-bottom: 15px;">
+                We've sent a verification email to <strong>${email}</strong>
+            </p>
+            <p style="margin-bottom: 20px; color: var(--gray-700);">
+                Please check your inbox and click the verification link to activate your account.
+                You'll then be able to log in.
+            </p>
+            <div style="background: var(--light-blue); padding: 15px; border-radius: var(--radius-md); margin-bottom: 15px;">
+                <small style="color: var(--primary-blue);">
+                    <strong>📌 Important:</strong> Check your spam folder if you don't see the email within a few minutes.
+                    The verification link expires in 24 hours.
+                </small>
+            </div>
+            <button class="btn btn-outline" onclick="clearMessages(); showResendVerificationOption('${email}')">
+                Didn't receive the email?
+            </button>
+        </div>
+    `;
+
+    showMessage(message, 'success', 15000);
+  }
+
+  function showEmailNotVerifiedError(email) {
+    const message = `
+        <div style="text-align: center; padding: 10px;">
+            <h3 style="color: var(--warning); margin-bottom: 15px;">
+                ⚠️ Email Not Verified
+            </h3>
+            <p style="margin-bottom: 15px;">
+                Your account exists but your email (<strong>${email}</strong>) hasn't been verified yet.
+            </p>
+            <p style="margin-bottom: 20px; color: var(--gray-700);">
+                Please check your email and click the verification link, or request a new one below.
+            </p>
+            <button class="btn btn-primary" onclick="clearMessages(); resendVerificationEmail('${email}')">
+                📧 Resend Verification Email
+            </button>
+        </div>
+    `;
+
+    showMessage(message, 'warning', 12000);
+  }
+
+  function showResendVerificationOption(email) {
+    const message = `
+        <div style="text-align: center; padding: 10px;">
+            <h3 style="margin-bottom: 15px;">Resend Verification Email</h3>
+            <p style="margin-bottom: 15px;">
+                We can send another verification email to <strong>${email}</strong>
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="resendVerificationEmail('${email}')">
+                    📧 Resend Email
+                </button>
+                <button class="btn btn-outline" onclick="clearMessages()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    `;
+
+    showMessage(message, 'info', 0);
+  }
+
+  async function resendVerificationEmail(email) {
+    try {
+      showLoadingMessage('Sending verification email...');
+
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showSuccessMessage('Verification email sent! Please check your inbox.');
+      } else if (response.status === 429) {
+        showErrorMessage('Too many requests. Please wait before requesting another email.');
+      } else {
+        showErrorMessage(data.message || 'Failed to send verification email. Please try again.');
+      }
+
+    } catch (error) {
+      console.error('Resend verification error:', error);
+      showErrorMessage('Network error. Please try again.');
+    } finally {
+      hideLoadingMessage();
+    }
   }
 
   // ===== FORM VALIDATION =====
 
-  /**
-   * VALIDATE LOGIN FORM
-   *
-   * Client-side validation for better UX.
-   * Note: Server-side validation is still required for security!
-   */
   function validateLoginForm(formData) {
     if (!formData.email) {
       showErrorMessage('Please enter your email address.');
@@ -1331,11 +1451,6 @@
     return true;
   }
 
-  /**
-   * VALIDATE SIGNUP FORM
-   *
-   * More comprehensive validation for new account creation
-   */
   function validateSignupForm(formData) {
     if (!formData.name || formData.name.length < 2) {
       showErrorMessage('Please enter your full name (at least 2 characters).');
@@ -1370,130 +1485,14 @@
     return true;
   }
 
-  /**
-   * EMAIL VALIDATION HELPER
-   *
-   * Basic email format validation using regex
-   */
   function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // ===== API COMMUNICATION =====
-
-  /**
-   * PERFORM LOGIN API CALL
-   *
-   * This would call your Spring Boot backend API.
-   * For now, it shows the structure you'll need.
-   */
-  async function performLogin(formData) {
-    try {
-      // TODO: Implement this endpoint in your Spring Boot backend
-      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest' // CSRF protection
-        },
-        credentials: 'include', // Include session cookies
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          success: true,
-          user: data.user,
-          redirectUrl: data.redirectUrl || '/dashboard.html'
-        };
-      } else {
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.message || 'Login failed'
-        };
-      }
-
-    } catch (error) {
-      // For now, since traditional login isn't implemented yet
-      if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        return {
-          success: false,
-          error: 'Traditional login not yet implemented. Please use "Continue with Google".'
-        };
-      }
-
-      throw error;
-    }
-  }
-
-  /**
-   * PERFORM SIGNUP API CALL
-   *
-   * Similar structure for user registration
-   */
-  async function performSignup(formData) {
-    try {
-      // TODO: Implement this endpoint in your Spring Boot backend
-      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          success: true,
-          user: data.user,
-          redirectUrl: data.redirectUrl || '/dashboard.html'
-        };
-      } else {
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.message || 'Registration failed'
-        };
-      }
-
-    } catch (error) {
-      // For now, since traditional signup isn't implemented yet
-      if (error.name === 'TypeError' || error.message.includes('fetch')) {
-        return {
-          success: false,
-          error: 'Traditional signup not yet implemented. Please use "Sign up with Google".'
-        };
-      }
-
-      throw error;
-    }
-  }
-
   // ===== USER FEEDBACK MESSAGES =====
 
-  /**
-   * MESSAGE DISPLAY SYSTEM
-   *
-   * These functions provide user feedback for different states:
-   * - Success messages (green)
-   * - Error messages (red)
-   * - Loading states (blue)
-   * - Warning messages (orange)
-   */
   function showMessage(message, type = 'info', duration = CONFIG.MESSAGE_DISPLAY_TIME) {
-    // Remove any existing messages
     clearMessages();
 
     const container = document.getElementById('messageContainer');
@@ -1511,7 +1510,6 @@
                 </div>
             `;
 
-    // Add styles for messages
     if (!document.getElementById('messageStyles')) {
       const styles = document.createElement('style');
       styles.id = 'messageStyles';
@@ -1598,7 +1596,6 @@
 
     container.appendChild(messageEl);
 
-    // Auto-remove after duration
     if (duration > 0) {
       setTimeout(() => {
         if (messageEl.parentNode) {
@@ -1631,7 +1628,7 @@
   }
 
   function showLoadingMessage(message) {
-    showMessage(message, 'info', 0); // Don't auto-remove loading messages
+    showMessage(message, 'info', 0);
   }
 
   function hideLoadingMessage() {
@@ -1647,38 +1644,25 @@
 
   // ===== EVENT LISTENERS & INITIALIZATION =====
 
-  /**
-   * DOCUMENT READY INITIALIZATION
-   *
-   * This runs when the page loads and sets up:
-   * - Event listeners
-   * - Keyboard shortcuts
-   * - Initial state checks
-   */
   document.addEventListener('DOMContentLoaded', function() {
     console.log('LinkUp landing page initialized');
 
-    // Set up keyboard shortcuts
     document.addEventListener('keydown', function(event) {
-      // Escape key closes modals
       if (event.key === 'Escape' && appState.currentModal) {
         closeModal(appState.currentModal);
       }
 
-      // Prevent tab from leaving modal
       if (event.key === 'Tab' && appState.currentModal) {
         trapTabInModal(event);
       }
     });
 
-    // Close modal when clicking outside
     document.addEventListener('click', function(event) {
       if (event.target.classList.contains('modal')) {
         closeModal(event.target.id);
       }
     });
 
-    // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
@@ -1694,15 +1678,9 @@
       });
     });
 
-    // Check if user is already logged in
     checkExistingAuth();
   });
 
-  /**
-   * TAB TRAPPING FOR ACCESSIBILITY
-   *
-   * Keeps keyboard navigation within modal
-   */
   function trapTabInModal(event) {
     if (!appState.currentModal) return;
 
@@ -1727,11 +1705,6 @@
     }
   }
 
-  /**
-   * CHECK EXISTING AUTHENTICATION
-   *
-   * If user is already logged in, redirect to dashboard
-   */
   async function checkExistingAuth() {
     try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/auth/current-user`, {
@@ -1748,18 +1721,10 @@
         window.location.href = '/dashboard.html';
       }
     } catch (error) {
-      // User not authenticated, stay on landing page
       console.log('User not authenticated, showing landing page');
     }
   }
 
-  // ===== UTILITY FUNCTIONS =====
-
-  /**
-   * DEBOUNCE FUNCTION
-   *
-   * Prevents rapid-fire function calls (useful for search, validation)
-   */
   function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -1772,11 +1737,6 @@
     };
   }
 
-  /**
-   * SANITIZE INPUT
-   *
-   * Basic input sanitization (server-side validation still required!)
-   */
   function sanitizeInput(input) {
     return input.replace(/[<>]/g, '');
   }

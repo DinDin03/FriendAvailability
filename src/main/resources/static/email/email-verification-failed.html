@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification Failed - LinkUp</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-blue: #0052CC;
+      --secondary-blue: #0065FF;
+      --light-blue: #E6F3FF;
+      --dark-blue: #003884;
+      --white: #FFFFFF;
+      --gray-50: #F8F9FA;
+      --gray-100: #F1F2F4;
+      --gray-300: #DFE1E6;
+      --gray-500: #8993A4;
+      --gray-700: #5E6C84;
+      --gray-900: #172B4D;
+      --success: #00875A;
+      --error: #DE350B;
+      --warning: #FF8B00;
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-3xl: 1.875rem;
+      --font-size-4xl: 2.25rem;
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+      --spacing-3xl: 4rem;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: linear-gradient(135deg, var(--error) 0%, #c82333 100%);
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      padding: var(--spacing-3xl);
+      text-align: center;
+      box-shadow: var(--shadow-xl);
+      max-width: 600px;
+      width: 100%;
+      animation: slideIn 0.6s ease-out;
+    }
+
+    .error-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto var(--spacing-xl);
+      background: linear-gradient(135deg, var(--error) 0%, #c82333 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 48px;
+      box-shadow: var(--shadow-lg);
+      animation: shake 0.8s ease-out;
+    }
+
+    h1 {
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: var(--error);
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+      font-weight: 500;
+    }
+
+    p {
+      color: var(--gray-700);
+      line-height: 1.6;
+      margin-bottom: var(--spacing-lg);
+      font-size: var(--font-size-base);
+    }
+
+    .solutions {
+      background: var(--light-blue);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin: var(--spacing-xl) 0;
+      text-align: left;
+      border-left: 4px solid var(--primary-blue);
+    }
+
+    .solutions h3 {
+      color: var(--primary-blue);
+      margin-bottom: var(--spacing-md);
+      font-size: var(--font-size-lg);
+      text-align: center;
+    }
+
+    .solutions ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .solutions li {
+      margin-bottom: var(--spacing-sm);
+      position: relative;
+      padding-left: var(--spacing-xl);
+      color: var(--gray-700);
+    }
+
+    .solutions li:before {
+      content: "💡";
+      position: absolute;
+      left: 0;
+      font-size: var(--font-size-base);
+    }
+
+    .actions {
+      display: flex;
+      gap: var(--spacing-md);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: var(--spacing-2xl) 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-md) var(--spacing-xl);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: var(--font-size-base);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+      background: var(--white);
+      color: var(--gray-700);
+      border: 2px solid var(--gray-300);
+    }
+
+    .btn-outline:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-500);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success) 0%, #00a65a 100%);
+      color: var(--white);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .contact-info {
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+      color: var(--gray-700);
+      font-size: var(--font-size-sm);
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes shake {
+      0%, 100% {
+        transform: translateX(0);
+      }
+      10%, 30%, 50%, 70%, 90% {
+        transform: translateX(-5px);
+      }
+      20%, 40%, 60%, 80% {
+        transform: translateX(5px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: var(--spacing-2xl);
+        margin: var(--spacing-md);
+      }
+
+      h1 {
+        font-size: var(--font-size-2xl);
+      }
+
+      .error-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+    }
+
+    .message {
+      margin: var(--spacing-lg) 0;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      display: none;
+    }
+
+    .message.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    .message-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="error-icon">
+    <i class="fas fa-exclamation-triangle"></i>
+  </div>
+
+  <h1>Email Verification Failed</h1>
+
+  <p class="subtitle">❌ Unable to verify your email</p>
+
+  <div class="error-message" id="errorMessage">
+    The verification link may have expired or is no longer valid.
+  </div>
+
+  <p>Don't worry! This happens sometimes. Here are a few things you can try:</p>
+
+  <div class="solutions">
+    <h3>💡 What you can do:</h3>
+    <ul>
+      <li>Check if you used the most recent verification email</li>
+      <li>Make sure you clicked the complete link (it might have wrapped)</li>
+      <li>Request a new verification email using the button below</li>
+      <li>Try signing up again if the link is very old</li>
+      <li>Contact our support team if the problem persists</li>
+    </ul>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-success" onclick="requestNewEmail()">
+      <i class="fas fa-paper-plane"></i>
+      Request New Email
+    </button>
+    <a href="/index.html" class="btn btn-primary">
+      <i class="fas fa-home"></i>
+      Back to Homepage
+    </a>
+    <a href="/index.html#signup" class="btn btn-outline">
+      <i class="fas fa-user-plus"></i>
+      Try Signing Up Again
+    </a>
+  </div>
+
+  <div class="contact-info">
+    <strong>💬 Need Help?</strong><br>
+    If you continue to have trouble, please contact our support team at
+    <a href="mailto:support@linkup.com" style="color: var(--primary-blue);">support@linkup.com</a>
+    or visit our <a href="/help" style="color: var(--primary-blue);">Help Center</a>.
+  </div>
+
+  <div id="messageDisplay" class="message"></div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Parse error message from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const errorParam = urlParams.get('error');
+
+    if (errorParam) {
+      const errorMessage = decodeURIComponent(errorParam);
+      document.getElementById('errorMessage').textContent = errorMessage;
+    }
+
+    console.log('Email verification failed page loaded');
+  });
+
+  async function requestNewEmail() {
+    const email = prompt('Please enter your email address to receive a new verification link:');
+
+    if (!email || !email.includes('@')) {
+      showMessage('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    try {
+      const button = event.target;
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage('✅ New verification email sent! Please check your inbox.', 'success');
+
+        // Redirect to check email page after 3 seconds
+        setTimeout(() => {
+          window.location.href = `/check-email.html?email=${encodeURIComponent(email)}`;
+        }, 3000);
+      } else {
+        if (response.status === 429) {
+          showMessage('Too many requests. Please wait before requesting another email.', 'error');
+        } else {
+          showMessage(data.message || 'Failed to send verification email. Please try again.', 'error');
+        }
+      }
+
+      button.disabled = false;
+      button.innerHTML = originalText;
+
+    } catch (error) {
+      console.error('Request new email error:', error);
+      showMessage('Network error. Please check your connection and try again.', 'error');
+
+      const button = event.target;
+      button.disabled = false;
+      button.innerHTML = '<i class="fas fa-paper-plane"></i> Request New Email';
+    }
+  }
+
+  function showMessage(message, type) {
+    const messageEl = document.getElementById('messageDisplay');
+    messageEl.textContent = message;
+    messageEl.className = `message message-${type} show`;
+
+    setTimeout(() => {
+      messageEl.classList.remove('show');
+    }, 5000);
+  }
+</script>
+</body>
+</html>

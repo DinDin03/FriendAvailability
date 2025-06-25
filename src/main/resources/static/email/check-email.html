@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Check Your Email - LinkUp</title>
+  <meta name="description" content="Please check your email to verify your LinkUp account and start coordinating with friends.">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* ===== CSS VARIABLES (Matching your index.html design) ===== */
+    :root {
+      --primary-blue: #0052CC;
+      --secondary-blue: #0065FF;
+      --light-blue: #E6F3FF;
+      --dark-blue: #003884;
+
+      --white: #FFFFFF;
+      --gray-50: #F8F9FA;
+      --gray-100: #F1F2F4;
+      --gray-300: #DFE1E6;
+      --gray-500: #8993A4;
+      --gray-700: #5E6C84;
+      --gray-900: #172B4D;
+
+      --success: #00875A;
+      --error: #DE350B;
+      --warning: #FF8B00;
+
+      --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-size-xs: 0.75rem;
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-lg: 1.125rem;
+      --font-size-xl: 1.25rem;
+      --font-size-2xl: 1.5rem;
+      --font-size-3xl: 1.875rem;
+      --font-size-4xl: 2.25rem;
+
+      --spacing-xs: 0.25rem;
+      --spacing-sm: 0.5rem;
+      --spacing-md: 1rem;
+      --spacing-lg: 1.5rem;
+      --spacing-xl: 2rem;
+      --spacing-2xl: 3rem;
+      --spacing-3xl: 4rem;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    /* ===== RESET & BASE STYLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-family);
+      line-height: 1.6;
+      color: var(--gray-900);
+      background-color: var(--white);
+      font-size: var(--font-size-base);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== HEADER & NAVIGATION ===== */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--gray-100);
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .nav {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--spacing-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 70px;
+    }
+
+    .logo {
+      font-size: var(--font-size-xl);
+      font-weight: 700;
+      color: var(--primary-blue);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .logo i {
+      font-size: var(--font-size-2xl);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      padding: var(--spacing-sm) var(--spacing-lg);
+      border: none;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--primary-blue);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--dark-blue);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gray-700);
+      border: 1px solid var(--gray-300);
+    }
+
+    .btn-outline:hover {
+      background: var(--gray-50);
+      border-color: var(--gray-500);
+    }
+
+    .btn-lg {
+      padding: var(--spacing-md) var(--spacing-xl);
+      font-size: var(--font-size-base);
+    }
+
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(70px + var(--spacing-2xl)) var(--spacing-xl) var(--spacing-2xl);
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
+    }
+
+    .check-email-container {
+      max-width: 600px;
+      text-align: center;
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      padding: var(--spacing-3xl);
+      animation: slideIn 0.6s ease-out;
+    }
+
+    .email-icon {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto var(--spacing-2xl);
+      background: linear-gradient(135deg, var(--success) 0%, #00a65a 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 48px;
+      box-shadow: var(--shadow-lg);
+      animation: bounce 2s infinite;
+    }
+
+    .check-email-title {
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .check-email-subtitle {
+      font-size: var(--font-size-lg);
+      color: var(--success);
+      font-weight: 600;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .email-address {
+      font-size: var(--font-size-lg);
+      color: var(--gray-700);
+      margin-bottom: var(--spacing-xl);
+      line-height: 1.6;
+    }
+
+    .email-address strong {
+      color: var(--primary-blue);
+      font-weight: 600;
+    }
+
+    .instructions {
+      background: var(--light-blue);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin: var(--spacing-xl) 0;
+      border-left: 4px solid var(--primary-blue);
+    }
+
+    .instructions h3 {
+      color: var(--primary-blue);
+      margin-bottom: var(--spacing-md);
+      font-size: var(--font-size-lg);
+    }
+
+    .instructions-list {
+      text-align: left;
+      color: var(--gray-700);
+      list-style: none;
+      padding: 0;
+    }
+
+    .instructions-list li {
+      margin-bottom: var(--spacing-sm);
+      position: relative;
+      padding-left: var(--spacing-xl);
+    }
+
+    .instructions-list li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    .actions {
+      display: flex;
+      gap: var(--spacing-md);
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: var(--spacing-2xl) 0;
+    }
+
+    .info-box {
+      background: var(--gray-50);
+      border-radius: var(--radius-md);
+      padding: var(--spacing-lg);
+      margin: var(--spacing-xl) 0;
+      color: var(--gray-700);
+      font-size: var(--font-size-sm);
+    }
+
+    .countdown {
+      font-size: var(--font-size-sm);
+      color: var(--warning);
+      font-weight: 500;
+      margin-top: var(--spacing-lg);
+    }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      background: var(--gray-900);
+      color: var(--white);
+      padding: var(--spacing-xl);
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: var(--spacing-xl);
+      justify-content: center;
+      margin-bottom: var(--spacing-md);
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: rgba(255, 255, 255, 0.8);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--white);
+    }
+
+    .footer-bottom {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: var(--font-size-sm);
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-10px);
+      }
+      60% {
+        transform: translateY(-5px);
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+    @media (max-width: 768px) {
+      .nav {
+        padding: 0 var(--spacing-md);
+      }
+
+      .main-content {
+        padding: calc(70px + var(--spacing-lg)) var(--spacing-md) var(--spacing-lg);
+      }
+
+      .check-email-container {
+        padding: var(--spacing-2xl);
+      }
+
+      .check-email-title {
+        font-size: var(--font-size-2xl);
+      }
+
+      .email-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+      }
+    }
+
+    /* ===== MESSAGE STYLES ===== */
+    .message {
+      margin: var(--spacing-lg) 0;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      display: none;
+    }
+
+    .message.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    .message-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+<!-- Header Navigation -->
+<header class="header">
+  <nav class="nav">
+    <a href="/index.html" class="logo">
+      <i class="fas fa-calendar-check"></i>
+      LinkUp
+    </a>
+
+    <div class="nav-actions">
+      <a href="/index.html" class="btn btn-outline">
+        <i class="fas fa-arrow-left"></i>
+        Back to Home
+      </a>
+    </div>
+  </nav>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+  <div class="check-email-container">
+    <!-- Email Icon -->
+    <div class="email-icon">
+      <i class="fas fa-envelope-open"></i>
+    </div>
+
+    <!-- Title -->
+    <h1 class="check-email-title">Check Your Email</h1>
+
+    <!-- Subtitle -->
+    <p class="check-email-subtitle">📧 Account created successfully!</p>
+
+    <!-- Email Address Display -->
+    <div class="email-address">
+      We've sent a verification email to<br>
+      <strong id="userEmail">your email address</strong>
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+      <h3>📌 What to do next:</h3>
+      <ul class="instructions-list">
+        <li>Check your email inbox (and spam folder)</li>
+        <li>Click the verification link in the email</li>
+        <li>Your account will be activated instantly</li>
+        <li>Return here to log in and start using LinkUp</li>
+      </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button class="btn btn-primary btn-lg" onclick="resendEmail()">
+        <i class="fas fa-paper-plane"></i>
+        Resend Email
+      </button>
+      <a href="/index.html" class="btn btn-outline btn-lg">
+        <i class="fas fa-sign-in-alt"></i>
+        Go to Login
+      </a>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <strong>💡 Tip:</strong> If you don't see the email within a few minutes, check your spam or junk folder.
+      The verification link will expire in 24 hours for security purposes.
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="countdown pulse">
+      ⏰ Verification link expires in <span id="timeRemaining">24 hours</span>
+    </div>
+
+    <!-- Message Display -->
+    <div id="messageDisplay" class="message"></div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="#privacy">Privacy Policy</a>
+      <a href="#terms">Terms of Service</a>
+      <a href="#contact">Contact Support</a>
+      <a href="#help">Help Center</a>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 LinkUp. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ===== EMAIL CHECK PAGE FUNCTIONALITY =====
+
+  // Configuration
+  const CONFIG = {
+    API_BASE_URL: '/api',
+    RESEND_COOLDOWN: 60000, // 1 minute
+    EXPIRY_HOURS: 24
+  };
+
+  // State management
+  let resendCooldown = false;
+  let userEmailAddress = '';
+
+  // Initialize page
+  document.addEventListener('DOMContentLoaded', function() {
+    initializePage();
+    startExpiryCountdown();
+  });
+
+  function initializePage() {
+    // Get email from URL parameter or localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email');
+
+    if (emailParam) {
+      userEmailAddress = decodeURIComponent(emailParam);
+      document.getElementById('userEmail').textContent = userEmailAddress;
+      localStorage.setItem('pendingVerificationEmail', userEmailAddress);
+    } else {
+      // Fallback to localStorage
+      const storedEmail = localStorage.getItem('pendingVerificationEmail');
+      if (storedEmail) {
+        userEmailAddress = storedEmail;
+        document.getElementById('userEmail').textContent = userEmailAddress;
+      }
+    }
+
+    console.log('Check email page initialized for:', userEmailAddress);
+  }
+
+  function startExpiryCountdown() {
+    const expiryTime = localStorage.getItem('verificationExpiryTime');
+    const currentTime = new Date().getTime();
+
+    if (expiryTime) {
+      const timeLeft = parseInt(expiryTime) - currentTime;
+      if (timeLeft > 0) {
+        updateCountdown(timeLeft);
+        setInterval(() => {
+          const now = new Date().getTime();
+          const remaining = parseInt(expiryTime) - now;
+          if (remaining > 0) {
+            updateCountdown(remaining);
+          } else {
+            document.getElementById('timeRemaining').textContent = 'expired';
+            document.getElementById('timeRemaining').style.color = 'var(--error)';
+          }
+        }, 60000); // Update every minute
+      }
+    } else {
+      // Set expiry time to 24 hours from now
+      const expiry = currentTime + (CONFIG.EXPIRY_HOURS * 60 * 60 * 1000);
+      localStorage.setItem('verificationExpiryTime', expiry.toString());
+      updateCountdown(CONFIG.EXPIRY_HOURS * 60 * 60 * 1000);
+    }
+  }
+
+  function updateCountdown(timeLeft) {
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+    let timeText = '';
+    if (hours > 0) {
+      timeText = `${hours} hour${hours !== 1 ? 's' : ''}`;
+      if (minutes > 0) {
+        timeText += ` and ${minutes} minute${minutes !== 1 ? 's' : ''}`;
+      }
+    } else if (minutes > 0) {
+      timeText = `${minutes} minute${minutes !== 1 ? 's' : ''}`;
+    } else {
+      timeText = 'less than a minute';
+    }
+
+    document.getElementById('timeRemaining').textContent = timeText;
+  }
+
+  async function resendEmail() {
+    if (resendCooldown) {
+      showMessage('Please wait before requesting another email.', 'error');
+      return;
+    }
+
+    if (!userEmailAddress) {
+      showMessage('Unable to resend email. Please try signing up again.', 'error');
+      return;
+    }
+
+    try {
+      // Disable button and show loading
+      const button = event.target;
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: userEmailAddress })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        showMessage('✅ Verification email sent! Please check your inbox.', 'success');
+
+        // Update expiry time
+        const newExpiry = new Date().getTime() + (CONFIG.EXPIRY_HOURS * 60 * 60 * 1000);
+        localStorage.setItem('verificationExpiryTime', newExpiry.toString());
+
+        // Start cooldown
+        startResendCooldown();
+      } else {
+        if (response.status === 429) {
+          showMessage('Too many requests. Please wait before requesting another email.', 'error');
+          startResendCooldown();
+        } else {
+          showMessage(data.message || 'Failed to send verification email. Please try again.', 'error');
+        }
+      }
+
+      // Restore button
+      button.disabled = false;
+      button.innerHTML = originalText;
+
+    } catch (error) {
+      console.error('Resend email error:', error);
+      showMessage('Network error. Please check your connection and try again.', 'error');
+
+      // Restore button
+      const button = event.target;
+      button.disabled = false;
+      button.innerHTML = '<i class="fas fa-paper-plane"></i> Resend Email';
+    }
+  }
+
+  function startResendCooldown() {
+    resendCooldown = true;
+    setTimeout(() => {
+      resendCooldown = false;
+    }, CONFIG.RESEND_COOLDOWN);
+  }
+
+  function showMessage(message, type) {
+    const messageEl = document.getElementById('messageDisplay');
+    messageEl.textContent = message;
+    messageEl.className = `message message-${type} show`;
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      messageEl.classList.remove('show');
+    }, 5000);
+  }
+
+  // Check if user gets verified while on this page
+  setInterval(async () => {
+    try {
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/current-user`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        // User has been verified! Redirect to dashboard
+        localStorage.removeItem('pendingVerificationEmail');
+        localStorage.removeItem('verificationExpiryTime');
+        showMessage('✅ Email verified! Redirecting to dashboard...', 'success');
+
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 2000);
+      }
+    } catch (error) {
+      // User not verified yet, continue waiting
+    }
+  }, 10000); // Check every 10 seconds
+</script>
+</body>
+</html>
