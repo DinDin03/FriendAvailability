@@ -110,5 +110,4 @@ public class EmailService {
                 .replace("{{dashboardUrl}}", primaryUrl)
                 .replace("{{baseUrl}}", secondaryUrl);
     }
-
 }
