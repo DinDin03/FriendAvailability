@@ -26,7 +26,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        System.out.println("🔧 Configuring SecurityFilterChain with custom OAuth2 service");
+        System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
 
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

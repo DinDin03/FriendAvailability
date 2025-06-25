@@ -36,7 +36,6 @@ public class CustomOAuth2UserService implements OAuth2UserService<OidcUserReques
         System.out.println("  Email: " + email);
         System.out.println("  Google ID: " + googleId);
 
-        // Validate required information
         if (email == null || googleId == null || name == null) {
             System.err.println("Missing required OAuth information");
             throw new OAuth2AuthenticationException("Missing required user information from Google");
