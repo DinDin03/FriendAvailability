@@ -10,6 +10,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -25,6 +26,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public SessionAuthenticationFilter sessionAuthenticationFilter() {
+        return new SessionAuthenticationFilter();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
 
@@ -32,6 +38,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
+                        // Static resources and public pages
                         .requestMatchers(
                                 "/",
                                 "/index.html",
@@ -41,22 +48,28 @@ public class SecurityConfig {
                                 "/favicon.ico"
                         ).permitAll()
 
+                        // Email verification pages - MUST be accessible without authentication
                         .requestMatchers(
-                                "/email/**",
-                                "/check-email.html",
+                                "/email/**",           // All email directory files
+                                "/check-email.html",   // Redirect after registration
                                 "/email/check-email.html",
                                 "/email/email-verified.html",
                                 "/email/email-verification-failed.html"
                         ).permitAll()
 
+                        // Authentication endpoints
                         .requestMatchers("/api/auth/**").permitAll()
 
+                        // OAuth2 endpoints
                         .requestMatchers("/oauth2/**", "/login/**").permitAll()
 
+                        // Dashboard requires authentication
                         .requestMatchers("/dashboard.html").authenticated()
 
+                        // All other API endpoints require authentication
                         .requestMatchers("/api/**").authenticated()
 
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -77,7 +90,9 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
-                );
+                )
+                // Add our custom session authentication filter
+                .addFilterBefore(sessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

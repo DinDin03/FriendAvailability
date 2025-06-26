@@ -58,7 +58,7 @@
 
     body {
       font-family: var(--font-family);
-      background: linear-gradient(135deg, var(--success) 0%, #00a65a 100%);
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
       margin: 0;
       padding: 20px;
       min-height: 100vh;
@@ -79,18 +79,18 @@
     }
 
     .success-icon {
-      width: 120px;
-      height: 120px;
+      width: 100px;
+      height: 100px;
       margin: 0 auto var(--spacing-xl);
-      background: linear-gradient(135deg, var(--success) 0%, #00a65a 100%);
+      background: var(--primary-blue);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--white);
-      font-size: 48px;
+      font-size: 40px;
       box-shadow: var(--shadow-lg);
-      animation: bounce 1s ease-out;
+      animation: scaleIn 0.5s ease-out;
     }
 
     h1 {
@@ -101,7 +101,7 @@
     }
 
     .subtitle {
-      color: var(--success);
+      color: var(--primary-blue);
       font-size: var(--font-size-lg);
       font-weight: 600;
       margin-bottom: var(--spacing-xl);
@@ -123,7 +123,7 @@
     }
 
     .feature-list h3 {
-      color: var(--primary-blue);
+      color: var(--gray-900);
       margin-bottom: var(--spacing-md);
       font-size: var(--font-size-lg);
       text-align: center;
@@ -142,10 +142,10 @@
     }
 
     .feature-list li:before {
-      content: "✓";
+      content: "\2713";
       position: absolute;
       left: 0;
-      color: var(--success);
+      color: var(--primary-blue);
       font-weight: bold;
       font-size: var(--font-size-lg);
     }
@@ -176,26 +176,28 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--success) 0%, #00a65a 100%);
+      background: var(--primary-blue);
       color: var(--white);
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
+      background: var(--dark-blue);
+      transform: translateY(-1px);
       box-shadow: var(--shadow-md);
     }
 
     .btn-outline {
       background: var(--white);
-      color: var(--primary-blue);
-      border: 2px solid var(--primary-blue);
+      color: var(--gray-700);
+      border: 2px solid var(--gray-300);
     }
 
     .btn-outline:hover {
-      background: var(--light-blue);
+      background: var(--gray-50);
+      border-color: var(--gray-500);
     }
 
-    .countdown {
+    .info-text {
       font-size: var(--font-size-sm);
       color: var(--gray-500);
       margin-top: var(--spacing-xl);
@@ -212,15 +214,14 @@
       }
     }
 
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+        opacity: 0;
       }
-      40% {
-        transform: translateY(-10px);
-      }
-      60% {
-        transform: translateY(-5px);
+      to {
+        transform: scale(1);
+        opacity: 1;
       }
     }
 
@@ -235,13 +236,17 @@
       }
 
       .success-icon {
-        width: 100px;
-        height: 100px;
-        font-size: 40px;
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
       }
 
       .actions {
         flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
       }
     }
   </style>
@@ -254,18 +259,18 @@
 
   <h1>Email Verified Successfully!</h1>
 
-  <p class="subtitle">🎉 Your LinkUp account is now fully active!</p>
+  <p class="subtitle">Your LinkUp account is now fully active</p>
 
   <p>Congratulations! Your email has been verified and you're ready to start coordinating with your friends like never before.</p>
 
   <div class="feature-list">
-    <h3>🌟 What you can do now:</h3>
+    <h3>What you can do now:</h3>
     <ul>
-      <li>📅 Set your availability and sync with Google Calendar</li>
-      <li>👥 Connect with friends and build your network</li>
-      <li>🔍 Find perfect meeting times that work for everyone</li>
-      <li>📊 Create friend circles for easier group planning</li>
-      <li>🗓️ Schedule activities and events together</li>
+      <li>Set your availability and sync with Google Calendar</li>
+      <li>Connect with friends and build your network</li>
+      <li>Find perfect meeting times that work for everyone</li>
+      <li>Create friend circles for easier group planning</li>
+      <li>Schedule activities and events together</li>
     </ul>
   </div>
 
@@ -280,8 +285,8 @@
     </a>
   </div>
 
-  <div class="countdown">
-    <small>You can safely close this window or use the buttons above to continue.</small>
+  <div class="info-text">
+    You can safely close this window or use the buttons above to continue.
   </div>
 </div>
 
