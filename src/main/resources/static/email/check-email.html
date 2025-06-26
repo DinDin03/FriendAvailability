@@ -13,7 +13,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
   <style>
-    /* ===== CSS VARIABLES (Matching your index.html design) ===== */
+    /* ===== CSS VARIABLES (Matching index.html) ===== */
     :root {
       --primary-blue: #0052CC;
       --secondary-blue: #0065FF;
@@ -28,9 +28,9 @@
       --gray-700: #5E6C84;
       --gray-900: #172B4D;
 
-      --success: #00875A;
-      --error: #DE350B;
-      --warning: #FF8B00;
+      --success: #0065FF;
+      --error: #0065FF;
+      --warning: #0065FF;
 
       --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-size-xs: 0.75rem;
@@ -68,16 +68,9 @@
       box-sizing: border-box;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
       font-family: var(--font-family);
-      line-height: 1.6;
-      color: var(--gray-900);
-      background-color: var(--white);
-      font-size: var(--font-size-base);
+      background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -93,7 +86,6 @@
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--gray-100);
       z-index: 1000;
-      transition: all 0.3s ease;
     }
 
     .nav {
@@ -116,14 +108,98 @@
       gap: var(--spacing-sm);
     }
 
-    .logo i {
-      font-size: var(--font-size-2xl);
+    /* ===== MAIN CONTENT ===== */
+    .main-content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: calc(70px + var(--spacing-2xl)) var(--spacing-xl) var(--spacing-2xl);
     }
 
-    .nav-actions {
+    .content-card {
+      background: var(--white);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-xl);
+      padding: var(--spacing-3xl);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      animation: slideIn 0.6s ease;
+    }
+
+    .icon-wrapper {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto var(--spacing-2xl);
+      background: var(--success);
+      border-radius: 50%;
       display: flex;
-      gap: var(--spacing-md);
       align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 40px;
+    }
+
+    h1 {
+      font-size: var(--font-size-3xl);
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .subtitle {
+      font-size: var(--font-size-lg);
+      color: var(--success);
+      font-weight: 600;
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .email-info {
+      font-size: var(--font-size-base);
+      color: var(--gray-700);
+      margin-bottom: var(--spacing-2xl);
+      line-height: 1.6;
+    }
+
+    .email-info strong {
+      color: var(--primary-blue);
+      font-weight: 600;
+    }
+
+    /* ===== INSTRUCTIONS BOX ===== */
+    .instructions-box {
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-xl);
+      margin: var(--spacing-2xl) 0;
+      text-align: left;
+    }
+
+    .instructions-box h3 {
+      color: var(--gray-900);
+      font-size: var(--font-size-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .instructions-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .instructions-list li {
+      color: var(--gray-700);
+      margin-bottom: var(--spacing-sm);
+      padding-left: var(--spacing-xl);
+      position: relative;
+    }
+
+    .instructions-list li::before {
+      content: "\2713";
+      position: absolute;
+      left: 0;
+      color: var(--success);
+      font-weight: bold;
     }
 
     /* ===== BUTTONS ===== */
@@ -132,16 +208,15 @@
       align-items: center;
       justify-content: center;
       gap: var(--spacing-sm);
-      padding: var(--spacing-sm) var(--spacing-lg);
+      padding: var(--spacing-md) var(--spacing-xl);
       border: none;
       border-radius: var(--radius-md);
       font-family: inherit;
-      font-size: var(--font-size-sm);
+      font-size: var(--font-size-base);
       font-weight: 500;
       text-decoration: none;
       cursor: pointer;
       transition: all 0.3s ease;
-      white-space: nowrap;
     }
 
     .btn-primary {
@@ -149,7 +224,7 @@
       color: var(--white);
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--dark-blue);
       transform: translateY(-1px);
       box-shadow: var(--shadow-md);
@@ -158,7 +233,7 @@
     .btn-outline {
       background: transparent;
       color: var(--gray-700);
-      border: 1px solid var(--gray-300);
+      border: 2px solid var(--gray-300);
     }
 
     .btn-outline:hover {
@@ -166,108 +241,12 @@
       border-color: var(--gray-500);
     }
 
-    .btn-lg {
-      padding: var(--spacing-md) var(--spacing-xl);
-      font-size: var(--font-size-base);
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
-    /* ===== MAIN CONTENT ===== */
-    .main-content {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: calc(70px + var(--spacing-2xl)) var(--spacing-xl) var(--spacing-2xl);
-      background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
-    }
-
-    .check-email-container {
-      max-width: 600px;
-      text-align: center;
-      background: var(--white);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-xl);
-      padding: var(--spacing-3xl);
-      animation: slideIn 0.6s ease-out;
-    }
-
-    .email-icon {
-      width: 120px;
-      height: 120px;
-      margin: 0 auto var(--spacing-2xl);
-      background: linear-gradient(135deg, var(--success) 0%, #00a65a 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--white);
-      font-size: 48px;
-      box-shadow: var(--shadow-lg);
-      animation: bounce 2s infinite;
-    }
-
-    .check-email-title {
-      font-size: var(--font-size-3xl);
-      font-weight: 700;
-      color: var(--gray-900);
-      margin-bottom: var(--spacing-lg);
-    }
-
-    .check-email-subtitle {
-      font-size: var(--font-size-lg);
-      color: var(--success);
-      font-weight: 600;
-      margin-bottom: var(--spacing-xl);
-    }
-
-    .email-address {
-      font-size: var(--font-size-lg);
-      color: var(--gray-700);
-      margin-bottom: var(--spacing-xl);
-      line-height: 1.6;
-    }
-
-    .email-address strong {
-      color: var(--primary-blue);
-      font-weight: 600;
-    }
-
-    .instructions {
-      background: var(--light-blue);
-      border-radius: var(--radius-lg);
-      padding: var(--spacing-xl);
-      margin: var(--spacing-xl) 0;
-      border-left: 4px solid var(--primary-blue);
-    }
-
-    .instructions h3 {
-      color: var(--primary-blue);
-      margin-bottom: var(--spacing-md);
-      font-size: var(--font-size-lg);
-    }
-
-    .instructions-list {
-      text-align: left;
-      color: var(--gray-700);
-      list-style: none;
-      padding: 0;
-    }
-
-    .instructions-list li {
-      margin-bottom: var(--spacing-sm);
-      position: relative;
-      padding-left: var(--spacing-xl);
-    }
-
-    .instructions-list li:before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: var(--success);
-      font-weight: bold;
-    }
-
-    .actions {
+    .action-buttons {
       display: flex;
       gap: var(--spacing-md);
       justify-content: center;
@@ -275,20 +254,38 @@
       margin: var(--spacing-2xl) 0;
     }
 
-    .info-box {
-      background: var(--gray-50);
-      border-radius: var(--radius-md);
-      padding: var(--spacing-lg);
-      margin: var(--spacing-xl) 0;
-      color: var(--gray-700);
-      font-size: var(--font-size-sm);
-    }
-
-    .countdown {
+    /* ===== TIMER ===== */
+    .timer-box {
       font-size: var(--font-size-sm);
       color: var(--warning);
       font-weight: 500;
-      margin-top: var(--spacing-lg);
+      margin-top: var(--spacing-xl);
+    }
+
+    /* ===== MESSAGE DISPLAY ===== */
+    .message {
+      margin: var(--spacing-lg) 0;
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      display: none;
+      font-size: var(--font-size-sm);
+    }
+
+    .message.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    .message-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
     }
 
     /* ===== FOOTER ===== */
@@ -297,12 +294,6 @@
       color: var(--white);
       padding: var(--spacing-xl);
       text-align: center;
-      margin-top: auto;
-    }
-
-    .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
     }
 
     .footer-links {
@@ -323,7 +314,7 @@
       color: var(--white);
     }
 
-    .footer-bottom {
+    .footer-text {
       color: rgba(255, 255, 255, 0.6);
       font-size: var(--font-size-sm);
     }
@@ -332,7 +323,7 @@
     @keyframes slideIn {
       from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
       }
       to {
         opacity: 1;
@@ -340,35 +331,7 @@
       }
     }
 
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-      }
-      40% {
-        transform: translateY(-10px);
-      }
-      60% {
-        transform: translateY(-5px);
-      }
-    }
-
-    @keyframes pulse {
-      0% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.5;
-      }
-      100% {
-        opacity: 1;
-      }
-    }
-
-    .pulse {
-      animation: pulse 2s infinite;
-    }
-
-    /* ===== RESPONSIVE DESIGN ===== */
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .nav {
         padding: 0 var(--spacing-md);
@@ -378,53 +341,21 @@
         padding: calc(70px + var(--spacing-lg)) var(--spacing-md) var(--spacing-lg);
       }
 
-      .check-email-container {
+      .content-card {
         padding: var(--spacing-2xl);
       }
 
-      .check-email-title {
+      h1 {
         font-size: var(--font-size-2xl);
       }
 
-      .email-icon {
-        width: 100px;
-        height: 100px;
-        font-size: 40px;
-      }
-
-      .actions {
+      .action-buttons {
         flex-direction: column;
       }
 
-      .footer-links {
-        flex-direction: column;
-        gap: var(--spacing-sm);
+      .btn {
+        width: 100%;
       }
-    }
-
-    /* ===== MESSAGE STYLES ===== */
-    .message {
-      margin: var(--spacing-lg) 0;
-      padding: var(--spacing-md);
-      border-radius: var(--radius-md);
-      display: none;
-    }
-
-    .message.show {
-      display: block;
-      animation: slideIn 0.3s ease;
-    }
-
-    .message-success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .message-error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
     }
   </style>
 </head>
@@ -448,27 +379,27 @@
 
 <!-- Main Content -->
 <main class="main-content">
-  <div class="check-email-container">
-    <!-- Email Icon -->
-    <div class="email-icon">
+  <div class="content-card">
+    <!-- Success Icon -->
+    <div class="icon-wrapper">
       <i class="fas fa-envelope-open"></i>
     </div>
 
     <!-- Title -->
-    <h1 class="check-email-title">Check Your Email</h1>
+    <h1>Check Your Email</h1>
 
     <!-- Subtitle -->
-    <p class="check-email-subtitle">📧 Account created successfully!</p>
+    <p class="subtitle">Account created successfully!</p>
 
-    <!-- Email Address Display -->
-    <div class="email-address">
+    <!-- Email Display -->
+    <div class="email-info">
       We've sent a verification email to<br>
       <strong id="userEmail">your email address</strong>
     </div>
 
     <!-- Instructions -->
-    <div class="instructions">
-      <h3>📌 What to do next:</h3>
+    <div class="instructions-box">
+      <h3>What to do next:</h3>
       <ul class="instructions-list">
         <li>Check your email inbox (and spam folder)</li>
         <li>Click the verification link in the email</li>
@@ -478,26 +409,21 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="actions">
-      <button class="btn btn-primary btn-lg" onclick="resendEmail()">
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="resendEmail()">
         <i class="fas fa-paper-plane"></i>
         Resend Email
       </button>
-      <a href="/index.html" class="btn btn-outline btn-lg">
+      <a href="/index.html" class="btn btn-outline">
         <i class="fas fa-sign-in-alt"></i>
         Go to Login
       </a>
     </div>
 
-    <!-- Info Box -->
-    <div class="info-box">
-      <strong>💡 Tip:</strong> If you don't see the email within a few minutes, check your spam or junk folder.
-      The verification link will expire in 24 hours for security purposes.
-    </div>
-
-    <!-- Countdown Timer -->
-    <div class="countdown pulse">
-      ⏰ Verification link expires in <span id="timeRemaining">24 hours</span>
+    <!-- Timer -->
+    <div class="timer-box">
+      <i class="fas fa-clock"></i>
+      Verification link expires in <span id="timeRemaining">24 hours</span>
     </div>
 
     <!-- Message Display -->
@@ -507,22 +433,18 @@
 
 <!-- Footer -->
 <footer class="footer">
-  <div class="footer-content">
-    <div class="footer-links">
-      <a href="#privacy">Privacy Policy</a>
-      <a href="#terms">Terms of Service</a>
-      <a href="#contact">Contact Support</a>
-      <a href="#help">Help Center</a>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2025 LinkUp. All rights reserved.</p>
-    </div>
+  <div class="footer-links">
+    <a href="#privacy">Privacy Policy</a>
+    <a href="#terms">Terms of Service</a>
+    <a href="#contact">Contact Support</a>
+    <a href="#help">Help Center</a>
+  </div>
+  <div class="footer-text">
+    &copy; 2025 LinkUp. All rights reserved.
   </div>
 </footer>
 
 <script>
-  // ===== EMAIL CHECK PAGE FUNCTIONALITY =====
-
   // Configuration
   const CONFIG = {
     API_BASE_URL: '/api',
@@ -530,18 +452,17 @@
     EXPIRY_HOURS: 24
   };
 
-  // State management
+  // State
   let resendCooldown = false;
   let userEmailAddress = '';
 
-  // Initialize page
+  // Initialize
   document.addEventListener('DOMContentLoaded', function() {
     initializePage();
     startExpiryCountdown();
   });
 
   function initializePage() {
-    // Get email from URL parameter or localStorage
     const urlParams = new URLSearchParams(window.location.search);
     const emailParam = urlParams.get('email');
 
@@ -550,15 +471,12 @@
       document.getElementById('userEmail').textContent = userEmailAddress;
       localStorage.setItem('pendingVerificationEmail', userEmailAddress);
     } else {
-      // Fallback to localStorage
       const storedEmail = localStorage.getItem('pendingVerificationEmail');
       if (storedEmail) {
         userEmailAddress = storedEmail;
         document.getElementById('userEmail').textContent = userEmailAddress;
       }
     }
-
-    console.log('Check email page initialized for:', userEmailAddress);
   }
 
   function startExpiryCountdown() {
@@ -581,7 +499,6 @@
         }, 60000); // Update every minute
       }
     } else {
-      // Set expiry time to 24 hours from now
       const expiry = currentTime + (CONFIG.EXPIRY_HOURS * 60 * 60 * 1000);
       localStorage.setItem('verificationExpiryTime', expiry.toString());
       updateCountdown(CONFIG.EXPIRY_HOURS * 60 * 60 * 1000);
@@ -619,7 +536,6 @@
     }
 
     try {
-      // Disable button and show loading
       const button = event.target;
       const originalText = button.innerHTML;
       button.disabled = true;
@@ -637,13 +553,11 @@
       const data = await response.json();
 
       if (response.ok) {
-        showMessage('✅ Verification email sent! Please check your inbox.', 'success');
+        showMessage('Verification email sent! Please check your inbox.', 'success');
 
-        // Update expiry time
         const newExpiry = new Date().getTime() + (CONFIG.EXPIRY_HOURS * 60 * 60 * 1000);
         localStorage.setItem('verificationExpiryTime', newExpiry.toString());
 
-        // Start cooldown
         startResendCooldown();
       } else {
         if (response.status === 429) {
@@ -654,7 +568,6 @@
         }
       }
 
-      // Restore button
       button.disabled = false;
       button.innerHTML = originalText;
 
@@ -662,7 +575,6 @@
       console.error('Resend email error:', error);
       showMessage('Network error. Please check your connection and try again.', 'error');
 
-      // Restore button
       const button = event.target;
       button.disabled = false;
       button.innerHTML = '<i class="fas fa-paper-plane"></i> Resend Email';
@@ -681,13 +593,12 @@
     messageEl.textContent = message;
     messageEl.className = `message message-${type} show`;
 
-    // Auto-hide after 5 seconds
     setTimeout(() => {
       messageEl.classList.remove('show');
     }, 5000);
   }
 
-  // Check if user gets verified while on this page
+  // Check if user gets verified
   setInterval(async () => {
     try {
       const response = await fetch(`${CONFIG.API_BASE_URL}/auth/current-user`, {
@@ -696,17 +607,16 @@
       });
 
       if (response.ok) {
-        // User has been verified! Redirect to dashboard
         localStorage.removeItem('pendingVerificationEmail');
         localStorage.removeItem('verificationExpiryTime');
-        showMessage('✅ Email verified! Redirecting to dashboard...', 'success');
+        showMessage('Email verified! Redirecting to dashboard...', 'success');
 
         setTimeout(() => {
           window.location.href = '/dashboard.html';
         }, 2000);
       }
     } catch (error) {
-      // User not verified yet, continue waiting
+      // User not verified yet
     }
   }, 10000); // Check every 10 seconds
 </script>

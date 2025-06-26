@@ -6,10 +6,10 @@
   <title>Welcome to LinkUp!</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Arial', sans-serif;
       line-height: 1.6;
-      color: #333;
-      background-color: #f4f4f4;
+      color: #172B4D;
+      background-color: #F8F9FA;
       margin: 0;
       padding: 20px;
     }
@@ -17,118 +17,229 @@
       max-width: 600px;
       margin: 0 auto;
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       overflow: hidden;
     }
     .header {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      background: #0052CC;
       color: white;
-      padding: 30px;
+      padding: 40px 30px;
       text-align: center;
     }
     .header h1 {
       margin: 0;
-      font-size: 28px;
-      font-weight: 300;
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      font-size: 16px;
+      opacity: 0.9;
     }
     .content {
       padding: 40px 30px;
     }
-    .success-badge {
-      background: #d4edda;
-      color: #155724;
-      padding: 15px;
-      border-radius: 5px;
+    .success-banner {
+      background: #E6F3FF;
+      color: #003884;
+      padding: 16px;
+      border-radius: 8px;
       text-align: center;
-      margin-bottom: 30px;
-      border: 1px solid #c3e6cb;
+      margin-bottom: 32px;
+      border: 1px solid #B8D4F1;
+      font-weight: 600;
+    }
+    .greeting {
+      font-size: 18px;
+      color: #172B4D;
+      margin-bottom: 16px;
+    }
+    .text {
+      color: #5E6C84;
+      margin-bottom: 16px;
     }
     .cta-button {
       display: inline-block;
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      background: #0052CC;
       color: white;
-      padding: 15px 30px;
+      padding: 14px 32px;
       text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
+      border-radius: 8px;
+      font-weight: 600;
       font-size: 16px;
-      margin: 20px 0;
+      margin: 24px 0;
+      transition: background 0.2s;
+    }
+    .cta-button:hover {
+      background: #003884;
     }
     .button-container {
       text-align: center;
-      margin: 30px 0;
+      margin: 32px 0;
     }
-    .feature-list {
-      background-color: #f8f9fa;
+    .features-box {
+      background-color: #F8F9FA;
+      padding: 24px;
+      border-radius: 8px;
+      margin: 32px 0;
+    }
+    .features-box h3 {
+      color: #172B4D;
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      font-weight: 600;
+    }
+    .features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .features-list li {
+      color: #5E6C84;
+      margin-bottom: 12px;
+      padding-left: 24px;
+      position: relative;
+    }
+    .features-list li:before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #0052CC;
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .features-list strong {
+      color: #172B4D;
+    }
+    .tips-section {
+      margin: 32px 0;
+    }
+    .tips-section h3 {
+      color: #172B4D;
+      font-size: 18px;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .tips-list {
+      padding-left: 24px;
+      margin: 0;
+      color: #5E6C84;
+    }
+    .tips-list li {
+      margin-bottom: 8px;
+    }
+    .tips-list strong {
+      color: #172B4D;
+    }
+    .help-section {
+      background: #E6F3FF;
       padding: 20px;
-      border-radius: 5px;
-      margin: 20px 0;
+      border-radius: 8px;
+      margin: 32px 0;
+      text-align: center;
+    }
+    .help-section p {
+      margin: 0;
+      color: #003884;
+    }
+    .help-section a {
+      color: #0052CC;
+      font-weight: 600;
+    }
+    .signature {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #DFE1E6;
+    }
+    .signature p {
+      margin: 8px 0;
+      color: #5E6C84;
+    }
+    .signature strong {
+      color: #172B4D;
     }
     .footer {
-      background-color: #f8f9fa;
-      padding: 20px 30px;
+      background-color: #F8F9FA;
+      padding: 24px 30px;
       text-align: center;
-      color: #6c757d;
+      color: #5E6C84;
       font-size: 14px;
-      border-top: 1px solid #dee2e6;
+      border-top: 1px solid #DFE1E6;
+    }
+    .footer p {
+      margin: 8px 0;
+    }
+    .footer a {
+      color: #0052CC;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 <div class="container">
   <div class="header">
-    <h1>🎉 Welcome to LinkUp!</h1>
+    <h1>Welcome to LinkUp!</h1>
     <p>Your account is now verified and ready to use</p>
   </div>
 
   <div class="content">
-    <div class="success-badge">
-      <strong>✅ Email Verified Successfully!</strong><br>
-      Your account is now fully activated.
+    <div class="success-banner">
+      Email Verified Successfully - Your account is now fully activated
     </div>
 
-    <p>Hi {{userName}},</p>
+    <p class="greeting">Hi {{userName}},</p>
 
-    <p>Congratulations! Your email has been verified and your LinkUp account is now fully active. You're ready to start coordinating with your friends like never before!</p>
+    <p class="text">Congratulations! Your email has been verified and your LinkUp account is now fully active. You're ready to start coordinating with your friends like never before!</p>
 
     <div class="button-container">
       <a href="{{dashboardUrl}}" class="cta-button">
-        🚀 Go to Your Dashboard
+        Go to Your Dashboard
       </a>
     </div>
 
-    <div class="feature-list">
-      <h3>🌟 What you can do now:</h3>
-      <ul>
-        <li><strong>📅 Set Your Availability:</strong> Add your free times manually or sync with Google Calendar</li>
-        <li><strong>👥 Connect with Friends:</strong> Send friend requests and build your network</li>
-        <li><strong>🔍 Find Perfect Times:</strong> See when you and your friends are all available</li>
-        <li><strong>📊 Create Circles:</strong> Organize friends into groups for easier planning</li>
-        <li><strong>🗓️ Schedule Together:</strong> Coordinate group activities effortlessly</li>
+    <div class="features-box">
+      <h3>What you can do now:</h3>
+      <ul class="features-list">
+        <li><strong>Set Your Availability:</strong> Add your free times manually or sync with Google Calendar</li>
+        <li><strong>Connect with Friends:</strong> Send friend requests and build your network</li>
+        <li><strong>Find Perfect Times:</strong> See when you and your friends are all available</li>
+        <li><strong>Create Circles:</strong> Organize friends into groups for easier planning</li>
+        <li><strong>Schedule Together:</strong> Coordinate group activities effortlessly</li>
       </ul>
     </div>
 
-    <h3>🚀 Getting Started Tips:</h3>
-    <ol>
-      <li><strong>Complete your profile</strong> - Add a bit about yourself</li>
-      <li><strong>Set your availability</strong> - Let friends know when you're free</li>
-      <li><strong>Invite your friends</strong> - LinkUp is better with friends!</li>
-      <li><strong>Explore features</strong> - Check out calendar sync and group planning</li>
-    </ol>
+    <div class="tips-section">
+      <h3>Getting Started Tips:</h3>
+      <ol class="tips-list">
+        <li><strong>Complete your profile</strong> - Add a bit about yourself</li>
+        <li><strong>Set your availability</strong> - Let friends know when you're free</li>
+        <li><strong>Invite your friends</strong> - LinkUp is better with friends!</li>
+        <li><strong>Explore features</strong> - Check out calendar sync and group planning</li>
+      </ol>
+    </div>
 
-    <p>Need help getting started? Check out our <a href="{{baseUrl}}/help">Help Center</a> or reply to this email with any questions.</p>
+    <div class="help-section">
+      <p>Need help getting started? Check out our <a href="{{baseUrl}}/help">Help Center</a> or reply to this email with any questions.</p>
+    </div>
 
-    <p>We're excited to see how LinkUp helps you stay connected with your friends!</p>
+    <p class="text">We're excited to see how LinkUp helps you stay connected with your friends!</p>
 
-    <p>Best regards,<br>
-      <strong>The LinkUp Team</strong></p>
+    <div class="signature">
+      <p>Best regards,<br>
+        <strong>The LinkUp Team</strong></p>
+    </div>
   </div>
 
   <div class="footer">
     <p>This email was sent to {{userEmail}}</p>
-    <p>Questions? Contact us at support@linkup.com</p>
-    <p>© 2025 LinkUp. All rights reserved.</p>
+    <p>Questions? Contact us at <a href="mailto:support@linkup.com">support@linkup.com</a></p>
+    <p>&copy; 2025 LinkUp. All rights reserved.</p>
   </div>
 </div>
 </body>
