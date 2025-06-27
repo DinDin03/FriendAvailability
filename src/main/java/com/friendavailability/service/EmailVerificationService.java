@@ -5,7 +5,6 @@ import com.friendavailability.model.User;
 import com.friendavailability.repository.EmailVerificationTokenRepository;
 import com.friendavailability.repository.UserRepository;
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -185,6 +184,7 @@ public class EmailVerificationService {
         return tokenValue;
     }
 
+    @Getter
     public static class VerificationResult {
         private final boolean success;
         private final String message;
@@ -204,43 +204,23 @@ public class EmailVerificationService {
             return new VerificationResult(false, message, null);
         }
 
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public User getUser() { return user; }
-
         @Override
         public String toString() {
             return "VerificationResult{success=" + success + ", message='" + message + "'}";
         }
     }
 
-    public static class VerificationStatus {
-        @Getter
-        private final boolean isVerified;
-        private final boolean hasPendingToken;
-        @Getter
-        private final LocalDateTime tokenExpiresAt;
-        @Getter
-        private final String message;
-
-        public VerificationStatus(boolean isVerified, boolean hasPendingToken,
-                                  LocalDateTime tokenExpiresAt, String message) {
-            this.isVerified = isVerified;
-            this.hasPendingToken = hasPendingToken;
-            this.tokenExpiresAt = tokenExpiresAt;
-            this.message = message;
-        }
-
-        public boolean hasPendingToken() { return hasPendingToken; }
+    public record VerificationStatus(@Getter boolean isVerified, boolean hasPendingToken,
+                                     @Getter LocalDateTime tokenExpiresAt, @Getter String message) {
 
         @Override
-        public String toString() {
-            return "VerificationStatus{" +
-                    "isVerified=" + isVerified +
-                    ", hasPendingToken=" + hasPendingToken +
-                    ", tokenExpiresAt=" + tokenExpiresAt +
-                    ", message='" + message + '\'' +
-                    '}';
+            public String toString() {
+                return "VerificationStatus{" +
+                        "isVerified=" + isVerified +
+                        ", hasPendingToken=" + hasPendingToken +
+                        ", tokenExpiresAt=" + tokenExpiresAt +
+                        ", message='" + message + '\'' +
+                        '}';
+            }
         }
-    }
 }
