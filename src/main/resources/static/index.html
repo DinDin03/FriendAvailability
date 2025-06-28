@@ -678,6 +678,82 @@
     .mt-auto {
       margin-top: auto;
     }
+
+    .modal-description {
+      text-align: center;
+      margin-bottom: var(--spacing-xl);
+      color: var(--gray-700);
+      font-size: var(--font-size-base);
+      line-height: 1.5;
+    }
+
+    .form-help {
+      display: block;
+      margin-top: var(--spacing-xs);
+      font-size: var(--font-size-sm);
+      color: var(--gray-500);
+    }
+
+    .help-info {
+      margin-top: var(--spacing-xl);
+      padding: var(--spacing-lg);
+      background: var(--gray-50);
+      border-radius: var(--radius-lg);
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: flex-start;
+    }
+
+    .help-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--primary-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: var(--font-size-sm);
+      flex-shrink: 0;
+    }
+
+    .help-content {
+      flex: 1;
+    }
+
+    .help-content p {
+      margin: 0 0 var(--spacing-xs) 0;
+      font-size: var(--font-size-sm);
+      color: var(--gray-700);
+    }
+
+    .help-content p:first-child {
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .help-link {
+      color: var(--primary-blue);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: var(--font-size-sm);
+    }
+
+    .help-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .help-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .help-icon {
+        margin: 0 auto;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1043,7 +1119,54 @@
     </div>
   </div>
 </div>
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('forgotPasswordModal')">&times;</button>
 
+    <h2 class="modal-title">Reset Your Password</h2>
+
+    <div class="modal-description">
+      <p>Enter your email address and we'll send you a link to reset your password.</p>
+    </div>
+
+    <form id="forgotPasswordForm" onsubmit="handleForgotPassword(event)">
+      <div class="form-group">
+        <label for="resetEmail" class="form-label">Email Address</label>
+        <input
+                type="email"
+                id="resetEmail"
+                class="form-input"
+                placeholder="Enter your email address"
+                required
+        >
+        <small class="form-help">We'll send password reset instructions to this email</small>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="fas fa-paper-plane"></i>
+          Send Reset Link
+        </button>
+        <button type="button" class="btn btn-outline btn-lg" onclick="closeModal('forgotPasswordModal')">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+      </div>
+    </form>
+
+    <div class="help-info">
+      <div class="help-icon">
+        <i class="fas fa-info-circle"></i>
+      </div>
+      <div class="help-content">
+        <p><strong>Can't access your email?</strong></p>
+        <p>Contact our support team for assistance with account recovery.</p>
+        <a href="#contact" class="help-link">Get Help</a>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Success/Error Message Container -->
 <div id="messageContainer"></div>
 
@@ -1108,8 +1231,13 @@
     document.body.style.overflow = '';
     appState.currentModal = null;
 
+    // Reset all forms in the modal
     const forms = modal.querySelectorAll('form');
     forms.forEach(form => form.reset());
+
+    // Clear any error styling
+    const inputs = modal.querySelectorAll('.form-input');
+    inputs.forEach(input => input.classList.remove('error'));
   }
 
   function openLoginModal() {
@@ -1331,10 +1459,21 @@
     window.location.href = '/oauth2/authorization/google';
   }
 
-  // ===== FORGOT PASSWORD FUNCTION =====
-  // Updated showForgotPasswordForm function in index.html
-  async function showForgotPasswordForm() {
-    const email = prompt('Enter your email address to reset your password:');
+  // ===== FORGOT PASSWORD FUNCTIONS =====
+
+  // Updated function to show modal instead of prompt
+  function showForgotPasswordForm() {
+    closeModal('loginModal'); // Close login modal first
+    setTimeout(() => {
+      openModal('forgotPasswordModal');
+    }, 200);
+  }
+
+  // Handle the forgot password form submission
+  async function handleForgotPassword(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('resetEmail').value.trim();
 
     if (!email || !isValidEmail(email)) {
       showErrorMessage('Please enter a valid email address.');
@@ -1342,7 +1481,10 @@
     }
 
     try {
-      showLoadingMessage('Sending password reset email...');
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      const originalText = submitButton.innerHTML;
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
       const response = await fetch(`${CONFIG.API_BASE_URL}/auth/forgot-password`, {
         method: 'POST',
@@ -1356,18 +1498,32 @@
       const data = await response.json();
 
       if (response.ok) {
-        closeModal('loginModal');
-        // UPDATED: Redirect to reset-password.html (email confirmation page)
-        window.location.href = `/pages/auth/reset-password.html?email=${encodeURIComponent(email)}`;
+        closeModal('forgotPasswordModal');
+
+        // Show success message
+        showSuccessMessage('Password reset email sent! Please check your inbox.');
+
+        // Redirect to confirmation page
+        setTimeout(() => {
+          window.location.href = `/pages/auth/reset-password.html?email=${encodeURIComponent(email)}`;
+        }, 1500);
+
       } else {
         showErrorMessage(data.message || 'Failed to send reset email. Please try again.');
       }
 
+      // Reset button state
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalText;
+
     } catch (error) {
       console.error('Forgot password error:', error);
       showErrorMessage('Network error. Please try again.');
-    } finally {
-      hideLoadingMessage();
+
+      // Reset button state
+      const submitButton = event.target.querySelector('button[type="submit"]');
+      submitButton.disabled = false;
+      submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send Reset Link';
     }
   }
 
