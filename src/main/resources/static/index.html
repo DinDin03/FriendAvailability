@@ -754,6 +754,90 @@
         margin: 0 auto;
       }
     }
+
+    #messageContainer {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      max-width: 400px;
+      pointer-events: none;
+      /* Ensure visibility */
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      animation: slideInRight 0.3s ease;
+      pointer-events: auto;
+      position: relative;
+    }
+
+    .message-content {
+      padding: var(--spacing-md);
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+    }
+
+    .message-success {
+      background: var(--success, #00875A);
+      color: white;
+    }
+
+    .message-error {
+      background: var(--error, #DE350B);
+      color: white;
+    }
+
+    .message-warning {
+      background: var(--warning, #FF8B00);
+      color: white;
+    }
+
+    .message-info {
+      background: var(--primary-blue, #0052CC);
+      color: white;
+    }
+
+    .message-close {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      margin-left: auto;
+      padding: 4px;
+      border-radius: 4px;
+      opacity: 0.8;
+    }
+
+    .message-close:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      #messageContainer {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1285,8 +1369,9 @@
     appState.isLoading = true;
     showLoadingMessage('Signing you in...');
 
+    let result;
     try {
-      const result = await performLogin(formData);
+      result = await performLogin(formData);
 
       if (result.success) {
         showSuccessMessage('Login successful! Redirecting...');
@@ -1315,7 +1400,10 @@
       showErrorMessage('Network error. Please check your connection and try again.');
     } finally {
       appState.isLoading = false;
-      hideLoadingMessage();
+      // Only hide loading message if login was successful
+      if (result && result.success) {
+        hideLoadingMessage();
+      }
     }
   }
 
@@ -1397,6 +1485,7 @@
       }
 
     } catch (error) {
+      console.error('[DEBUG] Fetch error:', error);
       if (error.name === 'TypeError' || error.message.includes('fetch')) {
         return {
           success: false,
@@ -1696,20 +1785,12 @@
     clearMessages();
 
     const container = document.getElementById('messageContainer');
-    if (!container) return;
+    if (!container) {
+      console.error('[DEBUG] messageContainer not found!');
+      return;
+    }
 
-    const messageEl = document.createElement('div');
-    messageEl.className = `message message-${type}`;
-    messageEl.innerHTML = `
-                <div class="message-content">
-                    <i class="fas ${getMessageIcon(type)}"></i>
-                    <span>${message}</span>
-                    <button class="message-close" onclick="this.parentElement.parentElement.remove()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-
+    // Ensure styles are applied
     if (!document.getElementById('messageStyles')) {
       const styles = document.createElement('style');
       styles.id = 'messageStyles';
@@ -1718,8 +1799,13 @@
                         position: fixed;
                         top: 80px;
                         right: 20px;
-                        z-index: 3000;
+                        z-index: 9999;
                         max-width: 400px;
+                        pointer-events: none;
+                        /* Ensure visibility */
+                        display: block !important;
+                        visibility: visible !important;
+                        opacity: 1 !important;
                     }
 
                     .message {
@@ -1727,6 +1813,8 @@
                         border-radius: var(--radius-md);
                         box-shadow: var(--shadow-lg);
                         animation: slideInRight 0.3s ease;
+                        pointer-events: auto;
+                        position: relative;
                     }
 
                     .message-content {
@@ -1737,22 +1825,22 @@
                     }
 
                     .message-success {
-                        background: var(--success);
+                        background: var(--success, #00875A);
                         color: white;
                     }
 
                     .message-error {
-                        background: var(--error);
+                        background: var(--error, #DE350B);
                         color: white;
                     }
 
                     .message-warning {
-                        background: var(--warning);
+                        background: var(--warning, #FF8B00);
                         color: white;
                     }
 
                     .message-info {
-                        background: var(--primary-blue);
+                        background: var(--primary-blue, #0052CC);
                         color: white;
                     }
 
@@ -1793,6 +1881,18 @@
                 `;
       document.head.appendChild(styles);
     }
+
+    const messageEl = document.createElement('div');
+    messageEl.className = `message message-${type}`;
+    messageEl.innerHTML = `
+                <div class="message-content">
+                    <i class="fas ${getMessageIcon(type)}"></i>
+                    <span>${message}</span>
+                    <button class="message-close" onclick="this.parentElement.parentElement.remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
 
     container.appendChild(messageEl);
 
