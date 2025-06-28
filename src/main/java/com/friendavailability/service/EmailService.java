@@ -117,7 +117,7 @@ public class EmailService {
             System.out.println("Preparing password reset email for: " + user.getEmail());
             System.out.println("Using base URL: " + baseUrl);
 
-            String resetUrl = baseUrl + "/pages/auth/reset-password.html?token=" + token + "&email=" + user.getEmail();
+            String resetUrl = baseUrl + "/pages/auth/new-password.html?token=" + token + "&email=" + user.getEmail();
 
             String htmlContent = loadTemplate("password-reset-email.html");
             htmlContent = processTemplate(htmlContent, user, resetUrl, baseUrl);
@@ -139,7 +139,6 @@ public class EmailService {
         } catch (Exception e) {
             System.err.println("Failed to send password reset email to: " + user.getEmail());
             System.err.println("Error: " + e.getMessage());
-            e.printStackTrace();
             return false;
         }
     }

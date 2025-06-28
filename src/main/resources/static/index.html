@@ -1332,6 +1332,7 @@
   }
 
   // ===== FORGOT PASSWORD FUNCTION =====
+  // Updated showForgotPasswordForm function in index.html
   async function showForgotPasswordForm() {
     const email = prompt('Enter your email address to reset your password:');
 
@@ -1356,6 +1357,7 @@
 
       if (response.ok) {
         closeModal('loginModal');
+        // UPDATED: Redirect to reset-password.html (email confirmation page)
         window.location.href = `/pages/auth/reset-password.html?email=${encodeURIComponent(email)}`;
       } else {
         showErrorMessage(data.message || 'Failed to send reset email. Please try again.');
