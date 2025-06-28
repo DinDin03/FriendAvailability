@@ -210,8 +210,8 @@ public class EmailVerificationService {
         }
     }
 
-    public record VerificationStatus(@Getter boolean isVerified, boolean hasPendingToken,
-                                     @Getter LocalDateTime tokenExpiresAt, @Getter String message) {
+    public record VerificationStatus(boolean isVerified, boolean hasPendingToken,
+                                     LocalDateTime tokenExpiresAt, String message) {
 
         @Override
             public String toString() {

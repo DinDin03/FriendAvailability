@@ -36,7 +36,7 @@ public class EmailService {
 
             String verificationUrl = baseUrl + "/api/auth/verify-email?token=" + token;
 
-            String htmlContent = loadTemplate("verification-email.html");
+            String htmlContent = loadTemplate("/templates/verification-email.html");
             htmlContent = processTemplate(htmlContent, user, verificationUrl, baseUrl);
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -66,7 +66,7 @@ public class EmailService {
 
             String dashboardUrl = baseUrl + "/dashboard.html";
 
-            String htmlContent = loadTemplate("welcome-email.html");
+            String htmlContent = loadTemplate("/templates/welcome-email.html");
             htmlContent = processTemplate(htmlContent, user, dashboardUrl, baseUrl);
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -108,6 +108,36 @@ public class EmailService {
                 .replace("{{userEmail}}", user.getEmail())
                 .replace("{{verificationUrl}}", primaryUrl)
                 .replace("{{dashboardUrl}}", primaryUrl)
+                .replace("{{resetUrl}}", primaryUrl)
                 .replace("{{baseUrl}}", secondaryUrl);
+    }
+
+    public boolean sendPasswordResetEmail(User user, String token) {
+        try {
+            System.out.println("Preparing password reset email for: " + user.getEmail());
+
+            String resetUrl = baseUrl + "/reset-password?token=" + token;
+
+            String htmlContent = loadTemplate("pages/auth/password-reset-email.html");
+            htmlContent = processTemplate(htmlContent, user, resetUrl, baseUrl);
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromAddress, fromName);
+            helper.setTo(user.getEmail());
+            helper.setSubject("Reset Your LinkUp Password");
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+            System.out.println("Password reset email sent successfully to: " + user.getEmail());
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("Failed to send password reset email to: " + user.getEmail());
+            System.err.println("Error: " + e.getMessage());
+            return false;
+        }
     }
 }

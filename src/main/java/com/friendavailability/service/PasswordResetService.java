@@ -20,12 +20,14 @@ public class PasswordResetService {
     private final PasswordResetTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public PasswordResetService(PasswordResetTokenRepository tokenRepository,
-                                UserRepository userRepository, PasswordEncoder passwordEncoder){
+                                UserRepository userRepository, PasswordEncoder passwordEncoder, EmailService emailService){
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     public String createResetToken(User user){
@@ -66,12 +68,95 @@ public class PasswordResetService {
         return tokenValue;
     }
 
-    public boolean ResetPassword(User user, String oldPassword, String newPassword){
-        if(newPassword == null || newPassword.) {
+    public boolean resetPassword(String tokenValue, String newPassword){
+        if(newPassword == null || newPassword.trim().isEmpty()) {
             throw new IllegalArgumentException("Password cannot be null");
+        }
+        if(newPassword.length() < 8){
+            throw new IllegalArgumentException("Password must be at least 8 characters long");
+        }
+
+        Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(tokenValue);
+        if(tokenOpt.isEmpty()){
+            System.out.println("Token not found");
+            return false;
+        }
+        PasswordResetToken token = tokenOpt.get();
+
+        if(!token.isValid()){
+            System.out.println("Token is either used or expired");
             return false;
         }
 
+        try {
+            User user = token.getUser();
+            String newHashedPassword = passwordEncoder.encode(newPassword);
+            user.setPasswordHash(newHashedPassword);
+            user.setUpdatedAt(LocalDateTime.now());
+            userRepository.save(user);
+
+            token.setUsed(true);
+            tokenRepository.save(token);
+            return true;
+        }catch(Exception e){
+            System.out.println("An error occured " + e.getMessage());
+            return false;
+        }
     }
+
+    public boolean requestPasswordReset(String email){
+        if(email == null || email.trim().isEmpty()){
+            return false;
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email.toLowerCase().trim());
+
+        if(userOpt.isEmpty()) {
+            System.out.println("Password reset requested for non-existent email: " + email);
+            return true;
+        }
+
+        User user = userOpt.get();
+
+        if(!user.getEmailVerified()) {
+            System.out.println("Password reset requested for unverified email: " + email);
+            return true;
+        }
+
+        try{
+            String token = createResetToken(user);
+            return emailService.sendPasswordResetEmail(user, token);
+        }catch (Exception e) {
+            System.err.println("Password reset failed for " + email + ": " + e.getMessage());
+            return false;
+        }
+    }
+
+    public Optional<User> validateResetToken(String tokenValue){
+        if(tokenValue == null || tokenValue.trim().isEmpty()){
+            return Optional.empty();
+        }
+        Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(tokenValue);
+
+        if(tokenOpt.isEmpty()){
+            return Optional.empty();
+        }
+        PasswordResetToken token = tokenOpt.get();
+
+        if(!token.isValid()){
+            return Optional.empty();
+        }
+        User user = token.getUser();
+        return Optional.of(user);
+    }
+
+    public int cleanExpiredTokens(){
+        int deletedCount = tokenRepository.deleteExpiredTokens(LocalDateTime.now());
+        if (deletedCount > 0) {
+            System.out.println("Cleaned up " + deletedCount + " expired password reset tokens");
+        }
+        return deletedCount;
+    }
+
 
 }
