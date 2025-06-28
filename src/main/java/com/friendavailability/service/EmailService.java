@@ -36,7 +36,7 @@ public class EmailService {
 
             String verificationUrl = baseUrl + "/api/auth/verify-email?token=" + token;
 
-            String htmlContent = loadTemplate("/templates/verification-email.html");
+            String htmlContent = loadTemplate("verification-email.html");
             htmlContent = processTemplate(htmlContent, user, verificationUrl, baseUrl);
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -66,7 +66,7 @@ public class EmailService {
 
             String dashboardUrl = baseUrl + "/dashboard.html";
 
-            String htmlContent = loadTemplate("/templates/welcome-email.html");
+            String htmlContent = loadTemplate("welcome-email.html");
             htmlContent = processTemplate(htmlContent, user, dashboardUrl, baseUrl);
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -91,7 +91,7 @@ public class EmailService {
     }
 
     private String loadTemplate(String templateName) throws Exception {
-        String templatePath = "static/email/" + templateName;
+        String templatePath = "static/email/templates/" + templateName;
         ClassPathResource resource = new ClassPathResource(templatePath);
 
         if (!resource.exists()) {
@@ -118,7 +118,7 @@ public class EmailService {
 
             String resetUrl = baseUrl + "/reset-password?token=" + token;
 
-            String htmlContent = loadTemplate("pages/auth/password-reset-email.html");
+            String htmlContent = loadTemplate("password-reset-email.html");
             htmlContent = processTemplate(htmlContent, user, resetUrl, baseUrl);
 
             MimeMessage message = mailSender.createMimeMessage();
