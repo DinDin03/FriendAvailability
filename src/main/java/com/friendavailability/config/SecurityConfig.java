@@ -45,7 +45,9 @@ public class SecurityConfig {
                                 "/style.css",
                                 "/app.js",
                                 "/default-ui.css",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/css/**",
+                                "/js/**"
                         ).permitAll()
 
                         // Email verification pages - MUST be accessible without authentication
@@ -55,6 +57,12 @@ public class SecurityConfig {
                                 "/email/check-email.html",
                                 "/email/email-verified.html",
                                 "/email/email-verification-failed.html"
+                        ).permitAll()
+
+                        // Password reset pages - MUST be accessible without authentication
+                        .requestMatchers(
+                                "/pages/auth/reset-password.html",
+                                "/pages/auth/**"
                         ).permitAll()
 
                         // Authentication endpoints
@@ -73,7 +81,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("/index.html")
                         .defaultSuccessUrl("/dashboard.html", true)
                         .permitAll()
                 )
