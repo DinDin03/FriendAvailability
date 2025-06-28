@@ -1356,7 +1356,7 @@
 
       if (response.ok) {
         closeModal('loginModal');
-        showSuccessMessage('If this email exists, we\'ve sent a password reset link. Please check your inbox.');
+        window.location.href = `/pages/auth/reset-password.html?email=${encodeURIComponent(email)}`;
       } else {
         showErrorMessage(data.message || 'Failed to send reset email. Please try again.');
       }
