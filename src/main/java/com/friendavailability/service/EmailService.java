@@ -95,7 +95,7 @@ public class EmailService {
         ClassPathResource resource = new ClassPathResource(templatePath);
 
         if (!resource.exists()) {
-            throw new RuntimeException("Email template not found: " + templatePath);
+            throw new RuntimeException("Email template not found! : " + templatePath);
         }
 
         byte[] templateBytes = StreamUtils.copyToByteArray(resource.getInputStream());
