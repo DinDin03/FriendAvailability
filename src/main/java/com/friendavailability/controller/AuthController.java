@@ -231,7 +231,6 @@ public class AuthController {
 
         } catch (Exception e) {
             System.err.println("Email verification error: " + e.getMessage());
-            e.printStackTrace();
 
             return ResponseEntity.status(HttpStatus.FOUND)
                     .header("Location", "/email/email-verification-failed.html?error=" +

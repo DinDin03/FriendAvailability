@@ -78,7 +78,7 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .successHandler(new SimpleUrlAuthenticationSuccessHandler("/dashboard.html"))
+                        .successHandler(new SimpleUrlAuthenticationSuccessHandler("/pages/dashboard.html"))
                         .failureUrl("/index.html?error=login_failed")
                         .userInfoEndpoint(userInfo -> userInfo
                                 .oidcUserService(customOAuth2UserService)

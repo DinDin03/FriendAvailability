@@ -959,6 +959,10 @@
     </button>
 
     <div class="form-link">
+      <p><a href="#" onclick="showForgotPasswordForm()">Forgot your password?</a></p>
+    </div>
+
+    <div class="form-link">
       <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up here</a></p>
     </div>
   </div>
@@ -1325,6 +1329,44 @@
     console.log('Initiating Google OAuth login');
     showLoadingMessage('Redirecting to Google...');
     window.location.href = '/oauth2/authorization/google';
+  }
+
+  // ===== FORGOT PASSWORD FUNCTION =====
+  async function showForgotPasswordForm() {
+    const email = prompt('Enter your email address to reset your password:');
+
+    if (!email || !isValidEmail(email)) {
+      showErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    try {
+      showLoadingMessage('Sending password reset email...');
+
+      const response = await fetch(`${CONFIG.API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        closeModal('loginModal');
+        showSuccessMessage('If this email exists, we\'ve sent a password reset link. Please check your inbox.');
+      } else {
+        showErrorMessage(data.message || 'Failed to send reset email. Please try again.');
+      }
+
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      showErrorMessage('Network error. Please try again.');
+    } finally {
+      hideLoadingMessage();
+    }
   }
 
   // ===== EMAIL VERIFICATION FUNCTIONS =====
@@ -1718,7 +1760,7 @@
       if (response.ok) {
         const user = await response.json();
         console.log('User already authenticated, redirecting to dashboard');
-        window.location.href = '/dashboard.html';
+        window.location.href = '/pages/dashboard.html';
       }
     } catch (error) {
       console.log('User not authenticated, showing landing page');
