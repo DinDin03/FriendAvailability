@@ -116,7 +116,7 @@ public class EmailService {
         try {
             System.out.println("Preparing password reset email for: " + user.getEmail());
 
-            String resetUrl = baseUrl + "/reset-password?token=" + token;
+            String resetUrl = baseUrl + "/pages/auth/reset-password.html?token=" + token;
 
             String htmlContent = loadTemplate("password-reset-email.html");
             htmlContent = processTemplate(htmlContent, user, resetUrl, baseUrl);
