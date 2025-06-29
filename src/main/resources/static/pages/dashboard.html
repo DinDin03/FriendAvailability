@@ -668,6 +668,7 @@
         currentDate: new Date(),
         events: [],
         friends: [],
+        pendingRequests: [],
         circles: []
     };
 
@@ -734,6 +735,20 @@
         } catch (error) {
             console.error('❌ Failed to load friends:', error);
             dashboardState.friends = [];
+            return [];
+        }
+    }
+
+    async function loadPendingRequests(userId) {
+        try {
+            console.log(`🔍 Loading pending requests for user ${userId}...`);
+            const requests = await apiCall(`/api/friends/${userId}/pending`);
+            dashboardState.pendingRequests = requests;
+            console.log('✅ Pending requests loaded:', dashboardState.pendingRequests);
+            return dashboardState.pendingRequests;
+        } catch (error) {
+            console.error('❌ Failed to load pending requests:', error);
+            dashboardState.pendingRequests = [];
             return [];
         }
     }
@@ -921,16 +936,136 @@
     class FriendsManager {
         constructor() {
             this.friends = dashboardState.friends;
+            this.pendingRequests = dashboardState.pendingRequests;
         }
 
         renderFriends() {
             const friendsList = document.getElementById('friendsList');
+
+            // Clear existing content
             friendsList.innerHTML = '';
 
-            this.friends.forEach(friend => {
-                const friendElement = this.createFriendElement(friend);
-                friendsList.appendChild(friendElement);
+            // Show pending requests first (if any)
+            if (this.pendingRequests && this.pendingRequests.length > 0) {
+                const requestsSection = this.createRequestsSection();
+                friendsList.appendChild(requestsSection);
+            }
+
+            // Show friends list
+            if (this.friends.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+            <i class="fas fa-user-friends"></i>
+            <p>No friends yet. Send some friend requests to get started!</p>
+          `;
+                friendsList.appendChild(emptyState);
+            } else {
+                this.friends.forEach(friend => {
+                    const friendElement = this.createFriendElement(friend);
+                    friendsList.appendChild(friendElement);
+                });
+            }
+        }
+
+        createRequestsSection() {
+            const requestsSection = document.createElement('div');
+            requestsSection.className = 'pending-requests-section';
+            requestsSection.style.cssText = `
+          margin-bottom: var(--spacing-lg);
+          padding: var(--spacing-md);
+          background-color: var(--light-blue);
+          border-radius: var(--radius-md);
+          border-left: 4px solid var(--primary-blue);
+        `;
+
+            const title = document.createElement('h4');
+            title.textContent = `Friend Requests (${this.pendingRequests.length})`;
+            title.style.cssText = `
+          color: var(--primary-blue);
+          margin-bottom: var(--spacing-md);
+          font-size: var(--font-size-lg);
+        `;
+            requestsSection.appendChild(title);
+
+            this.pendingRequests.forEach(request => {
+                const requestElement = this.createRequestElement(request);
+                requestsSection.appendChild(requestElement);
             });
+
+            return requestsSection;
+        }
+
+        createRequestElement(request) {
+            const requestDiv = document.createElement('div');
+            requestDiv.className = 'request-item';
+            requestDiv.style.cssText = `
+          background: var(--white);
+          padding: var(--spacing-md);
+          border-radius: var(--radius-md);
+          margin-bottom: var(--spacing-sm);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          box-shadow: var(--shadow-sm);
+        `;
+
+            // Get sender info (you might want to fetch this from your user API)
+            const senderInfo = document.createElement('div');
+            senderInfo.innerHTML = `
+          <div style="font-weight: 600; color: var(--gray-900);">Friend Request</div>
+          <div style="font-size: var(--font-size-sm); color: var(--gray-500);">From User ID: ${request.userId}</div>
+          <div style="font-size: var(--font-size-xs); color: var(--gray-500);">
+            ${new Date(request.createdAt).toLocaleDateString()}
+          </div>
+        `;
+
+            const actions = document.createElement('div');
+            actions.style.cssText = `
+          display: flex;
+          gap: var(--spacing-sm);
+        `;
+
+            const acceptBtn = document.createElement('button');
+            acceptBtn.className = 'btn btn-primary btn-small';
+            acceptBtn.innerHTML = '<i class="fas fa-check"></i> Accept';
+            acceptBtn.addEventListener('click', () => this.respondToRequest(request.id, 'accept'));
+
+            const rejectBtn = document.createElement('button');
+            rejectBtn.className = 'btn btn-outline btn-small';
+            rejectBtn.innerHTML = '<i class="fas fa-times"></i> Reject';
+            rejectBtn.addEventListener('click', () => this.respondToRequest(request.id, 'reject'));
+
+            actions.appendChild(acceptBtn);
+            actions.appendChild(rejectBtn);
+
+            requestDiv.appendChild(senderInfo);
+            requestDiv.appendChild(actions);
+
+            return requestDiv;
+        }
+
+        async respondToRequest(requestId, action) {
+            try {
+                console.log(`${action}ing friend request ${requestId}...`);
+
+                const endpoint = `/api/friends/${requestId}/${action}?userId=${dashboardState.currentUser.id}`;
+                await apiCall(endpoint, { method: 'PUT' });
+
+                console.log(`✅ Friend request ${action}ed successfully!`);
+
+                // Show success message
+                const dashboard = window.dashboardInstance;
+                dashboard.showMessage(`Friend request ${action}ed successfully!`, 'success');
+
+                // Reload data to refresh the display
+                await dashboard.loadAllData();
+
+            } catch (error) {
+                console.error(`❌ Failed to ${action} friend request:`, error);
+                const dashboard = window.dashboardInstance;
+                dashboard.showMessage(`Failed to ${action} friend request: ${error.message}`, 'error');
+            }
         }
 
         createFriendElement(friend) {
@@ -947,7 +1082,7 @@
 
             friendItem.addEventListener('click', () => {
                 console.log('Clicked friend:', friend.name);
-                // This would trigger backend call to get friend's availability
+                // This would show friend's availability or profile
             });
 
             return friendItem;
@@ -1064,6 +1199,9 @@
 
         async init() {
             console.log('🚀 Initializing LinkUp Dashboard...');
+
+            // Store dashboard instance globally for friend request handling
+            window.dashboardInstance = this;
 
             try {
                 // Show loading state
@@ -1218,9 +1356,14 @@
                     // Load other data in parallel
                     await Promise.all([
                         loadFriends(dashboardState.currentUser.id),
+                        loadPendingRequests(dashboardState.currentUser.id),
                         loadEvents(),
                         loadCircles()
                     ]);
+
+                    // Update friends manager with new data
+                    this.friends.friends = dashboardState.friends;
+                    this.friends.pendingRequests = dashboardState.pendingRequests;
 
                     // Re-render all components with fresh data
                     this.friends.renderFriends();
