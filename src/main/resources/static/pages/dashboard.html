@@ -546,15 +546,88 @@
     // Load friends
     async function loadFriends() {
         try {
-            const friends = await apiCall(`/api/friends/${state.currentUser.id}`);
+            console.log(`=== LOADING FRIENDS for User ID: ${state.currentUser.id} ===`);
+
+            // First, let's check what the API returns
+            const response = await fetch(`/api/friends/${state.currentUser.id}`, {
+                credentials: 'include'
+            });
+
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+
+            const responseText = await response.text();
+            console.log('Raw response text:', responseText);
+
+            // Try to parse as JSON
+            let friends;
+            try {
+                friends = JSON.parse(responseText);
+            } catch (e) {
+                console.error('Failed to parse response as JSON:', e);
+                friends = [];
+            }
+
+            console.log('Parsed friends array:', friends);
+            console.log('Number of friends:', friends.length);
+
+            // Log each friend's details
+            friends.forEach((friend, index) => {
+                console.log(`Friend ${index}:`, {
+                    id: friend.id,
+                    name: friend.name,
+                    email: friend.email,
+                    profilePictureUrl: friend.profilePictureUrl
+                });
+            });
+
             state.friends = friends;
             renderFriends();
+
         } catch (error) {
             console.error('Failed to load friends:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
             state.friends = [];
             renderFriends();
         }
     }
+
+    // Also add this test function to manually check the API
+    async function testFriendsAPI() {
+        console.log('=== MANUAL API TEST ===');
+
+        try {
+            // Test 1: Check current user
+            const currentUser = await fetch('/api/auth/current-user', {
+                credentials: 'include'
+            });
+            const userData = await currentUser.json();
+            console.log('Current user:', userData);
+
+            // Test 2: Check friends endpoint
+            const friendsResponse = await fetch(`/api/friends/${userData.id}`, {
+                credentials: 'include'
+            });
+            const friendsData = await friendsResponse.text();
+            console.log('Friends API response:', friendsData);
+
+            // Test 3: Check specific user 7
+            const user7Response = await fetch('/api/users/7', {
+                credentials: 'include'
+            });
+            const user7Data = await user7Response.json();
+            console.log('User 7 data:', user7Data);
+
+        } catch (error) {
+            console.error('Test failed:', error);
+        }
+    }
+
+    // Run the test when page loads
+    window.testFriendsAPI = testFriendsAPI;
 
     // Load pending requests
     async function loadPendingRequests() {
