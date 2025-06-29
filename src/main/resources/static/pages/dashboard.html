@@ -957,14 +957,28 @@
                 emptyState.className = 'empty-state';
                 emptyState.innerHTML = `
             <i class="fas fa-user-friends"></i>
-            <p>No friends yet. Send some friend requests to get started!</p>
-          `;
+            <p>No friends yet. Add friends to start scheduling meetups!</p>
+        `;
                 friendsList.appendChild(emptyState);
             } else {
+                // ADD THIS ELSE BLOCK - This is the missing piece!
+                // Create a container for friends
+                const friendsContainer = document.createElement('div');
+                friendsContainer.className = 'friends-container';
+
+                // Add a header
+                const friendsHeader = document.createElement('h4');
+                friendsHeader.style.cssText = 'margin: 0 0 12px 0; color: var(--gray-700); font-size: 14px;';
+                friendsHeader.textContent = `Friends (${this.friends.length})`;
+                friendsContainer.appendChild(friendsHeader);
+
+                // Create friend elements
                 this.friends.forEach(friend => {
                     const friendElement = this.createFriendElement(friend);
-                    friendsList.appendChild(friendElement);
+                    friendsContainer.appendChild(friendElement);
                 });
+
+                friendsList.appendChild(friendsContainer);
             }
         }
 
