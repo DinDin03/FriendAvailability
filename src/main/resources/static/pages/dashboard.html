@@ -3,261 +3,1306 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Friend Availability</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <title>Dashboard - LinkUp</title>
+    <meta name="description" content="Your LinkUp dashboard - coordinate schedules with friends effortlessly">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* ===== CSS VARIABLES (Matching index.html exactly) ===== */
+        :root {
+            /* Atlassian-inspired color palette */
+            --primary-blue: #0052CC;
+            --secondary-blue: #0065FF;
+            --light-blue: #E6F3FF;
+            --dark-blue: #003884;
+
+            /* Supporting colors */
+            --white: #FFFFFF;
+            --gray-50: #F8F9FA;
+            --gray-100: #F1F2F4;
+            --gray-300: #DFE1E6;
+            --gray-500: #8993A4;
+            --gray-700: #5E6C84;
+            --gray-900: #172B4D;
+
+            /* Success & error states */
+            --success: #00875A;
+            --error: #DE350B;
+            --warning: #FF8B00;
+
+            /* Typography */
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+
+            /* Spacing */
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --spacing-3xl: 4rem;
+
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        /* ===== RESET & BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-family);
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
+            font-size: var(--font-size-base);
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER & NAVIGATION ===== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--gray-300);
+            z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-xl);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: var(--font-size-xl);
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: var(--spacing-xl);
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 500;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary-blue);
+            background-color: var(--light-blue);
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 2px solid var(--gray-300);
+        }
+
+        /* ===== BUTTON STYLES ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark-blue);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-outline {
+            background-color: var(--white);
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-50);
+            border-color: var(--gray-500);
+        }
+
+        .btn-small {
+            padding: var(--spacing-xs) var(--spacing-sm);
+            font-size: var(--font-size-xs);
+        }
+
+        /* ===== DASHBOARD LAYOUT ===== */
+        .dashboard-container {
+            padding-top: 80px; /* Account for fixed header */
+            padding: 80px var(--spacing-xl) var(--spacing-xl);
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 1fr auto;
+            gap: var(--spacing-xl);
+            height: calc(100vh - 120px);
+            grid-template-areas:
+        "circles calendar friends"
+        "circles events friends";
+        }
+
+        /* ===== SECTION STYLES ===== */
+        .section {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            padding: var(--spacing-xl);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section-header {
+            margin-bottom: var(--spacing-lg);
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .section-subtitle {
+            color: var(--gray-500);
+            font-size: var(--font-size-sm);
+        }
+
+        /* ===== SPECIFIC SECTIONS ===== */
+        .circles-section {
+            grid-area: circles;
+        }
+
+        .calendar-section {
+            grid-area: calendar;
+        }
+
+        .events-section {
+            grid-area: events;
+            max-height: 300px;
+        }
+
+        .friends-section {
+            grid-area: friends;
+        }
+
+        /* ===== CALENDAR STYLES ===== */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            background-color: var(--gray-300);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .calendar-day {
+            background-color: var(--white);
+            padding: var(--spacing-sm);
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .calendar-day.today {
+            background-color: var(--light-blue);
+            font-weight: 600;
+        }
+
+        .calendar-day.other-month {
+            color: var(--gray-500);
+            background-color: var(--gray-50);
+        }
+
+        .day-number {
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+        }
+
+        .day-events {
+            margin-top: var(--spacing-xs);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .event-dot {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background-color: var(--primary-blue);
+        }
+
+        /* ===== EVENTS LIST STYLES ===== */
+        .events-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            background-color: var(--gray-50);
+            transition: all 0.2s ease;
+        }
+
+        .event-item:hover {
+            background-color: var(--light-blue);
+            transform: translateX(4px);
+        }
+
+        .event-time {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+            color: var(--primary-blue);
+            min-width: 60px;
+        }
+
+        .event-title {
+            font-weight: 500;
+            color: var(--gray-900);
+        }
+
+        /* ===== FRIENDS LIST STYLES ===== */
+        .friends-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            transition: all 0.2s ease;
+        }
+
+        .friend-item:hover {
+            background-color: var(--gray-50);
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--gray-300);
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: 500;
+            color: var(--gray-900);
+            margin-bottom: 2px;
+        }
+
+        .friend-status {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--success);
+        }
+
+        .status-indicator.busy {
+            background-color: var(--error);
+        }
+
+        .status-indicator.away {
+            background-color: var(--warning);
+        }
+
+        /* ===== CIRCLES LIST STYLES ===== */
+        .circles-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .circle-item {
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            background-color: var(--gray-50);
+            transition: all 0.2s ease;
+        }
+
+        .circle-item:hover {
+            background-color: var(--light-blue);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .circle-name {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .circle-members {
+            font-size: var(--font-size-xs);
+            color: var(--gray-500);
+        }
+
+        /* ===== LOADING & EMPTY STATES ===== */
+        .loading,
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl);
+            color: var(--gray-500);
+            font-style: italic;
+        }
+
+        .loading::before {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--gray-300);
+            border-top: 2px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: var(--spacing-sm);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas:
+          "calendar friends"
+          "events circles";
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                padding: var(--spacing-sm) var(--spacing-md);
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .dashboard-container {
+                padding: 80px var(--spacing-md) var(--spacing-md);
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+          "calendar"
+          "events"
+          "friends"
+          "circles";
+                gap: var(--spacing-md);
+            }
+
+            .section {
+                padding: var(--spacing-md);
+            }
+
+            .calendar-day {
+                min-height: 60px;
+            }
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section {
+            animation: fadeIn 0.6s ease;
+        }
+    </style>
 </head>
-<body class="dashboard">
-    <!-- Modern Dashboard Header -->
-    <header class="dashboard-header">
-        <nav class="dashboard-nav">
-            <div class="nav-brand">
-                <h2>📅 Friend Availability</h2>
-            </div>
-            <div class="nav-center">
-                <button onclick="showSection('calendar')" class="nav-btn active">Calendar</button>
-                <button onclick="showSection('friends')" class="nav-btn">Friends</button>
-                <button onclick="showSection('settings')" class="nav-btn">Settings</button>
-            </div>
-            <div class="nav-user">
-                <div class="user-info">
-                    <span id="userName">Loading...</span>
-                    <img id="userAvatar" src="" alt="Profile" class="user-avatar">
-                </div>
-                <button onclick="logout()" class="btn btn-outline btn-small">Logout</button>
-            </div>
-        </nav>
-    </header>
+<body>
+<!-- Header Navigation -->
+<header class="header">
+    <nav class="nav">
+        <a href="/" class="nav-brand">
+            <i class="fas fa-calendar-alt"></i>
+            LinkUp
+        </a>
 
-    <!-- Dashboard Hero Section -->
-    <section class="section" style="margin-top: 32px; margin-bottom: 0; background: #fff8ed; box-shadow: none; text-align: center;">
-        <h1 style="font-size:2.2rem; color:#b89b6a; font-weight:800; margin-bottom: 0.5rem;">Welcome to Your Dashboard</h1>
-        <p style="color:#7c6a4d; font-size:1.15rem; max-width: 600px; margin: 0 auto;">Effortlessly coordinate schedules, manage your availability, and connect with friends. All your planning, in one beautiful place.</p>
-    </section>
-
-    <main class="dashboard-container">
-        <!-- Calendar Section -->
-        <section id="calendar" class="section active" aria-labelledby="calendar-header">
-            <div class="section-header">
-                <h2 id="calendar-header">My Calendar</h2>
-                <p>Manage your availability and see when you're free</p>
-            </div>
-            <div class="stats-row">
-                <div class="stat-card">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="totalEvents">-</div>
-                        <div class="stat-label">Total Events</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🟢</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="freeSlots">-</div>
-                        <div class="stat-label">Free Time Slots</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🔴</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="busySlots">-</div>
-                        <div class="stat-label">Busy Times</div>
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-content">
-                        <div class="stat-number" id="friendCount">-</div>
-                        <div class="stat-label">Friends</div>
-                    </div>
-                </div>
-            </div>
-            <div class="calendar-controls">
-                <div class="date-controls">
-                    <button id="prevWeek" class="btn btn-outline">← Previous</button>
-                    <div class="date-range">
-                        <input type="date" id="startDate" />
-                        <span>to</span>
-                        <input type="date" id="endDate" />
-                    </div>
-                    <button id="nextWeek" class="btn btn-outline">Next →</button>
-                </div>
-                <div class="view-controls">
-                    <button onclick="setToday()" class="btn btn-secondary">Today</button>
-                    <button onclick="setThisWeek()" class="btn btn-secondary">This Week</button>
-                    <button onclick="showCreateEventModal()" class="btn btn-primary">+ Add Event</button>
-                </div>
-            </div>
-            <div class="calendar-view">
-                <div id="calendarGrid" class="calendar-grid">
-                    <!-- Calendar will be generated here -->
-                </div>
-                <div class="schedule-list">
-                    <h3>Your Schedule</h3>
-                    <div id="scheduleList" class="schedule-items">
-                        <div class="loading">Loading your schedule...</div>
-                    </div>
-                </div>
-            </div>
-            <div class="whats-next">
-                <h3>What's Next?</h3>
-                <div id="upcomingEvents" class="upcoming-events">
-                    <div class="loading">Loading upcoming events...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Friends Section -->
-        <section id="friends" class="section" aria-labelledby="friends-header">
-            <div class="section-header">
-                <h2 id="friends-header">Friends</h2>
-                <p>Manage your connections and see their availability</p>
-            </div>
-            <div class="requests-section">
-                <h3>Friend Requests</h3>
-                <div id="pendingRequests" class="request-list"></div>
-            </div>
-            <div class="add-friends-section">
-                <h3>Add Friends</h3>
-                <div class="form-container">
-                    <form id="sendRequestForm">
-                        <div class="form-row">
-                            <input type="email" id="friendEmail" placeholder="Friend's email address" required>
-                            <button type="submit" class="btn btn-primary">Send Request</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="friends-section">
-                <h3>Your Friends</h3>
-                <div id="friendsList" class="friends-grid"></div>
-            </div>
-            <div class="friend-availability">
-                <h3>Friend Availability</h3>
-                <div class="friend-selector">
-                    <select id="friendSelect">
-                        <option value="">Select a friend to see their availability</option>
-                    </select>
-                    <button onclick="loadFriendAvailability()" class="btn btn-secondary">View Schedule</button>
-                </div>
-                <div id="friendSchedule" class="friend-schedule-view"></div>
-            </div>
-        </section>
-
-        <!-- Settings Section -->
-        <section id="settings" class="section" aria-labelledby="settings-header">
-            <div class="section-header">
-                <h2 id="settings-header">Settings</h2>
-                <p>Manage your account and preferences</p>
-            </div>
-            <div class="settings-group">
-                <h3>Profile Information</h3>
-                <div class="form-container">
-                    <form id="profileForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="profileName">Display Name</label>
-                                <input type="text" id="profileName" placeholder="Your name">
-                            </div>
-                            <div class="form-group">
-                                <label for="profileEmail">Email</label>
-                                <input type="email" id="profileEmail" placeholder="your@email.com" readonly>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update Profile</button>
-                    </form>
-                </div>
-            </div>
-            <div class="settings-group">
-                <h3>Privacy & Sharing</h3>
-                <div class="form-container">
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <input type="checkbox" id="shareAvailability" checked>
-                            <span>Allow friends to see my availability</span>
-                        </label>
-                        <p class="setting-description">Friends can see when you're free or busy</p>
-                    </div>
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <input type="checkbox" id="showEventDetails" checked>
-                            <span>Show event details to friends</span>
-                        </label>
-                        <p class="setting-description">Friends can see event titles and locations</p>
-                    </div>
-                    <div class="setting-item">
-                        <label class="setting-label">
-                            <input type="checkbox" id="allowNotifications" checked>
-                            <span>Email notifications</span>
-                        </label>
-                        <p class="setting-description">Get notified about friend requests and events</p>
-                    </div>
-                </div>
-            </div>
-            <div class="settings-group danger-zone">
-                <h3>Account</h3>
-                <div class="form-container">
-                    <button onclick="exportData()" class="btn btn-secondary">Export My Data</button>
-                    <button onclick="deleteAccount()" class="btn btn-danger">Delete Account</button>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Create Event Modal -->
-    <div id="createEventModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="createEventModalTitle">
-        <div class="modal-content modal-large">
-            <div class="modal-header">
-                <h3 id="createEventModalTitle">Create New Event</h3>
-                <button class="modal-close" onclick="closeModal('createEventModal')" aria-label="Close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="createEventForm" class="event-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventTitle">Event Title</label>
-                            <input type="text" id="eventTitle" placeholder="Team meeting, Coffee with Sarah..." required>
-                        </div>
-                        <div class="form-group">
-                            <label for="eventType">Type</label>
-                            <select id="eventType">
-                                <option value="busy">🔴 Busy (not available)</option>
-                                <option value="free">🟢 Free (available)</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventStart">Start</label>
-                            <input type="datetime-local" id="eventStart" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="eventEnd">End</label>
-                            <input type="datetime-local" id="eventEnd" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="eventLocation">Location</label>
-                            <input type="text" id="eventLocation" placeholder="Optional">
-                        </div>
-                        <div class="form-group">
-                            <label for="eventDescription">Description</label>
-                            <input type="text" id="eventDescription" placeholder="Optional">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Event</button>
-                </form>
-            </div>
+        <div class="nav-links">
+            <a href="/dashboard" class="nav-link active">Dashboard</a>
+            <a href="/friends" class="nav-link">Friends</a>
+            <a href="/availability" class="nav-link">Calendar</a>
+            <a href="/schedule" class="nav-link">Schedule</a>
+            <a href="/profile" class="nav-link">Profile</a>
         </div>
+
+        <div class="nav-user">
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+                <img id="userAvatar" src="https://via.placeholder.com/32x32/0052CC/FFFFFF?text=U" alt="Profile" class="user-avatar">
+            </div>
+            <button onclick="logout()" class="btn btn-outline btn-small">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </nav>
+</header>
+
+<!-- Dashboard Container -->
+<div class="dashboard-container">
+    <div class="dashboard-grid">
+
+        <!-- Circles Section (Left) -->
+        <section class="section circles-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    My Circles
+                </h2>
+                <p class="section-subtitle">Friend groups for easier planning</p>
+            </div>
+
+            <div class="circles-list">
+                <div class="empty-state">
+                    <i class="fas fa-plus-circle"></i>
+                    Create your first circle to get started!
+                </div>
+            </div>
+
+            <button class="btn btn-primary">
+                <i class="fas fa-plus"></i>
+                Create Circle
+            </button>
+        </section>
+
+        <!-- Personal Calendar (Top Middle) -->
+        <section class="section calendar-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-calendar"></i>
+                    My Calendar
+                </h2>
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="btn btn-outline btn-small">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="currentMonth">June 2025</span>
+                        <button class="btn btn-outline btn-small">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <button class="btn btn-primary btn-small">
+                        <i class="fas fa-plus"></i>
+                        Add Event
+                    </button>
+                </div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar days will be generated by JavaScript -->
+                <div class="loading">Loading calendar...</div>
+            </div>
+        </section>
+
+        <!-- Friends Section (Right) -->
+        <section class="section friends-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-user-friends"></i>
+                    Friends
+                </h2>
+                <p class="section-subtitle">See who's available</p>
+            </div>
+
+            <div class="friends-list" id="friendsList">
+                <div class="loading">Loading friends...</div>
+            </div>
+
+            <button class="btn btn-primary">
+                <i class="fas fa-user-plus"></i>
+                Add Friend
+            </button>
+        </section>
+
+        <!-- Upcoming Events (Bottom Middle) -->
+        <section class="section events-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    Upcoming Events
+                </h2>
+                <p class="section-subtitle">What's happening next</p>
+            </div>
+
+            <div class="events-list" id="eventsList">
+                <div class="loading">Loading events...</div>
+            </div>
+        </section>
+
     </div>
+</div>
 
-    <!-- Modern Footer -->
-    <footer class="main-footer">
-        <div class="container">
-            <p>&copy; 2025 Friend Availability. All rights reserved.</p>
-        </div>
-    </footer>
+<script>
+    // ===== DASHBOARD STATE MANAGEMENT =====
+    // Real data loaded from your backend APIs
+    const dashboardState = {
+        currentUser: null,
+        currentDate: new Date(),
+        events: [],
+        friends: [],
+        circles: []
+    };
 
-    <script src="dashboard.js"></script>
+    // ===== API UTILITY FUNCTIONS =====
+    async function apiCall(endpoint, options = {}) {
+        try {
+            const defaultOptions = {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            };
+
+            const response = await fetch(endpoint, { ...defaultOptions, ...options });
+
+            if (!response.ok) {
+                throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+            }
+
+            // Handle different response types
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return await response.json();
+            } else {
+                return await response.text();
+            }
+        } catch (error) {
+            console.error(`API Error for ${endpoint}:`, error);
+            throw error;
+        }
+    }
+
+    // ===== DATA LOADING FUNCTIONS =====
+    async function loadCurrentUser() {
+        try {
+            console.log('🔍 Loading current user...');
+            const user = await apiCall('/api/auth/current-user');
+            dashboardState.currentUser = user;
+            console.log('✅ Current user loaded:', user);
+            return user;
+        } catch (error) {
+            console.error('❌ Failed to load current user:', error);
+            // If not authenticated, redirect to login
+            if (error.message.includes('401') || error.message.includes('403')) {
+                window.location.href = '/';
+            }
+            throw error;
+        }
+    }
+
+    async function loadFriends(userId) {
+        try {
+            console.log(`🔍 Loading friends for user ${userId}...`);
+            const friends = await apiCall(`/api/friends/${userId}`);
+            dashboardState.friends = friends.map(friend => ({
+                ...friend,
+                avatar: friend.profilePictureUrl || generateAvatar(friend.name, friend.id),
+                status: 'available', // TODO: Implement real status
+                lastSeen: 'recently'  // TODO: Implement real last seen
+            }));
+            console.log('✅ Friends loaded:', dashboardState.friends);
+            return dashboardState.friends;
+        } catch (error) {
+            console.error('❌ Failed to load friends:', error);
+            dashboardState.friends = [];
+            return [];
+        }
+    }
+
+    async function loadEvents() {
+        try {
+            console.log('🔍 Loading events...');
+            // TODO: Implement events API when available
+            // For now, using sample data until you implement event management
+            dashboardState.events = [
+                {
+                    id: 1,
+                    title: 'Team Meeting',
+                    date: '2025-06-30',
+                    time: '10:00',
+                    type: 'work'
+                },
+                {
+                    id: 2,
+                    title: 'Coffee with friends',
+                    date: '2025-07-01',
+                    time: '14:30',
+                    type: 'social'
+                }
+            ];
+            console.log('✅ Events loaded (sample data)');
+            return dashboardState.events;
+        } catch (error) {
+            console.error('❌ Failed to load events:', error);
+            dashboardState.events = [];
+            return [];
+        }
+    }
+
+    async function loadCircles() {
+        try {
+            console.log('🔍 Loading circles...');
+            // TODO: Implement circles API when available
+            // For now, using empty array until you implement circle management
+            dashboardState.circles = [];
+            console.log('✅ Circles loaded (empty - feature not implemented yet)');
+            return dashboardState.circles;
+        } catch (error) {
+            console.error('❌ Failed to load circles:', error);
+            dashboardState.circles = [];
+            return [];
+        }
+    }
+
+    // ===== UTILITY FUNCTIONS =====
+    function generateAvatar(name, id) {
+        // Generate avatar based on name initials and user ID
+        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
+        const colors = ['#0052CC', '#00875A', '#DE350B', '#FF8B00', '#6554C0'];
+        const color = colors[id % colors.length];
+        return `https://via.placeholder.com/40x40/${color.replace('#', '')}/FFFFFF?text=${initials}`;
+    }
+
+    // ===== CALENDAR FUNCTIONALITY =====
+    class CalendarManager {
+        constructor() {
+            this.currentDate = new Date();
+            this.selectedDate = null;
+            this.events = dashboardState.events;
+        }
+
+        // Generate calendar grid for current month
+        generateCalendar() {
+            const year = this.currentDate.getFullYear();
+            const month = this.currentDate.getMonth();
+
+            // Update month display
+            const monthNames = [
+                'January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+
+            // Get first day of month and days in month
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            // Clear existing calendar
+            const calendarGrid = document.getElementById('calendarGrid');
+            calendarGrid.innerHTML = '';
+
+            // Add day headers
+            const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header-day';
+                header.textContent = day;
+                header.style.cssText = `
+            background-color: var(--gray-100);
+            padding: var(--spacing-sm);
+            text-align: center;
+            font-weight: 600;
+            font-size: var(--font-size-xs);
+            color: var(--gray-700);
+          `;
+                calendarGrid.appendChild(header);
+            });
+
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                calendarGrid.appendChild(emptyDay);
+            }
+
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = this.createDayElement(year, month, day);
+                calendarGrid.appendChild(dayElement);
+            }
+        }
+
+        createDayElement(year, month, day) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+
+            const currentDate = new Date();
+            const dayDate = new Date(year, month, day);
+
+            // Check if this is today
+            if (dayDate.toDateString() === currentDate.toDateString()) {
+                dayElement.classList.add('today');
+            }
+
+            // Add day number
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayElement.appendChild(dayNumber);
+
+            // Add events for this day
+            const dayEvents = document.createElement('div');
+            dayEvents.className = 'day-events';
+
+            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const dayEventList = this.events.filter(event => event.date === dateString);
+
+            dayEventList.forEach(event => {
+                const eventDot = document.createElement('div');
+                eventDot.className = 'event-dot';
+                eventDot.title = `${event.time} - ${event.title}`;
+                dayEvents.appendChild(eventDot);
+            });
+
+            dayElement.appendChild(dayEvents);
+
+            // Add click handler
+            dayElement.addEventListener('click', () => {
+                this.selectDate(dayDate);
+            });
+
+            return dayElement;
+        }
+
+        selectDate(date) {
+            // Remove previous selection
+            document.querySelectorAll('.calendar-day.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+
+            // Add selection styling
+            event.currentTarget.classList.add('selected');
+
+            // Update selected date
+            this.selectedDate = date;
+
+            console.log('Selected date:', date.toDateString());
+            // This is where you would trigger backend call to get events for this date
+        }
+
+        navigateMonth(direction) {
+            this.currentDate.setMonth(this.currentDate.getMonth() + direction);
+            this.generateCalendar();
+        }
+    }
+
+    // ===== FRIENDS FUNCTIONALITY =====
+    class FriendsManager {
+        constructor() {
+            this.friends = dashboardState.friends;
+        }
+
+        renderFriends() {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = '';
+
+            this.friends.forEach(friend => {
+                const friendElement = this.createFriendElement(friend);
+                friendsList.appendChild(friendElement);
+            });
+        }
+
+        createFriendElement(friend) {
+            const friendItem = document.createElement('div');
+            friendItem.className = 'friend-item';
+            friendItem.innerHTML = `
+          <img src="${friend.avatar}" alt="${friend.name}" class="friend-avatar">
+          <div class="friend-info">
+            <div class="friend-name">${friend.name}</div>
+            <div class="friend-status">${friend.lastSeen}</div>
+          </div>
+          <div class="status-indicator ${friend.status}"></div>
+        `;
+
+            friendItem.addEventListener('click', () => {
+                console.log('Clicked friend:', friend.name);
+                // This would trigger backend call to get friend's availability
+            });
+
+            return friendItem;
+        }
+    }
+
+    // ===== EVENTS FUNCTIONALITY =====
+    class EventsManager {
+        constructor() {
+            this.events = dashboardState.events;
+        }
+
+        renderUpcomingEvents() {
+            const eventsList = document.getElementById('eventsList');
+            eventsList.innerHTML = '';
+
+            // Sort events by date and time
+            const upcomingEvents = this.events
+                .sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time))
+                .slice(0, 5); // Show only next 5 events
+
+            upcomingEvents.forEach(event => {
+                const eventElement = this.createEventElement(event);
+                eventsList.appendChild(eventElement);
+            });
+        }
+
+        createEventElement(event) {
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+
+            const eventDate = new Date(event.date);
+            const today = new Date();
+            const isToday = eventDate.toDateString() === today.toDateString();
+            const isTomorrow = eventDate.toDateString() === new Date(today.getTime() + 24*60*60*1000).toDateString();
+
+            let dateDisplay;
+            if (isToday) {
+                dateDisplay = 'Today';
+            } else if (isTomorrow) {
+                dateDisplay = 'Tomorrow';
+            } else {
+                dateDisplay = eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+
+            eventItem.innerHTML = `
+          <div class="event-time">${event.time}</div>
+          <div class="event-info">
+            <div class="event-title">${event.title}</div>
+            <div class="event-date" style="font-size: var(--font-size-xs); color: var(--gray-500);">${dateDisplay}</div>
+          </div>
+        `;
+
+            eventItem.addEventListener('click', () => {
+                console.log('Clicked event:', event.title);
+                // This would trigger backend call to get event details
+            });
+
+            return eventItem;
+        }
+    }
+
+    // ===== CIRCLES FUNCTIONALITY =====
+    class CirclesManager {
+        constructor() {
+            this.circles = dashboardState.circles;
+        }
+
+        renderCircles() {
+            const circlesList = document.querySelector('.circles-list');
+
+            if (this.circles.length === 0) {
+                circlesList.innerHTML = `
+            <div class="empty-state">
+              <i class="fas fa-plus-circle"></i>
+              Create your first circle to get started!
+            </div>
+          `;
+                return;
+            }
+
+            circlesList.innerHTML = '';
+            this.circles.forEach(circle => {
+                const circleElement = this.createCircleElement(circle);
+                circlesList.appendChild(circleElement);
+            });
+        }
+
+        createCircleElement(circle) {
+            const circleItem = document.createElement('div');
+            circleItem.className = 'circle-item';
+            circleItem.innerHTML = `
+          <div class="circle-name">${circle.name}</div>
+          <div class="circle-members">${circle.memberCount} members</div>
+        `;
+
+            circleItem.addEventListener('click', () => {
+                console.log('Clicked circle:', circle.name);
+                // This would trigger backend call to get circle details
+            });
+
+            return circleItem;
+        }
+    }
+
+    // ===== DASHBOARD INITIALIZATION =====
+    class Dashboard {
+        constructor() {
+            this.calendar = new CalendarManager();
+            this.friends = new FriendsManager();
+            this.events = new EventsManager();
+            this.circles = new CirclesManager();
+        }
+
+        async init() {
+            console.log('🚀 Initializing LinkUp Dashboard...');
+
+            try {
+                // Show loading state
+                this.showMessage('Loading your dashboard...', 'info');
+
+                // Load all data
+                await this.loadAllData();
+
+                // Initialize all components
+                this.calendar.generateCalendar();
+
+                // Set up event listeners
+                await this.setupEventListeners();
+
+                // Remove loading states
+                setTimeout(() => {
+                    document.querySelectorAll('.loading').forEach(el => {
+                        el.remove();
+                    });
+                }, 500);
+
+                console.log('✅ Dashboard initialized successfully!');
+                this.showMessage('Welcome back! Dashboard loaded successfully.', 'success');
+
+            } catch (error) {
+                console.error('❌ Dashboard initialization failed:', error);
+                this.showMessage('Failed to load dashboard. Please try logging in again.', 'error');
+
+                // If authentication failed, redirect after a delay
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+            }
+        }
+
+        loadUserInfo() {
+            const user = dashboardState.currentUser;
+            if (user) {
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userAvatar').src = user.profilePictureUrl || generateAvatar(user.name, user.id);
+            }
+        }
+
+        async setupEventListeners() {
+            // Calendar navigation
+            document.querySelector('.calendar-nav .btn:first-child').addEventListener('click', () => {
+                this.calendar.navigateMonth(-1);
+            });
+
+            document.querySelector('.calendar-nav .btn:last-child').addEventListener('click', () => {
+                this.calendar.navigateMonth(1);
+            });
+
+            // Add friend button
+            document.querySelector('.friends-section .btn').addEventListener('click', () => {
+                this.showAddFriendModal();
+            });
+
+            // Create circle button
+            document.querySelector('.circles-section .btn').addEventListener('click', () => {
+                this.showCreateCircleModal();
+            });
+
+            // Add event button
+            document.querySelector('.calendar-section .btn').addEventListener('click', () => {
+                this.showAddEventModal();
+            });
+        }
+
+        showAddFriendModal() {
+            const email = prompt('Enter your friend\'s email address:');
+            if (email && dashboardState.currentUser) {
+                this.sendFriendRequest(email);
+            }
+        }
+
+        async sendFriendRequest(email) {
+            try {
+                console.log('Sending friend request to:', email);
+
+                // First, find the user by email
+                const user = await apiCall(`/api/users/by-email?email=${encodeURIComponent(email)}`);
+
+                if (user && user.id) {
+                    // Send friend request
+                    await apiCall(`/api/friends/request?fromUserId=${dashboardState.currentUser.id}&toUserId=${user.id}`, {
+                        method: 'POST'
+                    });
+
+                    console.log('✅ Friend request sent successfully!');
+                    this.showMessage('Friend request sent successfully!', 'success');
+
+                    // Reload friends to update the display
+                    await this.loadAllData();
+                } else {
+                    this.showMessage('User not found with that email address.', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Failed to send friend request:', error);
+                this.showMessage(`Failed to send friend request: ${error.message}`, 'error');
+            }
+        }
+
+        showCreateCircleModal() {
+            this.showMessage('Circle feature coming soon! This will be implemented in a future update.', 'info');
+        }
+
+        showAddEventModal() {
+            this.showMessage('Event creation feature coming soon! This will be implemented in a future update.', 'info');
+        }
+
+        showMessage(message, type = 'info') {
+            // Create message element
+            const messageDiv = document.createElement('div');
+            messageDiv.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 12px 20px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          z-index: 10000;
+          animation: slideInRight 0.3s ease;
+          max-width: 400px;
+        `;
+
+            // Set background color based on type
+            const colors = {
+                success: '#00875A',
+                error: '#DE350B',
+                warning: '#FF8B00',
+                info: '#0052CC'
+            };
+            messageDiv.style.backgroundColor = colors[type] || colors.info;
+            messageDiv.textContent = message;
+
+            document.body.appendChild(messageDiv);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+
+        async loadAllData() {
+            try {
+                // Load current user first
+                await loadCurrentUser();
+
+                if (dashboardState.currentUser) {
+                    // Load other data in parallel
+                    await Promise.all([
+                        loadFriends(dashboardState.currentUser.id),
+                        loadEvents(),
+                        loadCircles()
+                    ]);
+
+                    // Re-render all components with fresh data
+                    this.friends.renderFriends();
+                    this.events.renderUpcomingEvents();
+                    this.circles.renderCircles();
+                    this.loadUserInfo();
+                }
+            } catch (error) {
+                console.error('❌ Failed to load dashboard data:', error);
+                this.showMessage('Failed to load dashboard data. Please refresh the page.', 'error');
+            }
+        }
+    }
+
+    // ===== UTILITY FUNCTIONS =====
+    async function logout() {
+        try {
+            console.log('🔍 Logging out...');
+            await apiCall('/api/auth/logout', { method: 'POST' });
+            console.log('✅ Logout successful');
+            window.location.href = '/';
+        } catch (error) {
+            console.error('❌ Logout failed:', error);
+            // Even if logout fails, redirect to home
+            window.location.href = '/';
+        }
+    }
+
+    // Add logout function to global scope
+    window.logout = logout;
+
+    // ===== START THE APPLICATION =====
+    document.addEventListener('DOMContentLoaded', () => {
+        const dashboard = new Dashboard();
+        dashboard.init();
+    });
+
+    // Add animation styles
+    const additionalStyles = document.createElement('style');
+    additionalStyles.textContent = `
+      .calendar-day.selected {
+        background-color: var(--primary-blue) !important;
+        color: var(--white);
+        transform: scale(0.95);
+      }
+
+      .calendar-header-day {
+        background-color: var(--gray-100);
+        padding: var(--spacing-sm);
+        text-align: center;
+        font-weight: 600;
+        font-size: var(--font-size-xs);
+        color: var(--gray-700);
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .friend-item:hover {
+        background-color: var(--gray-50);
+        cursor: pointer;
+      }
+
+      .event-item:hover {
+        background-color: var(--light-blue);
+        cursor: pointer;
+      }
+
+      .circle-item:hover {
+        background-color: var(--light-blue);
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(additionalStyles);
+</script>
 </body>
 </html>
