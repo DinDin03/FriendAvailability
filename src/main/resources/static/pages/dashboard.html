@@ -933,6 +933,9 @@
     }
 
     // ===== FRIENDS FUNCTIONALITY =====
+    // ===== COMPLETE FIX FOR FriendsManager CLASS =====
+    // Replace the entire FriendsManager class in dashboard.html with this:
+
     class FriendsManager {
         constructor() {
             this.friends = dashboardState.friends;
@@ -956,17 +959,16 @@
                 const emptyState = document.createElement('div');
                 emptyState.className = 'empty-state';
                 emptyState.innerHTML = `
-            <i class="fas fa-user-friends"></i>
-            <p>No friends yet. Add friends to start scheduling meetups!</p>
-        `;
+                <i class="fas fa-user-friends"></i>
+                <p>No friends yet. Add friends to start scheduling meetups!</p>
+            `;
                 friendsList.appendChild(emptyState);
             } else {
-                // ADD THIS ELSE BLOCK - This is the missing piece!
-                // Create a container for friends
+                // Create friends container
                 const friendsContainer = document.createElement('div');
                 friendsContainer.className = 'friends-container';
 
-                // Add a header
+                // Add header
                 const friendsHeader = document.createElement('h4');
                 friendsHeader.style.cssText = 'margin: 0 0 12px 0; color: var(--gray-700); font-size: 14px;';
                 friendsHeader.textContent = `Friends (${this.friends.length})`;
@@ -986,19 +988,19 @@
             const requestsSection = document.createElement('div');
             requestsSection.className = 'pending-requests-section';
             requestsSection.style.cssText = `
-          margin-bottom: var(--spacing-lg);
-          padding: var(--spacing-md);
-          background-color: var(--light-blue);
-          border-radius: var(--radius-md);
-          border-left: 4px solid var(--primary-blue);
+            margin-bottom: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background-color: var(--light-blue);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--primary-blue);
         `;
 
             const title = document.createElement('h4');
             title.textContent = `Friend Requests (${this.pendingRequests.length})`;
             title.style.cssText = `
-          color: var(--primary-blue);
-          margin-bottom: var(--spacing-md);
-          font-size: var(--font-size-lg);
+            color: var(--primary-blue);
+            margin-bottom: var(--spacing-md);
+            font-size: var(--font-size-lg);
         `;
             requestsSection.appendChild(title);
 
@@ -1014,41 +1016,50 @@
             const requestDiv = document.createElement('div');
             requestDiv.className = 'request-item';
             requestDiv.style.cssText = `
-          background: var(--white);
-          padding: var(--spacing-md);
-          border-radius: var(--radius-md);
-          margin-bottom: var(--spacing-sm);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          box-shadow: var(--shadow-sm);
+            background: var(--white);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
         `;
 
-            // Get sender info (you might want to fetch this from your user API)
+            // Create sender info div
             const senderInfo = document.createElement('div');
+
+            // We need to fetch the sender's information
+            // For now, we'll display what we have and enhance it later
+            const senderName = request.senderName || `User #${request.userId}`;
+            const senderEmail = request.senderEmail || '';
+
             senderInfo.innerHTML = `
-          <div style="font-weight: 600; color: var(--gray-900);">Friend Request</div>
-          <div style="font-size: var(--font-size-sm); color: var(--gray-500);">From User ID: ${request.userId}</div>
-          <div style="font-size: var(--font-size-xs); color: var(--gray-500);">
-            ${new Date(request.createdAt).toLocaleDateString()}
-          </div>
+            <div style="font-weight: 600; color: var(--gray-900);">Friend Request</div>
+            <div style="font-size: var(--font-size-sm); color: var(--gray-700);">
+                From: ${senderName}
+            </div>
+            ${senderEmail ? `<div style="font-size: var(--font-size-xs); color: var(--gray-500);">${senderEmail}</div>` : ''}
+            <div style="font-size: var(--font-size-xs); color: var(--gray-500);">
+                ${new Date(request.createdAt).toLocaleDateString()}
+            </div>
         `;
 
             const actions = document.createElement('div');
             actions.style.cssText = `
-          display: flex;
-          gap: var(--spacing-sm);
+            display: flex;
+            gap: var(--spacing-sm);
         `;
 
             const acceptBtn = document.createElement('button');
             acceptBtn.className = 'btn btn-primary btn-small';
             acceptBtn.innerHTML = '<i class="fas fa-check"></i> Accept';
-            acceptBtn.addEventListener('click', () => this.respondToRequest(request.id, 'accept'));
+            acceptBtn.onclick = () => this.respondToRequest(request.id, 'accept');
 
             const rejectBtn = document.createElement('button');
             rejectBtn.className = 'btn btn-outline btn-small';
             rejectBtn.innerHTML = '<i class="fas fa-times"></i> Reject';
-            rejectBtn.addEventListener('click', () => this.respondToRequest(request.id, 'reject'));
+            rejectBtn.onclick = () => this.respondToRequest(request.id, 'reject');
 
             actions.appendChild(acceptBtn);
             actions.appendChild(rejectBtn);
@@ -1056,7 +1067,30 @@
             requestDiv.appendChild(senderInfo);
             requestDiv.appendChild(actions);
 
+            // Fetch sender details asynchronously
+            this.loadSenderDetails(request.userId, senderInfo);
+
             return requestDiv;
+        }
+
+        async loadSenderDetails(senderId, senderInfoDiv) {
+            try {
+                const sender = await apiCall(`/api/users/${senderId}`);
+                if (sender) {
+                    senderInfoDiv.innerHTML = `
+                    <div style="font-weight: 600; color: var(--gray-900);">Friend Request</div>
+                    <div style="font-size: var(--font-size-sm); color: var(--gray-700);">
+                        From: ${sender.name}
+                    </div>
+                    <div style="font-size: var(--font-size-xs); color: var(--gray-500);">${sender.email}</div>
+                    <div style="font-size: var(--font-size-xs); color: var(--gray-500);">
+                        ${new Date().toLocaleDateString()}
+                    </div>
+                `;
+                }
+            } catch (error) {
+                console.error('Failed to load sender details:', error);
+            }
         }
 
         async respondToRequest(requestId, action) {
@@ -1072,7 +1106,7 @@
                 const dashboard = window.dashboardInstance;
                 dashboard.showMessage(`Friend request ${action}ed successfully!`, 'success');
 
-                // Reload data to refresh the display
+                // Reload all data to refresh the display
                 await dashboard.loadAllData();
 
             } catch (error) {
@@ -1086,23 +1120,22 @@
             const friendItem = document.createElement('div');
             friendItem.className = 'friend-item';
             friendItem.innerHTML = `
-          <img src="${friend.avatar}" alt="${friend.name}" class="friend-avatar">
-          <div class="friend-info">
-            <div class="friend-name">${friend.name}</div>
-            <div class="friend-status">${friend.lastSeen}</div>
-          </div>
-          <div class="status-indicator ${friend.status}"></div>
+            <img src="${friend.avatar}" alt="${friend.name}" class="friend-avatar">
+            <div class="friend-info">
+                <div class="friend-name">${friend.name}</div>
+                <div class="friend-status">${friend.email}</div>
+            </div>
+            <div class="status-indicator ${friend.status}"></div>
         `;
 
             friendItem.addEventListener('click', () => {
                 console.log('Clicked friend:', friend.name);
-                // This would show friend's availability or profile
+                // Future: Show friend's availability or profile
             });
 
             return friendItem;
         }
     }
-
     // ===== EVENTS FUNCTIONALITY =====
     class EventsManager {
         constructor() {
