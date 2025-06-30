@@ -354,10 +354,29 @@ class AuthService {
 
         } catch (error) {
             errorLog('Login failed:', error);
+            let errorMessage = 'Login failed';
+            let errorCode = 'UNKNOWN_ERROR';
+            if (error.data) {
+                if (typeof error.data === 'string') {
+                    try {
+                        const parsed = JSON.parse(error.data);
+                        errorMessage = parsed.message || errorMessage;
+                        errorCode = parsed.errorCode || errorCode;
+                    } catch {
+                        errorMessage = error.data;
+                    }
+                } else if (typeof error.data === 'object') {
+                    errorMessage = error.data.message || errorMessage;
+                    errorCode = error.data.errorCode || errorCode;
+                }
+            } else if (error.status === 400) {
+                errorMessage = 'Invalid input. Please check your email and password.';
+                errorCode = 'VALIDATION_ERROR';
+            }
             return {
                 success: false,
-                error: error.data?.message || 'Login failed',
-                errorCode: error.data?.errorCode || 'UNKNOWN_ERROR'
+                error: errorMessage,
+                errorCode: errorCode
             };
         }
     }

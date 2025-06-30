@@ -257,6 +257,8 @@ class LandingPageController {
         }
 
         let loadingId = null; // Track loading notification ID
+        let submitButton = null;
+        let originalButtonText = '';
 
         try {
             // Validate form
@@ -276,12 +278,24 @@ class LandingPageController {
             this.isLoading = true;
             loadingId = Notifications.loading('Signing you in...');
 
+            // Also show spinner on the button
+            submitButton = event.target.querySelector('button[type="submit"]');
+            if (submitButton) {
+                originalButtonText = submitButton.innerHTML;
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+            }
+
             // Attempt login
             const result = await AuthService.login(formData);
 
             if (result.success) {
                 // Success path
                 Notifications.hide(loadingId);
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                }
                 Notifications.success('Login successful! Redirecting...');
                 Modals.close('loginModal');
 
@@ -319,10 +333,14 @@ class LandingPageController {
             }
 
         } finally {
-            // CRITICAL: Always cleanup loading state
+            // CRITICAL: Always cleanup loading state and button
             this.isLoading = false;
             if (loadingId) {
                 Notifications.hide(loadingId);
+            }
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalButtonText;
             }
         }
     }
@@ -334,6 +352,14 @@ class LandingPageController {
     handleLoginError(result) {
         // Clear loading state first
         this.isLoading = false;
+
+        // Always re-enable the button and hide spinner if present
+        const loginForm = document.getElementById('loginForm');
+        const submitButton = loginForm ? loginForm.querySelector('button[type="submit"]') : null;
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        }
 
         switch (result.errorCode) {
             case 'EMAIL_NOT_VERIFIED':
