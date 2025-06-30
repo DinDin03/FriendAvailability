@@ -1,0 +1,777 @@
+/* ===== AUTHENTICATION PAGES SPECIFIC STYLES ===== */
+/*
+  This file contains styles for all authentication-related interfaces.
+  Think of this as your "AuthController" styling - it handles login, signup,
+  password reset, email verification, and other auth flows.
+
+  Authentication components:
+  - Login and Signup modals
+  - Password reset pages
+  - Email verification pages
+  - Social login buttons
+  - Form validation states
+  - Auth success/error states
+  - Security information displays
+*/
+
+/* ===== AUTH MODAL SYSTEM ===== */
+/*
+  Modal-based authentication for landing page.
+  Like having secure authentication endpoints that handle different auth flows.
+*/
+
+.auth-modal .modal-content {
+    max-width: 450px;
+    padding: var(--spacing-2xl);
+}
+
+.auth-modal .modal-title {
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+    color: var(--gray-900);
+}
+
+.auth-modal .modal-description {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    color: var(--gray-700);
+    font-size: var(--font-size-base);
+}
+
+/* Auth form styling */
+.auth-form {
+    margin-bottom: var(--spacing-lg);
+}
+
+.auth-form .form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.auth-form .form-actions {
+    justify-content: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.auth-form .btn {
+    min-height: 48px;
+    font-weight: 500;
+}
+
+/* Social login section */
+.social-login {
+    margin: var(--spacing-xl) 0;
+}
+
+.social-login .btn-google {
+    width: 100%;
+    justify-content: center;
+    padding: var(--spacing-md) var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-300);
+}
+
+.social-login .btn-google:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+}
+
+/* Form links and switches */
+.auth-links {
+    text-align: center;
+    margin-top: var(--spacing-lg);
+}
+
+.auth-links a {
+    color: var(--primary-blue);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: var(--font-size-sm);
+}
+
+.auth-links a:hover {
+    text-decoration: underline;
+}
+
+.auth-switch {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--gray-100);
+    text-align: center;
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+}
+
+.auth-switch a {
+    color: var(--primary-blue);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* ===== AUTH PAGE LAYOUTS ===== */
+/*
+  Full-page authentication layouts (password reset, email verification).
+  Like having dedicated auth service pages with consistent branding.
+*/
+
+.auth-page {
+    background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(70px + var(--spacing-2xl)) var(--spacing-xl) var(--spacing-2xl);
+}
+
+.auth-card {
+    background: var(--white);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    padding: var(--spacing-3xl);
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+    animation: slideIn 0.6s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
+}
+
+/* ===== EMAIL VERIFICATION STYLING ===== */
+/*
+  Email verification and confirmation pages.
+  Like having email service confirmation workflows.
+*/
+
+.email-icon-wrapper {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto var(--spacing-2xl);
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 40px;
+    box-shadow: var(--shadow-lg);
+    animation: scaleIn 0.5s ease-out;
+}
+
+.email-icon-wrapper.warning {
+    background: var(--warning);
+}
+
+.email-icon-wrapper.error {
+    background: var(--error);
+}
+
+.email-subtitle {
+    font-size: var(--font-size-lg);
+    color: var(--success);
+    font-weight: 600;
+    margin-bottom: var(--spacing-xl);
+}
+
+.email-subtitle.warning {
+    color: var(--warning);
+}
+
+.email-subtitle.error {
+    color: var(--error);
+}
+
+.email-info {
+    font-size: var(--font-size-base);
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-2xl);
+    line-height: 1.6;
+}
+
+.email-info strong {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* Instructions box */
+.instructions-box {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin: var(--spacing-2xl) 0;
+    text-align: left;
+    border-left: 4px solid var(--primary-blue);
+}
+
+.instructions-box h3 {
+    color: var(--gray-900);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.instructions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.instructions-list li {
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-sm);
+    padding-left: var(--spacing-xl);
+    position: relative;
+    line-height: 1.5;
+}
+
+.instructions-list li::before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: bold;
+    font-size: var(--font-size-lg);
+}
+
+.instructions-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Timer display */
+.timer-box {
+    background: var(--light-blue);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+    color: var(--primary-blue);
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.timer-box.expired {
+    background: #f8d7da;
+    color: var(--error);
+}
+
+/* ===== PASSWORD RESET STYLING ===== */
+/*
+  Password reset workflow pages.
+  Like having secure password management service endpoints.
+*/
+
+.password-reset-form {
+    text-align: left;
+    margin: var(--spacing-xl) 0;
+}
+
+.password-reset-form .form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.password-reset-form .form-actions {
+    justify-content: center;
+    margin-top: var(--spacing-xl);
+}
+
+/* Password strength indicator */
+.password-strength {
+    margin-top: var(--spacing-sm);
+}
+
+.password-strength-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--gray-200);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: var(--spacing-xs);
+}
+
+.password-strength-fill {
+    height: 100%;
+    background: var(--error);
+    transition: all var(--transition-normal);
+    width: 0%;
+}
+
+.password-strength-fill.weak {
+    background: var(--error);
+    width: 25%;
+}
+
+.password-strength-fill.fair {
+    background: var(--warning);
+    width: 50%;
+}
+
+.password-strength-fill.good {
+    background: #28a745;
+    width: 75%;
+}
+
+.password-strength-fill.strong {
+    background: var(--success);
+    width: 100%;
+}
+
+.password-strength-text {
+    font-size: var(--font-size-xs);
+    color: var(--gray-600);
+    text-align: left;
+}
+
+/* Security information box */
+.security-info-box {
+    background: var(--light-blue);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+    border-left: 4px solid var(--primary-blue);
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.security-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: var(--font-size-lg);
+    flex-shrink: 0;
+}
+
+.security-content {
+    flex: 1;
+}
+
+.security-content h4 {
+    color: var(--gray-900);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+}
+
+.security-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.security-content li {
+    color: var(--gray-700);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--spacing-xs);
+    padding-left: var(--spacing-lg);
+    position: relative;
+    text-align: left;
+    line-height: 1.4;
+}
+
+.security-content li::before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    color: var(--primary-blue);
+    font-weight: bold;
+}
+
+.security-content li:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== SUCCESS/ERROR STATES ===== */
+/*
+  Authentication result pages (success, failure, expired).
+  Like having standardized API response formats.
+*/
+
+.auth-success {
+    color: var(--success);
+}
+
+.auth-success .auth-card {
+    border-left: 6px solid var(--success);
+}
+
+.auth-error {
+    color: var(--error);
+}
+
+.auth-error .auth-card {
+    border-left: 6px solid var(--error);
+}
+
+.auth-warning {
+    color: var(--warning);
+}
+
+.auth-warning .auth-card {
+    border-left: 6px solid var(--warning);
+}
+
+/* Next steps section */
+.next-steps-box {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin: var(--spacing-2xl) 0;
+    text-align: left;
+}
+
+.next-steps-box h3 {
+    color: var(--gray-900);
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+}
+
+.next-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.next-steps-list li {
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-xl);
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    line-height: 1.5;
+}
+
+.next-steps-list li::before {
+    content: "\2713";
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: bold;
+    font-size: var(--font-size-lg);
+}
+
+.next-steps-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== HELP AND SUPPORT SECTIONS ===== */
+/*
+  Help information and support contact details.
+  Like having comprehensive API documentation and support channels.
+*/
+
+.help-info {
+    margin-top: var(--spacing-xl);
+    padding: var(--spacing-lg);
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.help-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--primary-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+}
+
+.help-content {
+    flex: 1;
+}
+
+.help-content p {
+    margin: 0 0 var(--spacing-xs) 0;
+    font-size: var(--font-size-sm);
+    color: var(--gray-700);
+    line-height: 1.4;
+    text-align: left;
+}
+
+.help-content p:first-child {
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.help-link {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: var(--font-size-sm);
+}
+
+.help-link:hover {
+    text-decoration: underline;
+}
+
+/* Contact support box */
+.contact-info {
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin: var(--spacing-xl) 0;
+    color: var(--gray-700);
+    font-size: var(--font-size-sm);
+    text-align: center;
+    line-height: 1.5;
+}
+
+.contact-info strong {
+    color: var(--gray-900);
+    display: block;
+    margin-bottom: var(--spacing-sm);
+}
+
+.contact-info a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+/* ===== FORM VALIDATION ENHANCEMENTS ===== */
+/*
+  Enhanced form validation for auth forms.
+  Like having comprehensive input validation in your Spring Boot controllers.
+*/
+
+.auth-form .form-input.success {
+    border-color: var(--success);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%2300875A' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.auth-form .form-input.error {
+    border-color: var(--error);
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%23DE350B' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.form-validation-summary {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    font-size: var(--font-size-sm);
+}
+
+.form-validation-summary ul {
+    margin: 0;
+    padding-left: var(--spacing-lg);
+}
+
+.form-validation-summary li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* ===== LOADING STATES FOR AUTH ===== */
+/*
+  Loading indicators during authentication processes.
+  Like showing progress during async auth operations.
+*/
+
+.auth-loading {
+    position: relative;
+}
+
+.auth-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: inherit;
+    z-index: 10;
+}
+
+.auth-loading .btn {
+    position: relative;
+}
+
+.auth-loading .btn::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* ===== RESPONSIVE DESIGN FOR AUTH PAGES ===== */
+
+/* Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .auth-card {
+        max-width: 500px;
+        padding: var(--spacing-2xl);
+    }
+
+    .auth-modal .modal-content {
+        max-width: 400px;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+    .auth-main {
+        padding: calc(70px + var(--spacing-lg)) var(--spacing-md) var(--spacing-lg);
+    }
+
+    .auth-card {
+        padding: var(--spacing-xl);
+        margin: var(--spacing-md);
+    }
+
+    .auth-modal .modal-content {
+        margin: var(--spacing-md);
+        padding: var(--spacing-lg);
+        max-width: none;
+    }
+
+    .email-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        font-size: 32px;
+    }
+
+    .auth-card h1 {
+        font-size: var(--font-size-2xl);
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .security-info-box,
+    .help-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .security-icon,
+    .help-icon {
+        margin: 0 auto;
+    }
+
+    .instructions-box,
+    .next-steps-box {
+        padding: var(--spacing-md);
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .auth-card,
+    .instructions-box,
+    .security-info-box,
+    .help-info {
+        border: 2px solid var(--gray-900);
+    }
+
+    .email-icon-wrapper {
+        border: 3px solid var(--gray-900);
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .auth-card,
+    .email-icon-wrapper {
+        animation: none;
+    }
+
+    .auth-loading .btn::after {
+        animation: none;
+    }
+}
+
+/* Focus management for auth flows */
+.auth-form input:focus,
+.auth-form button:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+}
+
+/* ===== PRINT STYLES FOR AUTH PAGES ===== */
+@media print {
+    .auth-page {
+        background: var(--white);
+    }
+
+    .auth-card {
+        box-shadow: none;
+        border: 1px solid var(--gray-300);
+    }
+
+    .form-actions,
+    .help-info,
+    .contact-info {
+        display: none;
+    }
+
+    .instructions-box,
+    .next-steps-box,
+    .security-info-box {
+        break-inside: avoid;
+    }
+}

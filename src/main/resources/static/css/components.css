@@ -1,0 +1,774 @@
+/* ===== BUTTON COMPONENT SYSTEM ===== */
+/*
+  Button system with different variants and states.
+  Similar to having different method overloads in Java.
+*/
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    user-select: none;
+    line-height: 1.2;
+    min-height: 44px; /* Accessibility: minimum touch target */
+    border: 2px solid transparent; /* Consistent border for all variants */
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ===== BUTTON VARIANTS ===== */
+.btn-primary {
+    background: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #0044a3;
+    border-color: #0044a3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
+}
+
+.btn-secondary {
+    background: var(--white);
+    color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--light-blue);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--gray-700);
+    border-color: var(--gray-300);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: var(--gray-50);
+    border-color: var(--gray-500);
+    color: var(--gray-900);
+}
+
+.btn-google {
+    background: var(--white);
+    color: var(--gray-700);
+    border-color: var(--gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-google:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: var(--gray-400);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: var(--success);
+    color: var(--white);
+    border-color: var(--success);
+}
+
+.btn-success:hover:not(:disabled) {
+    background: #006644;
+    border-color: #006644;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 135, 90, 0.3);
+}
+
+.btn-danger {
+    background: var(--error);
+    color: var(--white);
+    border-color: var(--error);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #c0392b;
+    border-color: #c0392b;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(222, 53, 11, 0.3);
+}
+
+/* ===== BUTTON SIZES ===== */
+.btn-sm {
+    padding: var(--spacing-xs) var(--spacing-md);
+    font-size: var(--font-size-xs);
+    min-height: 32px;
+}
+
+.btn-lg {
+    padding: 14px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    min-height: 52px;
+}
+
+.btn-icon {
+    padding: var(--spacing-sm);
+    background: transparent;
+    color: var(--gray-500);
+    border: none;
+    min-width: 40px;
+    min-height: 40px;
+}
+
+.btn-icon:hover:not(:disabled) {
+    color: var(--gray-700);
+    background: var(--gray-100);
+}
+
+/* ===== BUTTON MODIFIERS ===== */
+.btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* ===== FORM COMPONENT SYSTEM ===== */
+/*
+  Form system with validation states and consistent styling.
+  Similar to having validation annotations in Spring Boot.
+*/
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--gray-800);
+    font-size: 14px;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: var(--error);
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    background: var(--white);
+    line-height: 1.4;
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.08);
+    background: #fafbfc;
+}
+
+.form-input::placeholder {
+    color: var(--gray-500);
+}
+
+.form-input.error,
+.form-select.error,
+.form-textarea.error {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px rgba(222, 53, 11, 0.08);
+}
+
+.form-input.success,
+.form-select.success,
+.form-textarea.success {
+    border-color: var(--success);
+    box-shadow: 0 0 0 3px rgba(0, 135, 90, 0.08);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-help {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+    line-height: 1.4;
+}
+
+.form-error {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--error);
+    line-height: 1.4;
+}
+
+.form-success {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--success);
+    line-height: 1.4;
+}
+
+.form-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: var(--spacing-xl);
+}
+
+.form-actions.horizontal {
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.form-actions.center {
+    justify-content: center;
+}
+
+.form-actions.end {
+    justify-content: flex-end;
+}
+
+.form-divider {
+    margin: 24px 0;
+    text-align: center;
+    position: relative;
+    color: var(--gray-500);
+    font-size: 14px;
+}
+
+.form-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--gray-300);
+}
+
+.form-divider span {
+    background: var(--white);
+    padding: 0 16px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.form-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+}
+
+.form-link a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.form-link a:hover {
+    text-decoration: underline;
+}
+
+/* Checkbox and Radio */
+.form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.form-check-input {
+    margin-top: 2px; /* Align with first line of text */
+}
+
+.form-check-label {
+    margin-bottom: 0;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+/* ===== CARD COMPONENT SYSTEM ===== */
+/*
+  Card system for organizing content into sections.
+  Like having different container types in your Java application.
+*/
+
+.card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    border: 1px solid var(--gray-100);
+    transition: box-shadow var(--transition-normal);
+}
+
+.card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+}
+
+.card-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+}
+
+.card-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+    margin: 0;
+    font-weight: 400;
+}
+
+.card-body {
+    padding: var(--spacing-lg);
+}
+
+.card-footer {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--gray-100);
+    background: var(--gray-50);
+}
+
+/* Card variants */
+.card-elevated {
+    box-shadow: var(--shadow-lg);
+}
+
+.card-flat {
+    box-shadow: none;
+    border: 1px solid var(--gray-300);
+}
+
+/* ===== MODERN MODAL COMPONENT SYSTEM ===== */
+/*
+  Modal system for overlays and dialogs.
+  Similar to having different service layers that handle specific responsibilities.
+*/
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2000;
+    backdrop-filter: blur(8px);
+    padding: var(--spacing-md);
+    overflow-y: auto;
+}
+
+/* Only affect buttons inside modals */
+.modal .btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Keep hero buttons inline */
+.hero-actions .btn {
+    width: auto;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content {
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow:
+            0 20px 25px -5px rgba(0, 0, 0, 0.1),
+            0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--gray-100);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.modal-close:hover {
+    background: var(--gray-200);
+    color: var(--gray-800);
+    transform: scale(1.05);
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 40px;
+    color: var(--gray-900);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.modal-description {
+    text-align: center;
+    margin-bottom: 32px;
+    color: var(--gray-600);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* ===== MESSAGE/NOTIFICATION COMPONENT ===== */
+/*
+  Notification system for user feedback.
+  Like having a consistent logging/messaging system in your backend.
+*/
+
+#messageContainer {
+    position: fixed;
+    top: 80px;
+    right: var(--spacing-lg);
+    z-index: 9999;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.message {
+    margin-bottom: var(--spacing-sm);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    animation: slideInRight 0.3s ease;
+    pointer-events: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.message-content {
+    padding: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.message-icon {
+    flex-shrink: 0;
+}
+
+.message-text {
+    flex: 1;
+    line-height: 1.4;
+}
+
+.message-close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    margin-left: auto;
+    padding: 4px;
+    border-radius: 4px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+}
+
+.message-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Message variants */
+.message-success {
+    background: var(--success);
+    color: var(--white);
+}
+
+.message-error {
+    background: var(--error);
+    color: var(--white);
+}
+
+.message-warning {
+    background: var(--warning);
+    color: var(--white);
+}
+
+.message-info {
+    background: var(--primary-blue);
+    color: var(--white);
+}
+
+/* ===== LOADING COMPONENT ===== */
+/*
+  Loading states for async operations.
+  Similar to showing progress in long-running backend operations.
+*/
+
+.loading {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--gray-500);
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(2px);
+}
+
+.loading-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.loading-content {
+    background: var(--white);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-xl);
+    max-width: 300px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--gray-300);
+    border-top: 4px solid var(--primary-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto var(--spacing-md);
+}
+
+.spinner-sm {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+}
+
+.spinner-lg {
+    width: 60px;
+    height: 60px;
+    border-width: 6px;
+}
+
+/* Inline spinner for buttons */
+.btn .spinner {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+    margin: 0;
+}
+
+/* ===== EMPTY STATE COMPONENT ===== */
+/*
+  Empty states for when there's no data to display.
+*/
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-2xl) var(--spacing-lg);
+    color: var(--gray-500);
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    margin-bottom: var(--spacing-lg);
+    opacity: 0.5;
+    color: var(--gray-400);
+}
+
+.empty-state-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-sm);
+    color: var(--gray-700);
+}
+
+.empty-state-description {
+    font-size: var(--font-size-base);
+    margin-bottom: var(--spacing-lg);
+    color: var(--gray-500);
+    line-height: 1.5;
+}
+
+.empty-state-action {
+    margin-top: var(--spacing-lg);
+}
+
+/* ===== BADGE COMPONENT ===== */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-primary { background: var(--light-blue); color: var(--primary-blue); }
+.badge-success { background: #d4edda; color: var(--success); }
+.badge-error { background: #f8d7da; color: var(--error); }
+.badge-warning { background: #fff3cd; color: var(--warning); }
+.badge-gray { background: var(--gray-100); color: var(--gray-700); }
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== RESPONSIVE BEHAVIOR ===== */
+
+@media (max-width: 768px) {
+    .modal {
+        padding: var(--spacing-sm);
+    }
+
+    .modal-content {
+        max-width: 100%;
+        padding: 24px;
+        border-radius: 12px;
+    }
+
+    .modal-title {
+        font-size: 22px;
+    }
+
+    .form-input {
+        padding: 14px 16px; /* Slightly larger for mobile */
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions.horizontal {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-icon {
+        width: auto;
+    }
+
+    #messageContainer {
+        right: var(--spacing-sm);
+        left: var(--spacing-sm);
+        max-width: none;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+}
