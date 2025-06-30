@@ -1,0 +1,792 @@
+/* ===== DASHBOARD PAGE SPECIFIC STYLES ===== */
+/*
+  This file contains styles that are ONLY used on the dashboard page.
+  Think of this as a "DashboardController" in Spring Boot - it handles
+  functionality specific to the authenticated user's main interface.
+
+  Dashboard-specific components:
+  - Dashboard layout and grid
+  - User profile section
+  - Friends management interface
+  - Calendar widget
+  - Activity feeds
+  - Quick actions
+  - Statistics cards
+*/
+
+/* ===== DASHBOARD LAYOUT ===== */
+/*
+  Main dashboard container and grid system.
+  Like having a structured service layer that organizes different data sources.
+*/
+
+.dashboard-page {
+    background: var(--gray-100);
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--spacing-lg);
+}
+
+/* Dashboard Header with User Info */
+.dashboard-header {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid var(--gray-100);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
+}
+
+.dashboard-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.dashboard-header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+/* User Info Component */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.user-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gray-100);
+    transition: border-color var(--transition-normal);
+}
+
+.user-avatar:hover {
+    border-color: var(--primary-blue);
+}
+
+.user-details h1 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: var(--gray-900);
+}
+
+.user-details .user-email {
+    color: var(--gray-500);
+    font-size: var(--font-size-sm);
+    margin: 0;
+}
+
+.user-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    background: var(--success);
+    color: var(--white);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    margin-top: var(--spacing-xs);
+}
+
+.user-status.offline {
+    background: var(--gray-500);
+}
+
+/* Quick Stats in Header */
+.dashboard-stats {
+    display: flex;
+    gap: var(--spacing-lg);
+}
+
+.stat-item {
+    text-align: center;
+    padding: var(--spacing-sm);
+}
+
+.stat-number {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--primary-blue);
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* ===== DASHBOARD GRID SYSTEM ===== */
+/*
+  Flexible grid layout for dashboard widgets.
+  Like having different microservices that can be composed together.
+*/
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Widget base styling */
+.dashboard-widget {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-100);
+    overflow: hidden;
+    transition: box-shadow var(--transition-normal);
+}
+
+.dashboard-widget:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--gray-100);
+    background: var(--gray-50);
+}
+
+.widget-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.widget-title i {
+    color: var(--primary-blue);
+}
+
+.widget-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.widget-body {
+    padding: var(--spacing-lg);
+}
+
+.widget-body.no-padding {
+    padding: 0;
+}
+
+/* ===== FRIENDS WIDGET ===== */
+/*
+  Friends management interface.
+  Like having a user relationship service with CRUD operations.
+*/
+
+.friends-widget {
+    grid-column: 1;
+}
+
+.friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+}
+
+.friends-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.friends-list::-webkit-scrollbar-track {
+    background: var(--gray-100);
+    border-radius: 3px;
+}
+
+.friends-list::-webkit-scrollbar-thumb {
+    background: var(--gray-300);
+    border-radius: 3px;
+}
+
+.friends-list::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-500);
+}
+
+.friend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.friend-item:hover {
+    background: var(--light-blue);
+    transform: translateX(4px);
+}
+
+.friend-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gray-100);
+    position: relative;
+}
+
+.friend-avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: var(--success);
+    border: 2px solid var(--white);
+    border-radius: 50%;
+}
+
+.friend-avatar.offline::after {
+    background: var(--gray-500);
+}
+
+.friend-info {
+    flex: 1;
+    min-width: 0; /* Allow text to truncate */
+}
+
+.friend-name {
+    font-weight: 500;
+    color: var(--gray-900);
+    font-size: var(--font-size-base);
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-email {
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-actions {
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.friend-item:hover .friend-actions {
+    opacity: 1;
+}
+
+/* Friend Requests Section */
+.friend-requests {
+    background: var(--light-blue);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.friend-requests h4 {
+    color: var(--primary-blue);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.request-item {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.request-item:last-child {
+    margin-bottom: 0;
+}
+
+.request-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    flex: 1;
+    min-width: 0;
+}
+
+.request-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* ===== CALENDAR WIDGET ===== */
+/*
+  Calendar interface for availability and scheduling.
+  Like having a time-based data service with scheduling logic.
+*/
+
+.calendar-widget {
+    grid-column: 2;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--gray-100);
+}
+
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.calendar-month {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--gray-900);
+    min-width: 200px;
+    text-align: center;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--gray-300);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.calendar-day-header {
+    background: var(--gray-100);
+    padding: var(--spacing-sm);
+    text-align: center;
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+    color: var(--gray-700);
+}
+
+.calendar-day {
+    background: var(--white);
+    min-height: 80px;
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.calendar-day:hover {
+    background: var(--light-blue);
+}
+
+.calendar-day.today {
+    background: var(--primary-blue);
+    color: var(--white);
+}
+
+.calendar-day.other-month {
+    color: var(--gray-500);
+    background: var(--gray-50);
+}
+
+.calendar-day.has-events::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+}
+
+.calendar-day.selected {
+    border-color: var(--primary-blue);
+    background: var(--light-blue);
+}
+
+/* ===== ACTIVITY WIDGET ===== */
+/*
+  Recent activity and events feed.
+  Like having an audit log service that tracks user actions.
+*/
+
+.activity-widget {
+    grid-column: 3;
+}
+
+.activity-feed {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+}
+
+.activity-item {
+    display: flex;
+    gap: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-100);
+    position: relative;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    flex-shrink: 0;
+}
+
+.activity-icon.friend-request {
+    background: var(--light-blue);
+    color: var(--primary-blue);
+}
+
+.activity-icon.event {
+    background: #d4edda;
+    color: var(--success);
+}
+
+.activity-icon.calendar {
+    background: #fff3cd;
+    color: var(--warning);
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-title {
+    font-weight: 500;
+    color: var(--gray-900);
+    font-size: var(--font-size-sm);
+    margin-bottom: 2px;
+    line-height: 1.3;
+}
+
+.activity-time {
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+}
+
+/* ===== QUICK ACTIONS SECTION ===== */
+/*
+  Quick action buttons and shortcuts.
+  Like having a shortcuts API for common operations.
+*/
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.quick-action-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    text-align: center;
+    border: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-blue);
+    transform: scaleX(0);
+    transition: transform var(--transition-normal);
+}
+
+.quick-action-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.quick-action-card:hover::before {
+    transform: scaleX(1);
+}
+
+.quick-action-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--light-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-blue);
+    font-size: var(--font-size-xl);
+    margin: 0 auto var(--spacing-md);
+    transition: all var(--transition-normal);
+}
+
+.quick-action-card:hover .quick-action-icon {
+    background: var(--primary-blue);
+    color: var(--white);
+    transform: scale(1.1);
+}
+
+.quick-action-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.quick-action-description {
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+    margin: 0;
+}
+
+/* ===== RESPONSIVE DESIGN FOR DASHBOARD ===== */
+
+/* Large Desktop (1200px and up) */
+@media (min-width: 1200px) {
+    .dashboard-container {
+        padding: var(--spacing-2xl);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 350px 1fr 350px;
+        gap: var(--spacing-2xl);
+    }
+}
+
+/* Desktop adjustments (1024px to 1199px) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+    .dashboard-grid {
+        grid-template-columns: 300px 1fr 300px;
+    }
+}
+
+/* Tablet adjustments (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .calendar-widget {
+        grid-column: span 2;
+    }
+
+    .dashboard-stats {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .stat-item {
+        padding: var(--spacing-xs);
+    }
+}
+
+/* Mobile adjustments (767px and down) */
+@media (max-width: 767px) {
+    .dashboard-container {
+        padding: var(--spacing-md);
+    }
+
+    .dashboard-header {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        text-align: center;
+        padding: var(--spacing-md);
+    }
+
+    .dashboard-header-left,
+    .dashboard-header-right {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+
+    .user-info {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .dashboard-stats {
+        flex-direction: row;
+        justify-content: space-around;
+        width: 100%;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .friends-widget,
+    .calendar-widget,
+    .activity-widget {
+        grid-column: 1;
+    }
+
+    .widget-header {
+        padding: var(--spacing-md);
+    }
+
+    .widget-body {
+        padding: var(--spacing-md);
+    }
+
+    .friends-list,
+    .activity-feed {
+        padding: var(--spacing-md);
+        max-height: 300px;
+    }
+
+    .calendar-day {
+        min-height: 60px;
+        padding: var(--spacing-xs);
+    }
+
+    .friend-item {
+        padding: var(--spacing-sm);
+    }
+
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== ACCESSIBILITY IMPROVEMENTS ===== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .dashboard-widget,
+    .friend-item,
+    .request-item,
+    .quick-action-card {
+        border: 2px solid var(--gray-900);
+    }
+
+    .calendar-day {
+        border: 1px solid var(--gray-700);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .friend-item:hover,
+    .quick-action-card:hover,
+    .calendar-day {
+        transform: none;
+    }
+
+    .quick-action-card::before {
+        display: none;
+    }
+}
+
+/* ===== DARK MODE SUPPORT (Future Enhancement) ===== */
+/*
+  Prepared for dark mode implementation.
+  Like having different configuration profiles in Spring Boot.
+*/
+
+@media (prefers-color-scheme: dark) {
+    .dashboard-page {
+        background: #1a1a1a;
+    }
+
+    .dashboard-widget,
+    .dashboard-header {
+        background: #2a2a2a;
+        border-color: #404040;
+    }
+
+    .widget-header {
+        background: #333333;
+    }
+
+    /* This would be expanded with full dark mode variables */
+}
+
+/* ===== PRINT STYLES FOR DASHBOARD ===== */
+@media print {
+    .dashboard-header-right,
+    .widget-actions,
+    .friend-actions,
+    .request-actions,
+    .quick-actions {
+        display: none;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .dashboard-widget {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid var(--gray-300);
+    }
+}

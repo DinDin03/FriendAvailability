@@ -1,0 +1,430 @@
+/* ===== RESET & BASE STYLES ===== */
+/*
+  This file contains the foundational styles that every page needs:
+  - CSS Reset to ensure consistent styling across browsers
+  - Base typography rules
+  - Common animations
+  - Utility classes
+
+  Think of this like a "base class" in Java - it provides the foundation
+  that other components inherit from.
+*/
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px; /* Base font size for rem calculations - 1rem = 16px */
+    height: 100%;
+}
+
+body {
+    font-family: var(--font-family);
+    line-height: 1.6;
+    color: var(--gray-900);
+    background-color: var(--white);
+    font-size: var(--font-size-base);
+    min-height: 100vh;
+
+    /* Improve font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* ===== TYPOGRAPHY SYSTEM ===== */
+/*
+  Consistent typography hierarchy that matches your design system.
+  Similar to having standard naming conventions in your Java code.
+*/
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: var(--spacing-md);
+    color: var(--gray-900);
+}
+
+h1 {
+    font-size: var(--font-size-4xl);
+    font-weight: 700;
+}
+
+h2 {
+    font-size: var(--font-size-3xl);
+    font-weight: 600;
+}
+
+h3 {
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+}
+
+h4 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+}
+
+h5 {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+}
+
+h6 {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+}
+
+p {
+    margin-bottom: var(--spacing-md);
+    line-height: 1.6;
+    color: var(--gray-700);
+}
+
+/* Remove margin from last child to prevent extra spacing */
+p:last-child {
+    margin-bottom: 0;
+}
+
+/* ===== LINKS ===== */
+a {
+    color: var(--primary-blue);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--dark-blue);
+    text-decoration: underline;
+}
+
+a:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+/* ===== LISTS ===== */
+ul, ol {
+    margin-bottom: var(--spacing-md);
+    padding-left: var(--spacing-xl);
+}
+
+li {
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Remove default list styling when needed */
+.list-none {
+    list-style: none;
+    padding-left: 0;
+}
+
+/* ===== IMAGES & MEDIA ===== */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* ===== ACCESSIBILITY ===== */
+/*
+  These styles improve accessibility - important for enterprise applications
+  like what you'll work on at Atlassian
+*/
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus styles for keyboard navigation */
+*:focus {
+    outline: 2px solid var(--primary-blue);
+    outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users only */
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* Ensure interactive elements have minimum touch target size */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* ===== UTILITY CLASSES ===== */
+/*
+  Similar to utility methods in Java - small, reusable pieces of functionality
+*/
+
+/* Text alignment */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+/* Text colors */
+.text-primary { color: var(--primary-blue); }
+.text-success { color: var(--success); }
+.text-error { color: var(--error); }
+.text-warning { color: var(--warning); }
+.text-muted { color: var(--gray-500); }
+
+/* Font weights */
+.font-light { font-weight: 300; }
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* Font sizes */
+.text-xs { font-size: var(--font-size-xs); }
+.text-sm { font-size: var(--font-size-sm); }
+.text-base { font-size: var(--font-size-base); }
+.text-lg { font-size: var(--font-size-lg); }
+.text-xl { font-size: var(--font-size-xl); }
+
+/* Spacing utilities */
+.m-0 { margin: 0; }
+.mt-0 { margin-top: 0; }
+.mb-0 { margin-bottom: 0; }
+.ml-auto { margin-left: auto; }
+.mr-auto { margin-right: auto; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Display utilities */
+.hidden { display: none; }
+.block { display: block; }
+.inline { display: inline; }
+.inline-block { display: inline-block; }
+.flex { display: flex; }
+.grid { display: grid; }
+
+/* Flexbox utilities */
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+/* ===== ANIMATIONS ===== */
+/*
+  Reusable animations that components can use.
+  Keeping them here prevents duplication across files.
+*/
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Animation utility classes */
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease;
+}
+
+.animate-slideIn {
+    animation: slideIn 0.6s ease;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.3s ease;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ===== RESPONSIVE DESIGN FOUNDATION ===== */
+/*
+  Mobile-first approach - start with mobile styles, then add larger screens.
+  This is industry best practice.
+*/
+
+/* Base styles above are for mobile */
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    html {
+        font-size: 18px; /* Slightly larger base font on tablets */
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+    body {
+        font-size: var(--font-size-lg); /* Larger text on desktop */
+    }
+}
+
+/* ===== PRINT STYLES ===== */
+/*
+  Ensure pages print nicely - good practice for business applications
+*/
+@media print {
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    img {
+        max-width: 100% !important;
+    }
+
+    p,
+    h1,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h1,
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
+
+/* ===== BROWSER-SPECIFIC FIXES ===== */
+/*
+  Handle browser inconsistencies - important for cross-browser compatibility
+*/
+
+/* Fix for iOS Safari */
+input[type="search"] {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Fix for Chrome autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--white) inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Fix for Firefox */
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
