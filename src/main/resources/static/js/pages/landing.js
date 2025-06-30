@@ -1,24 +1,3 @@
-/* ===== LANDING PAGE CONTROLLER ===== */
-/*
-  This file handles all landing page specific functionality.
-  Think of this as your @Controller class in Spring Boot - it handles
-  the presentation logic and user interactions for the landing page.
-
-  This refactored code uses our modular services:
-  - AuthService for authentication
-  - ValidationService for form validation
-  - Modals for login/signup dialogs
-  - Notifications for user feedback
-  - API services for backend communication
-
-  Similar to having a clean separation between your controller,
-  service, and repository layers in Spring Boot.
-*/
-
-/**
- * Landing Page Controller Class
- * Similar to a @Controller class in Spring Boot
- */
 class LandingPageController {
     constructor() {
         this.currentModal = null;
