@@ -26,8 +26,6 @@ public class JacksonConfig {
 
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        System.out.println("JacksonConfig: ObjectMapper configured with Hibernate6Module and JavaTimeModule");
-
         return mapper;
     }
 }
