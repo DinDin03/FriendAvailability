@@ -1,0 +1,45 @@
+# Remove the version line (it's obsolete as the warning said)
+services:
+  # Database Service
+  mysql:
+    image: mysql:8.0
+    container_name: linkup-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 16October2003@
+      MYSQL_DATABASE: linkup_db
+      MYSQL_USER: linkup_user
+      MYSQL_PASSWORD: 16October2003@
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/init:/docker-entrypoint-initdb.d  # For database initialization scripts
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Optional: phpMyAdmin for database management (web-based GUI)
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: linkup-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: linkup_user
+      PMA_PASSWORD: 16October2003@
+      MYSQL_ROOT_PASSWORD: 16October2003@
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+    driver: local
+
+# Network for all services to communicate
+networks:
+  default:
+    name: linkup-network

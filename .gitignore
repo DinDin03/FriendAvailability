@@ -42,3 +42,10 @@ application-*.properties
 # Database credentials
 **/application-local.properties
 **/application-prod.properties
+
+# Existing content...
+
+# Local development environment files
+.env.local
+.env.development
+
