@@ -27,8 +27,12 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
            "ORDER BY cr.updatedAt DESC")
     List<ChatRoom> findChatRoomsForUser(@Param("userId") Long userId);
 
-    Page<ChatRoom> findChatRoomsForUser()
-
+    @Query("SELECT DISTINCT cr FROM ChatRoom cr " +
+            "JOIN cr.participants cp " +
+            "WHERE cp.userId = :userId " +
+            "AND cp.isActive = true " +
+            "ORDER BY cr.updatedAt DESC")
+    Page<ChatRoom> findChatRoomsForUser(@Param("userId") Long userId, Pageable pageable);
 
 
 }
