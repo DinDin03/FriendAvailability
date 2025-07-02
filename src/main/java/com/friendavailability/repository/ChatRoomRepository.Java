@@ -40,5 +40,6 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
            "AND cp.isActive = true")
     long countChatRoomsForUser(@Param("userId") Long userId);
 
+    
 
 }
