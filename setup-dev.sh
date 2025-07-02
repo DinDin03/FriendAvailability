@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Setting up LinkUp Local Development Environment..."
+echo "Setting up FriendAvailability Local Development Environment..."
 
 # Check if Docker is running
 if ! docker info > /dev/null 2>&1; then
@@ -8,10 +8,17 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if .env.local exists
+# Check if .env.local exists, create if not
 if [ ! -f ".env.local" ]; then
-    echo ".env.local file not found. Please create it with your environment variables."
-    exit 1
+    echo ".env.local file not found. Creating a basic one..."
+    cat > .env.local << EOF
+# Environment variables for local development
+SPRING_PROFILES_ACTIVE=local
+MYSQL_ROOT_PASSWORD=16October2003@
+MYSQL_DATABASE=linkup_db
+MYSQL_USER=linkup_user
+MYSQL_PASSWORD=16October2003@
+EOF
 fi
 
 echo "Starting Docker services..."
