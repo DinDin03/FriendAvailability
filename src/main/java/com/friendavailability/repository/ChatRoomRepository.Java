@@ -27,7 +27,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
            "ORDER BY cr.updatedAt DESC")
     List<ChatRoom> findChatRoomsForUser(@Param("userId") Long userId);
 
-    Page<ChatRoom>
+    Page<ChatRoom> findChatRoomsForUser()
 
 
 
