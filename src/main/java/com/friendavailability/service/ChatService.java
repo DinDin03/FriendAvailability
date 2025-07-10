@@ -11,3 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+@Service
+@Transactional
+public class ChatService {
+
+    private final ChatRoomRepository chatRoomRepository;
+    private final MessageRepository messageRepository;
+    private final ChatParticipantRepository chatParticipantRepository;
+    private final FriendRepository friendRepository;
+    private final UserRepository userRepository;
+}
