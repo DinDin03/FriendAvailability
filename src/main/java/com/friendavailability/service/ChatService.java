@@ -88,10 +88,10 @@ public class ChatService {
 
             ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
-            //addUserToPrivateChat(savedRoom.getId(), userId1, ParticipantRole.ADMIN);
-            //addUserToPrivateChat(savedRoom.getId(), userId2, ParticipantRole.MEMBER);
+            addUserToPrivateChat(savedRoom.getId(), userId1, ParticipantRole.ADMIN);
+            addUserToPrivateChat(savedRoom.getId(), userId2, ParticipantRole.MEMBER);
 
-            //createSystemMessage(savedRoom.getId(), "Private chat started");
+            createSystemMessage(savedRoom.getId(), "Private chat started");
 
             return savedRoom;
         } catch (Exception e) {
@@ -126,15 +126,15 @@ public class ChatService {
 
             ChatRoom savedRoom = chatRoomRepository.save(chatRoom);
 
-            //addUserToGroupChatInternal(savedRoom.getId(), creatorId, ParticipantRole.ADMIN);
+            addUserToGroupChatInternal(savedRoom.getId(), creatorId, ParticipantRole.ADMIN);
 
             for (Long participantId : participantIds) {
                 if (!participantId.equals(creatorId)) {
-                    //addUserToGroupChatInternal(savedRoom.getId(), participantId, ParticipantRole.MEMBER);
+                    addUserToGroupChatInternal(savedRoom.getId(), participantId, ParticipantRole.MEMBER);
                 }
             }
 
-            //createSystemMessage(savedRoom.getId(), "Group chat " + chatName + " created");
+            createSystemMessage(savedRoom.getId(), "Group chat " + chatName + " created");
 
             return savedRoom;
         } catch (Exception e) {
@@ -154,10 +154,10 @@ public class ChatService {
 
         validateUsersAreFriends(requestingUserId, userId);
 
-        //addUserToGroupChatInternal(roomId, userId, ParticipantRole.MEMBER);
+        addUserToGroupChatInternal(roomId, userId, ParticipantRole.MEMBER);
 
-        //User addedUser = getUserById(userId);
-        //createSystemMessage(roomId, addedUser.getName() + " was added to the group chat");
+        User addedUser = getUserById(userId);
+        createSystemMessage(roomId, addedUser.getName() + " was added to the group chat");
 
     }
 
@@ -195,5 +195,9 @@ public class ChatService {
         if(updated == 0){
             throw new IllegalArgumentException("User not found in the chat");
         }
+
+        User removedUser = getUserById(userId);
+        String message = isSelfRemoval ? removedUser.getName() + " left the chat " : 
+        
     } 
 }
