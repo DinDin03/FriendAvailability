@@ -187,7 +187,7 @@ public class ChatService {
         boolean isAdmin = chatParticipantRepository.isUserAdminInRoom(requestingUserId, roomId);
 
         if(!isSelfRemoval && !isAdmin){
-            throw new IllegalAccessException("Only admin or user can remove from the group chat")
+            throw new RuntimeException("Only admin or user can remove from the group chat");
         }
 
         int updated = chatParticipantRepository.removeUserFromRoom(userId, roomId);
