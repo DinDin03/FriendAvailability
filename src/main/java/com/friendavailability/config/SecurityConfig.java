@@ -112,7 +112,8 @@ public class SecurityConfig {
                 "http://localhost:8080",
                 "http://127.0.0.1:8080",
                 "https://friendavailability-production.up.railway.app",
-                "https://www.dineth.au"
+                "https://www.linkups.com.au"
+
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
