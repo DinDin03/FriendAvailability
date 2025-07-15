@@ -47,7 +47,10 @@ public class SecurityConfig {
                                 "/default-ui.css",
                                 "/favicon.ico",
                                 "/css/**",
-                                "/js/**"
+                                "/js/**",
+                                "/websocket-test.html", 
+                                "/ws/**",
+                                "/api/chat/**"
                         ).permitAll()
 
                         // Email verification pages - MUST be accessible without authentication
