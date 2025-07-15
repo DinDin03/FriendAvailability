@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -347,6 +348,7 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -358,6 +360,7 @@
             .dashboard-grid {
                 grid-template-columns: 1fr 1fr;
             }
+
             .calendar-container {
                 grid-column: span 2;
             }
@@ -367,489 +370,327 @@
             .dashboard-grid {
                 grid-template-columns: 1fr;
             }
+
             .calendar-container {
                 grid-column: span 1;
             }
         }
     </style>
 </head>
+
 <body>
-<div class="dashboard-container">
-    <!-- Header -->
-    <header class="dashboard-header">
-        <div class="header-left">
-            <div class="user-info">
-                <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
-                <div class="user-details">
-                    <h1 id="userName">Loading...</h1>
-                    <p id="userEmail">Loading...</p>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="user-info">
+                    <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                    <div class="user-details">
+                        <h1 id="userName">Loading...</h1>
+                        <p id="userEmail">Loading...</p>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="header-right">
-            <button class="btn btn-secondary" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Logout
-            </button>
-        </div>
-    </header>
-
-    <!-- Main Dashboard Grid -->
-    <div class="dashboard-grid">
-        <!-- Friends Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">Friends</h2>
-                <button class="btn btn-primary" onclick="showAddFriend()">
-                    <i class="fas fa-user-plus"></i> Add Friend
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </button>
             </div>
-            <div id="friendsContainer">
-                <div class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Loading friends...
-                </div>
-            </div>
-        </div>
+        </header>
 
-        <!-- Calendar Card -->
-        <div class="dashboard-card calendar-container">
-            <div class="card-header">
-                <h2 class="card-title">Calendar</h2>
-                <div class="calendar-header">
-                    <button class="btn btn-icon" onclick="changeMonth(-1)">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <span id="currentMonth">Loading...</span>
-                    <button class="btn btn-icon" onclick="changeMonth(1)">
-                        <i class="fas fa-chevron-right"></i>
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Friends Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Friends</h2>
+                    <button class="btn btn-primary" onclick="showAddFriend()">
+                        <i class="fas fa-user-plus"></i> Add Friend
                     </button>
                 </div>
+                <div id="friendsContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading friends...
+                    </div>
+                </div>
             </div>
-            <div id="calendarGrid" class="calendar-grid">
-                <div class="loading">Loading calendar...</div>
-            </div>
-        </div>
 
-        <!-- Events Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">Upcoming Events</h2>
-                <button class="btn btn-primary" onclick="showAddEvent()">
-                    <i class="fas fa-plus"></i> Add Event
-                </button>
+            <!-- Calendar Card -->
+            <div class="dashboard-card calendar-container">
+                <div class="card-header">
+                    <h2 class="card-title">Calendar</h2>
+                    <div class="calendar-header">
+                        <button class="btn btn-icon" onclick="changeMonth(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="currentMonth">Loading...</span>
+                        <button class="btn btn-icon" onclick="changeMonth(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="calendarGrid" class="calendar-grid">
+                    <div class="loading">Loading calendar...</div>
+                </div>
             </div>
-            <div id="eventsContainer">
-                <div class="empty-state">
-                    <i class="fas fa-calendar-alt"></i>
-                    <p>No upcoming events</p>
+
+            <!-- Events Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Upcoming Events</h2>
+                    <button class="btn btn-primary" onclick="showAddEvent()">
+                        <i class="fas fa-plus"></i> Add Event
+                    </button>
+                </div>
+                <div id="eventsContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>No upcoming events</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Circles Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Circles</h2>
+                    <button class="btn btn-primary" onclick="showCreateCircle()">
+                        <i class="fas fa-circle-plus"></i> Create Circle
+                    </button>
+                </div>
+                <div id="circlesContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>No circles yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replace your existing chat widget with this complete version -->
+            <div class="dashboard-widget chat-widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-comments"></i>
+                        <span>Live Chat</span>
+                    </div>
+                    <div class="widget-actions">
+                        <div id="chatConnectionStatus" class="connection-status">
+                            <i class="fas fa-circle status-offline"></i>
+                            <span>Offline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget-body chat-container">
+                    <!-- Chat Rooms List View -->
+                    <div id="chatRoomsList" class="chat-rooms-section">
+                        <div class="chat-rooms-header">
+                            <h4>Chat Rooms</h4>
+                            <button id="refreshRoomsBtn" class="btn-icon" title="Refresh rooms">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="chatRoomsLoading" class="loading-state" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading chat rooms...</p>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="chatRoomsEmpty" class="loading-state" style="display: none;">
+                            <i class="fas fa-comments"></i>
+                            <p>No chat rooms yet</p>
+                            <button class="btn btn-primary" onclick="createTestChatRoom()">
+                                <i class="fas fa-plus"></i> Create Test Room
+                            </button>
+                        </div>
+
+                        <!-- Chat Rooms List -->
+                        <div id="chatRoomsItems" class="chat-rooms-list">
+                            <!-- Chat rooms will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Active Chat View -->
+                    <div id="activeChatView" class="active-chat-section" style="display: none;">
+                        <div class="chat-header">
+                            <button class="btn-icon" onclick="showChatRoomsList()">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h4 id="activeChatTitle">Chat Room</h4>
+                        </div>
+
+                        <!-- Messages Container -->
+                        <div id="chatMessagesContainer" class="chat-messages">
+                            <!-- Messages will be populated here -->
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="chat-input-section">
+                            <div class="chat-input-wrapper">
+                                <input type="text" id="chatMessageInput" placeholder="Type your message..."
+                                    onkeypress="handleMessageKeyPress(event)">
+                                <button id="chatSendBtn" class="btn-send" onclick="sendChatMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simple Room Selection (Fallback) -->
+                    <div class="chat-room-selector" style="display: none;">
+                        <select id="chatRoomSelect" class="chat-room-dropdown">
+                            <option value="">Select a chat room...</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Circles Card -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">Circles</h2>
-                <button class="btn btn-primary" onclick="showCreateCircle()">
-                    <i class="fas fa-circle-plus"></i> Create Circle
-                </button>
-            </div>
-            <div id="circlesContainer">
-                <div class="empty-state">
-                    <i class="fas fa-users"></i>
-                    <p>No circles yet</p>
-                </div>
-            </div>
-        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+        <!-- Load utilities first -->
+        <script src="../js/utils/helpers.js"></script>
+        <script src="../js/utils/validation.js"></script>
+        <script src="../js/utils/dom.js"></script>
+
+        <!-- Load configuration -->
+        <script src="../js/config/api.js"></script>
+
+        <!-- Load services -->
+        <script src="../js/services/api.js"></script>
+        <script src="../js/services/auth.js"></script>
+        <script src="../js/services/notifications.js"></script>
+
+        <!-- Load components -->
+        <script src="../js/components/modal.js"></script>
+        <script src="../js/components/forms.js"></script>
+        <script src="../js/components/calendar.js"></script>
+
+        <!-- APPLY SERVICE FIXES BEFORE DASHBOARD LOADS -->
+        <script>
+            // Immediate service fixes (no setTimeout delay)
+            console.log('🔧 Applying immediate service fixes...');
+
+            // Fix ApiService immediately
+            if (!window.ApiService || typeof window.ApiService.get !== 'function') {
+                console.log('🔧 Creating ApiService...');
+                window.ApiService = {
+                    async get(endpoint) {
+                        console.log('📡 ApiService.get:', endpoint);
+                        try {
+                            const response = await fetch(endpoint, {
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                }
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            const data = await response.json();
+                            console.log('✅ ApiService.get response:', data);
+                            return data;
+                        } catch (error) {
+                            console.error('❌ ApiService.get error:', error);
+                            throw error;
+                        }
+                    },
+
+                    async post(endpoint, data) {
+                        console.log('📡 ApiService.post:', endpoint, data);
+                        try {
+                            const response = await fetch(endpoint, {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: data ? JSON.stringify(data) : undefined
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return await response.json();
+                        } catch (error) {
+                            console.error('❌ ApiService.post error:', error);
+                            throw error;
+                        }
+                    },
+
+                    async put(endpoint, data) {
+                        console.log('📡 ApiService.put:', endpoint, data);
+                        try {
+                            const response = await fetch(endpoint, {
+                                method: 'PUT',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: data ? JSON.stringify(data) : undefined
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return await response.json();
+                        } catch (error) {
+                            console.error('❌ ApiService.put error:', error);
+                            throw error;
+                        }
+                    }
+                };
+                console.log('✅ ApiService created successfully');
+            }
+
+            // Fix NotificationService immediately
+            const showNotification = (message, color, icon) => {
+                console.log(`📢 Notification (${color}): ${message}`);
+
+                // Create visual notification
+                const div = document.createElement('div');
+                div.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+                div.style.cssText = `
+        position: fixed; top: 20px; right: 20px; 
+        background: ${color}; color: white; 
+        padding: 16px 20px; border-radius: 8px; 
+        z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px; font-weight: 500;
+        display: flex; align-items: center; gap: 8px;
+        max-width: 350px; word-wrap: break-word;
+    `;
+
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 5000);
+            };
+
+            // Override NotificationService immediately
+            window.NotificationService = {
+                showSuccess: (message) => showNotification(message, '#00875A', 'fa-check-circle'),
+                showError: (message) => showNotification(message, '#DE350B', 'fa-exclamation-circle'),
+                showInfo: (message) => showNotification(message, '#0052CC', 'fa-info-circle'),
+                showWarning: (message) => showNotification(message, '#FF8B00', 'fa-exclamation-triangle'),
+
+                // Fallback methods
+                success: (message) => window.NotificationService.showSuccess(message),
+                error: (message) => window.NotificationService.showError(message),
+                info: (message) => window.NotificationService.showInfo(message),
+                warning: (message) => window.NotificationService.showWarning(message)
+            };
+
+            console.log('✅ Service fixes applied BEFORE dashboard loads');
+            console.log('✅ ApiService.get available:', typeof window.ApiService.get === 'function');
+            console.log('✅ NotificationService.showError available:', typeof window.NotificationService.showError === 'function');
+        </script>
+
+        <!-- Load main dashboard script LAST -->
+        <script src="../js/pages/dashboard.js"></script>
     </div>
-</div>
-
-<!-- JavaScript -->
-<script>
-    // Global state
-    const state = {
-        currentUser: null,
-        friends: [],
-        pendingRequests: [],
-        currentDate: new Date()
-    };
-
-    // Initialize dashboard
-    document.addEventListener('DOMContentLoaded', async () => {
-        await initializeDashboard();
-    });
-
-    async function initializeDashboard() {
-        try {
-            // Load current user
-            await loadCurrentUser();
-
-            if (!state.currentUser) {
-                window.location.href = '/';
-                return;
-            }
-
-            // Load data in parallel
-            await Promise.all([
-                loadFriends(),
-                loadPendingRequests()
-            ]);
-
-            // Render components
-            renderCalendar();
-            showMessage('Dashboard loaded successfully!', 'success');
-
-        } catch (error) {
-            console.error('Dashboard initialization failed:', error);
-            showMessage('Failed to load dashboard', 'error');
-        }
-    }
-
-    // API Utilities
-    async function apiCall(endpoint, options = {}) {
-        const response = await fetch(endpoint, {
-            ...options,
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`API call failed: ${response.status}`);
-        }
-
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return await response.json();
-        }
-        return await response.text();
-    }
-
-    // Load current user
-    async function loadCurrentUser() {
-        try {
-            const user = await apiCall('/api/auth/current-user');
-            state.currentUser = user;
-
-            // Update UI
-            document.getElementById('userName').textContent = user.name;
-            document.getElementById('userEmail').textContent = user.email;
-            document.getElementById('userAvatar').src = user.profilePictureUrl || generateAvatar(user.name);
-
-        } catch (error) {
-            console.error('Failed to load current user:', error);
-            throw error;
-        }
-    }
-
-    // Load friends
-    async function loadFriends() {
-        try {
-            console.log(`=== LOADING FRIENDS for User ID: ${state.currentUser.id} ===`);
-
-            // First, let's check what the API returns
-            const response = await fetch(`/api/friends/${state.currentUser.id}`, {
-                credentials: 'include'
-            });
-
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-
-            const responseText = await response.text();
-            console.log('Raw response text:', responseText);
-
-            // Try to parse as JSON
-            let friends;
-            try {
-                friends = JSON.parse(responseText);
-            } catch (e) {
-                console.error('Failed to parse response as JSON:', e);
-                friends = [];
-            }
-
-            console.log('Parsed friends array:', friends);
-            console.log('Number of friends:', friends.length);
-
-            // Log each friend's details
-            friends.forEach((friend, index) => {
-                console.log(`Friend ${index}:`, {
-                    id: friend.id,
-                    name: friend.name,
-                    email: friend.email,
-                    profilePictureUrl: friend.profilePictureUrl
-                });
-            });
-
-            state.friends = friends;
-            renderFriends();
-
-        } catch (error) {
-            console.error('Failed to load friends:', error);
-            console.error('Error details:', {
-                message: error.message,
-                stack: error.stack
-            });
-            state.friends = [];
-            renderFriends();
-        }
-    }
-
-    // Also add this test function to manually check the API
-    async function testFriendsAPI() {
-        console.log('=== MANUAL API TEST ===');
-
-        try {
-            // Test 1: Check current user
-            const currentUser = await fetch('/api/auth/current-user', {
-                credentials: 'include'
-            });
-            const userData = await currentUser.json();
-            console.log('Current user:', userData);
-
-            // Test 2: Check friends endpoint
-            const friendsResponse = await fetch(`/api/friends/${userData.id}`, {
-                credentials: 'include'
-            });
-            const friendsData = await friendsResponse.text();
-            console.log('Friends API response:', friendsData);
-
-            // Test 3: Check specific user 7
-            const user7Response = await fetch('/api/users/7', {
-                credentials: 'include'
-            });
-            const user7Data = await user7Response.json();
-            console.log('User 7 data:', user7Data);
-
-        } catch (error) {
-            console.error('Test failed:', error);
-        }
-    }
-
-    // Run the test when page loads
-    window.testFriendsAPI = testFriendsAPI;
-
-    // Load pending requests
-    async function loadPendingRequests() {
-        try {
-            const requests = await apiCall(`/api/friends/${state.currentUser.id}/pending`);
-            state.pendingRequests = requests;
-
-            // We need to fetch sender details for each request
-            for (const request of state.pendingRequests) {
-                try {
-                    const sender = await apiCall(`/api/users/${request.userId}`);
-                    request.senderName = sender.name;
-                    request.senderEmail = sender.email;
-                    request.senderAvatar = sender.profilePictureUrl || generateAvatar(sender.name);
-                } catch (error) {
-                    console.error('Failed to load sender details:', error);
-                }
-            }
-
-            renderFriends();
-        } catch (error) {
-            console.error('Failed to load pending requests:', error);
-            state.pendingRequests = [];
-        }
-    }
-
-    // Render friends and requests
-    function renderFriends() {
-        const container = document.getElementById('friendsContainer');
-        let html = '';
-
-        // Render pending requests first
-        if (state.pendingRequests.length > 0) {
-            html += `<div class="request-section">
-                    <h3 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
-                        Friend Requests (${state.pendingRequests.length})
-                    </h3>`;
-
-            state.pendingRequests.forEach(request => {
-                html += `
-                        <div class="request-item">
-                            <div style="display: flex; align-items: center; gap: var(--spacing-md);">
-                                <img src="${request.senderAvatar || generateAvatar('Unknown')}"
-                                     alt="Avatar" class="friend-avatar">
-                                <div>
-                                    <div style="font-weight: 500;">${request.senderName || 'Unknown User'}</div>
-                                    <div style="font-size: var(--font-size-sm); color: var(--gray-500);">
-                                        ${request.senderEmail || ''}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="request-actions">
-                                <button class="btn btn-primary" onclick="acceptRequest(${request.id})">
-                                    <i class="fas fa-check"></i> Accept
-                                </button>
-                                <button class="btn btn-secondary" onclick="rejectRequest(${request.id})">
-                                    <i class="fas fa-times"></i> Reject
-                                </button>
-                            </div>
-                        </div>`;
-            });
-
-            html += '</div>';
-        }
-
-        // Render friends list
-        if (state.friends.length === 0) {
-            html += `<div class="empty-state">
-                    <i class="fas fa-user-friends"></i>
-                    <p>No friends yet. Send some friend requests!</p>
-                </div>`;
-        } else {
-            html += '<div class="friends-list">';
-            state.friends.forEach(friend => {
-                const avatar = friend.profilePictureUrl || generateAvatar(friend.name);
-                html += `
-                        <div class="friend-item">
-                            <img src="${avatar}" alt="${friend.name}" class="friend-avatar">
-                            <div class="friend-info">
-                                <div class="friend-name">${friend.name}</div>
-                                <div class="friend-email">${friend.email}</div>
-                            </div>
-                        </div>`;
-            });
-            html += '</div>';
-        }
-
-        container.innerHTML = html;
-    }
-
-    // Calendar functions
-    function renderCalendar() {
-        const year = state.currentDate.getFullYear();
-        const month = state.currentDate.getMonth();
-
-        // Update month display
-        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'];
-        document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
-
-        // Calculate calendar days
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay();
-
-        let html = '';
-
-        // Day headers
-        const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        dayHeaders.forEach(day => {
-            html += `<div class="calendar-day-header">${day}</div>`;
-        });
-
-        // Empty cells before month starts
-        for (let i = 0; i < startingDayOfWeek; i++) {
-            html += `<div class="calendar-day other-month"></div>`;
-        }
-
-        // Days of month
-        const today = new Date();
-        for (let day = 1; day <= daysInMonth; day++) {
-            const isToday = year === today.getFullYear() &&
-                month === today.getMonth() &&
-                day === today.getDate();
-            html += `<div class="calendar-day ${isToday ? 'today' : ''}">${day}</div>`;
-        }
-
-        document.getElementById('calendarGrid').innerHTML = html;
-    }
-
-    function changeMonth(direction) {
-        state.currentDate.setMonth(state.currentDate.getMonth() + direction);
-        renderCalendar();
-    }
-
-    // Friend request actions
-    async function acceptRequest(requestId) {
-        try {
-            await apiCall(`/api/friends/${requestId}/accept?userId=${state.currentUser.id}`, {
-                method: 'PUT'
-            });
-            showMessage('Friend request accepted!', 'success');
-            await loadFriends();
-            await loadPendingRequests();
-        } catch (error) {
-            showMessage('Failed to accept request', 'error');
-        }
-    }
-
-    async function rejectRequest(requestId) {
-        try {
-            await apiCall(`/api/friends/${requestId}/reject?userId=${state.currentUser.id}`, {
-                method: 'PUT'
-            });
-            showMessage('Friend request rejected', 'info');
-            await loadPendingRequests();
-        } catch (error) {
-            showMessage('Failed to reject request', 'error');
-        }
-    }
-
-    // UI Actions
-    async function showAddFriend() {
-        const email = prompt('Enter friend\'s email address:');
-        if (!email) return;
-
-        try {
-            // Find user by email
-            const user = await apiCall(`/api/users/by-email?email=${encodeURIComponent(email)}`);
-
-            if (!user) {
-                showMessage('User not found', 'error');
-                return;
-            }
-
-            // Send friend request
-            await apiCall(`/api/friends/request?fromUserId=${state.currentUser.id}&toUserId=${user.id}`, {
-                method: 'POST'
-            });
-
-            showMessage('Friend request sent!', 'success');
-        } catch (error) {
-            showMessage('Failed to send friend request', 'error');
-        }
-    }
-
-    function showAddEvent() {
-        showMessage('Event creation coming soon!', 'info');
-    }
-
-    function showCreateCircle() {
-        showMessage('Circle creation coming soon!', 'info');
-    }
-
-    async function logout() {
-        try {
-            await apiCall('/api/auth/logout', { method: 'POST' });
-            window.location.href = '/';
-        } catch (error) {
-            window.location.href = '/';
-        }
-    }
-
-    // Utilities
-    function generateAvatar(name) {
-        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
-        const colors = ['0052CC', '00875A', 'DE350B', 'FF8B00', '6554C0'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        return `https://via.placeholder.com/48x48/${color}/FFFFFF?text=${initials}`;
-    }
-
-    function showMessage(text, type = 'info') {
-        const message = document.createElement('div');
-        message.className = `message ${type}`;
-        message.textContent = text;
-        document.body.appendChild(message);
-
-        setTimeout(() => {
-            message.remove();
-        }, 5000);
-    }
-</script>
 </body>
+
 </html>

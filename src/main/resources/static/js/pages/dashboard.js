@@ -24,9 +24,18 @@ const DashboardState = {
 
     // UI state
     isLoading: false,
-    activeView: 'dashboard'
-};
+    activeView: 'dashboard',
 
+    // ADD THESE CHAT PROPERTIES:
+    chat: {
+        stompClient: null,
+        connected: false,
+        currentRoomId: null,
+        availableRooms: [],
+        messages: new Map(), // roomId -> messages array
+        typingUsers: new Set()
+    }
+};
 /**
  * DASHBOARD CONFIGURATION
  * Constants and settings for dashboard behavior
@@ -84,6 +93,8 @@ class Dashboard {
             // Step 2: Load all dashboard data in parallel for better performance
             this.state.isLoading = true;
             this.showLoadingStates();
+
+            this.initializeChat();
 
             await Promise.all([
                 this.loadFriends(),
@@ -725,6 +736,341 @@ class Dashboard {
 
         console.log('✅ Dashboard cleaned up');
     }
+
+    // ===== CHAT FUNCTIONALITY =====
+
+    /**
+     * Initialize chat system
+     */
+    initializeChat() {
+        console.log('🚀 Initializing chat system...');
+
+        this.connectWebSocket();
+        this.setupChatEventListeners();
+        //this.loadUserChatRooms();
+    }
+
+    /**
+     * Connect to WebSocket server
+     */
+    connectWebSocket() {
+        try {
+            const socket = new SockJS('/ws');
+            this.state.chat.stompClient = Stomp.over(socket);
+
+            this.state.chat.stompClient.connect({}, (frame) => {
+                console.log('✅ WebSocket connected:', frame);
+                this.state.chat.connected = true;
+                this.updateChatConnectionStatus();
+
+                // Subscribe to user-specific error messages
+                this.state.chat.stompClient.subscribe(
+                    `/user/${this.state.currentUser.id}/queue/errors`,
+                    (message) => this.handleChatError(JSON.parse(message.body))
+                );
+
+            }, (error) => {
+                console.error('❌ WebSocket connection failed:', error);
+                this.state.chat.connected = false;
+                this.updateChatConnectionStatus();
+
+                // Retry connection after 5 seconds
+                setTimeout(() => this.connectWebSocket(), 5000);
+            });
+        } catch (error) {
+            console.error('Error connecting to WebSocket:', error);
+        }
+    }
+
+    /**
+     * Update connection status UI
+     */
+    updateChatConnectionStatus() {
+        const statusElement = document.getElementById('chatConnectionStatus');
+        if (!statusElement) return;
+
+        const icon = statusElement.querySelector('i');
+        const text = statusElement.querySelector('span');
+
+        if (this.state.chat.connected) {
+            icon.className = 'fas fa-circle status-online';
+            text.textContent = 'Online';
+        } else {
+            icon.className = 'fas fa-circle status-offline';
+            text.textContent = 'Offline';
+        }
+    }
+
+    /**
+     * Setup chat event listeners
+     */
+    setupChatEventListeners() {
+        // Room selection
+        const roomSelect = document.getElementById('chatRoomSelect');
+        if (roomSelect) {
+            roomSelect.addEventListener('change', (e) => {
+                this.joinChatRoom(e.target.value);
+            });
+        }
+
+        // Send message button
+        const sendBtn = document.getElementById('chatSendBtn');
+        if (sendBtn) {
+            sendBtn.addEventListener('click', () => this.sendChatMessage());
+        }
+
+        // Message input (Enter key)
+        const messageInput = document.getElementById('chatMessageInput');
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.sendChatMessage();
+                }
+            });
+
+            // Typing indicators
+            let typingTimer;
+            messageInput.addEventListener('input', () => {
+                if (this.state.chat.currentRoomId) {
+                    this.sendTypingIndicator(true);
+
+                    clearTimeout(typingTimer);
+                    typingTimer = setTimeout(() => {
+                        this.sendTypingIndicator(false);
+                    }, 2000);
+                }
+            });
+        }
+
+        // Refresh rooms button
+        const refreshBtn = document.getElementById('refreshRoomsBtn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.loadUserChatRooms());
+        }
+    }
+
+    /**
+     * Load user's chat rooms
+     */
+    async loadUserChatRooms() {
+        try {
+            const response = await fetch(`/api/chat/rooms?userId=${this.state.currentUser.id}`);
+            const rooms = await response.json();
+
+            this.state.chat.availableRooms = rooms;
+            this.renderChatRooms();
+
+        } catch (error) {
+            console.error('Error loading chat rooms:', error);
+            NotificationService.showError('Failed to load chat rooms');
+        }
+    }
+
+    /**
+     * Render chat rooms in dropdown
+     */
+    renderChatRooms() {
+        const roomSelect = document.getElementById('chatRoomSelect');
+        if (!roomSelect) return;
+
+        // Clear existing options except first
+        while (roomSelect.children.length > 1) {
+            roomSelect.removeChild(roomSelect.lastChild);
+        }
+
+        // Add room options
+        this.state.chat.availableRooms.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room.id;
+            option.textContent = room.name || `Chat Room ${room.id}`;
+            roomSelect.appendChild(option);
+        });
+    }
+
+    /**
+     * Join a chat room
+     */
+    joinChatRoom(roomId) {
+        if (!roomId || !this.state.chat.connected) return;
+
+        // Leave current room if any
+        if (this.state.chat.currentRoomId) {
+            this.leaveChatRoom();
+        }
+
+        this.state.chat.currentRoomId = roomId;
+
+        // Subscribe to room messages
+        this.state.chat.stompClient.subscribe(
+            `/topic/chat/${roomId}`,
+            (message) => this.handleChatMessage(JSON.parse(message.body))
+        );
+
+        // Subscribe to typing indicators
+        this.state.chat.stompClient.subscribe(
+            `/topic/chat/${roomId}/typing`,
+            (message) => this.handleTypingIndicator(JSON.parse(message.body))
+        );
+
+        // Enable chat input
+        const messageInput = document.getElementById('chatMessageInput');
+        const sendBtn = document.getElementById('chatSendBtn');
+        if (messageInput && sendBtn) {
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+
+        // Load recent messages
+        this.loadRoomMessages(roomId);
+
+        console.log(`✅ Joined chat room: ${roomId}`);
+    }
+
+    /**
+     * Leave current chat room
+     */
+    leaveChatRoom() {
+        if (this.state.chat.currentRoomId) {
+            console.log(`👋 Left chat room: ${this.state.chat.currentRoomId}`);
+            this.state.chat.currentRoomId = null;
+        }
+
+        // Disable chat input
+        const messageInput = document.getElementById('chatMessageInput');
+        const sendBtn = document.getElementById('chatSendBtn');
+        if (messageInput && sendBtn) {
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+        }
+    }
+
+    /**
+     * Send a chat message
+     */
+    sendChatMessage() {
+        const messageInput = document.getElementById('chatMessageInput');
+        if (!messageInput || !this.state.chat.currentRoomId) return;
+
+        const content = messageInput.value.trim();
+        if (!content) return;
+
+        const message = {
+            senderId: this.state.currentUser.id,
+            roomId: this.state.chat.currentRoomId,
+            content: content
+        };
+
+        this.state.chat.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
+        messageInput.value = '';
+    }
+
+    /**
+     * Handle incoming chat message
+     */
+    handleChatMessage(messageData) {
+        console.log('📨 Received message:', messageData);
+        this.displayChatMessage(messageData);
+    }
+
+    /**
+     * Display chat message in UI
+     */
+    displayChatMessage(messageData) {
+        const messagesContainer = document.getElementById('chatMessages');
+        if (!messagesContainer) return;
+
+        // Remove welcome message if present
+        const welcomeMsg = messagesContainer.querySelector('.chat-welcome');
+        if (welcomeMsg) {
+            welcomeMsg.remove();
+        }
+
+        const messageElement = document.createElement('div');
+        const isOwnMessage = messageData.senderId === this.state.currentUser.id;
+
+        messageElement.className = `message ${isOwnMessage ? 'own' : 'other'}`;
+        messageElement.innerHTML = `
+        <div class="message-bubble">
+            <div class="message-info">
+                <span class="sender-name">${messageData.senderName}</span>
+                <span class="message-time">${new Date(messageData.timestamp).toLocaleTimeString()}</span>
+            </div>
+            <div class="message-content">${this.escapeHtml(messageData.content)}</div>
+        </div>
+    `;
+
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    /**
+     * Send typing indicator
+     */
+    sendTypingIndicator(isTyping) {
+        if (!this.state.chat.currentRoomId || !this.state.chat.connected) return;
+
+        const typingData = {
+            userId: this.state.currentUser.id,
+            userName: this.state.currentUser.name,
+            roomId: this.state.chat.currentRoomId,
+            isTyping: isTyping
+        };
+
+        this.state.chat.stompClient.send('/app/chat.typing', {}, JSON.stringify(typingData));
+    }
+
+    /**
+     * Handle typing indicator
+     */
+    handleTypingIndicator(typingData) {
+        // Don't show our own typing indicator
+        if (typingData.userId === this.state.currentUser.id) return;
+
+        console.log('⌨️ Typing indicator:', typingData);
+        // You can implement visual typing indicators here later
+    }
+
+    /**
+     * Load recent messages for a room
+     */
+    async loadRoomMessages(roomId) {
+        try {
+            const response = await fetch(
+                `/api/chat/rooms/${roomId}/messages/recent?userId=${this.state.currentUser.id}&limit=20`
+            );
+            const messages = await response.json();
+
+            // Clear current messages
+            const messagesContainer = document.getElementById('chatMessages');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '';
+            }
+
+            // Display messages
+            messages.forEach(message => this.displayChatMessage(message));
+
+        } catch (error) {
+            console.error('Error loading room messages:', error);
+        }
+    }
+
+    /**
+     * Handle chat errors
+     */
+    handleChatError(errorData) {
+        console.error('💥 Chat error:', errorData);
+        NotificationService.showError(`Chat Error: ${errorData.error}`);
+    }
+
+    /**
+     * Escape HTML to prevent XSS
+     */
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
 }
 
 class DashboardChat {
@@ -736,33 +1082,33 @@ class DashboardChat {
         this.currentUserName = null;
         this.chatRooms = [];
         this.unreadCounts = new Map();
-        
+
         this.init();
     }
-    
+
     async init() {
         console.log('🚀 Initializing Dashboard Chat...');
-        
+
         // Get current user info from dashboard state
         this.currentUserId = DashboardState.currentUser?.id || 1; // Fallback for testing
         this.currentUserName = DashboardState.currentUser?.name || 'User';
-        
+
         // Load initial chat data
         await this.loadChatRooms();
-        
+
         // Connect to WebSocket
         this.connectWebSocket();
-        
+
         console.log('✅ Dashboard Chat initialized');
     }
-    
+
     async loadChatRooms() {
         try {
             document.getElementById('chatRoomsLoading').style.display = 'flex';
-            
+
             const response = await fetch(`/api/chat/rooms?userId=${this.currentUserId}`);
             const data = await response.json();
-            
+
             if (response.ok) {
                 this.chatRooms = data.chatRooms || [];
                 await this.loadUnreadCounts();
@@ -778,13 +1124,13 @@ class DashboardChat {
             document.getElementById('chatRoomsLoading').style.display = 'none';
         }
     }
-    
+
     async loadUnreadCounts() {
         for (const room of this.chatRooms) {
             try {
                 const response = await fetch(`/api/chat/rooms/${room.id}/messages/unread?userId=${this.currentUserId}`);
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     this.unreadCounts.set(room.id, data.unreadCount);
                 }
@@ -794,24 +1140,24 @@ class DashboardChat {
         }
         this.updateTotalUnreadBadge();
     }
-    
+
     renderChatRooms() {
         const container = document.getElementById('chatRoomsItems');
         const emptyState = document.getElementById('chatRoomsEmpty');
-        
+
         if (this.chatRooms.length === 0) {
             this.showEmptyState();
             return;
         }
-        
+
         emptyState.style.display = 'none';
-        
+
         container.innerHTML = this.chatRooms.map(room => {
             const unreadCount = this.unreadCounts.get(room.id) || 0;
             const displayName = room.displayName || room.name || 'Chat';
             const roomType = room.type || 'PRIVATE';
             const avatar = this.getRoomAvatar(room);
-            
+
             return `
                 <div class="chat-room-item" onclick="openChatRoom(${room.id})">
                     <div class="chat-room-avatar" style="background: ${avatar.bg}; color: ${avatar.color}">
@@ -831,16 +1177,16 @@ class DashboardChat {
             `;
         }).join('');
     }
-    
+
     showEmptyState() {
         document.getElementById('chatRoomsEmpty').style.display = 'flex';
         document.getElementById('chatRoomsItems').innerHTML = '';
     }
-    
+
     getRoomAvatar(room) {
         const name = room.displayName || room.name || 'Chat';
         const firstLetter = name.charAt(0).toUpperCase();
-        
+
         // Generate consistent colors based on room ID
         const colors = [
             { bg: '#0052CC', color: '#ffffff' },
@@ -849,36 +1195,36 @@ class DashboardChat {
             { bg: '#FF8B00', color: '#ffffff' },
             { bg: '#6554C0', color: '#ffffff' }
         ];
-        
+
         const colorIndex = room.id % colors.length;
         return {
             text: firstLetter,
             ...colors[colorIndex]
         };
     }
-    
+
     formatTime(dateString) {
         if (!dateString) return '';
-        
+
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now - date;
         const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMins / 60);
         const diffDays = Math.floor(diffHours / 24);
-        
+
         if (diffMins < 1) return 'now';
         if (diffMins < 60) return `${diffMins}m`;
         if (diffHours < 24) return `${diffHours}h`;
         if (diffDays < 7) return `${diffDays}d`;
-        
+
         return date.toLocaleDateString();
     }
-    
+
     updateTotalUnreadBadge() {
         const totalUnread = Array.from(this.unreadCounts.values()).reduce((sum, count) => sum + count, 0);
         const badge = document.getElementById('totalUnreadBadge');
-        
+
         if (totalUnread > 0) {
             badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
             badge.style.display = 'inline-block';
@@ -886,12 +1232,12 @@ class DashboardChat {
             badge.style.display = 'none';
         }
     }
-    
+
     connectWebSocket() {
         try {
             const socket = new SockJS('/ws');
             this.stompClient = Stomp.over(socket);
-            
+
             this.stompClient.connect({}, (frame) => {
                 console.log('✅ WebSocket connected:', frame);
                 this.connected = true;
@@ -900,7 +1246,7 @@ class DashboardChat {
                 console.error('❌ WebSocket connection failed:', error);
                 this.connected = false;
                 this.updateConnectionStatus();
-                
+
                 // Retry connection after 5 seconds
                 setTimeout(() => this.connectWebSocket(), 5000);
             });
@@ -908,12 +1254,12 @@ class DashboardChat {
             console.error('Error connecting to WebSocket:', error);
         }
     }
-    
+
     updateConnectionStatus() {
         const statusElement = document.getElementById('chatConnectionStatus');
         const icon = statusElement.querySelector('i');
         const text = statusElement.querySelector('span');
-        
+
         if (this.connected) {
             icon.className = 'fas fa-circle status-online';
             text.textContent = 'Online';
@@ -1012,7 +1358,7 @@ function showChatRoomsList() {
 }
 
 // Initialize chat when dashboard loads
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Wait for dashboard to initialize first
     setTimeout(() => {
         dashboardChat = new DashboardChat();
