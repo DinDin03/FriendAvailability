@@ -30,7 +30,7 @@ public class MessageService {
     }
 
     public Message sendMessage(Long senderId, Long roomId, String content){
-        validateUserCanSendToRoom(senderId, roomId);
+        validateUserCanAccessRoom(senderId, roomId);
         validateMessageContent(content);
 
         try{
@@ -59,7 +59,7 @@ public class MessageService {
         }
     }
 
-    private void validateUserCanSendToRoom(Long senderId, Long roomId) {
+    private void validateUserCanAccessRoom(Long senderId, Long roomId) {
         if(!userRepository.existsById(senderId)){
             throw new RuntimeException("User not found with id " + senderId);
         }
@@ -83,6 +83,11 @@ public class MessageService {
             System.out.println("Failed to update the room activity " + e.getMessage());
         }
     }
+
+    public Page<Message> getMessageHistory(Long roomId, Long userId, int page, int size){
+        
+    }
+
 
 
     
