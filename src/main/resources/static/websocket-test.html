@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple WebSocket Chat Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        input, button { margin: 5px; padding: 8px; }
+        #messages { height: 400px; border: 1px solid #ccc; padding: 10px; overflow-y: auto; background: #f9f9f9; }
+        .message { margin: 5px 0; padding: 8px; border-left: 3px solid #007bff; background: white; }
+        .system-message { border-left-color: #28a745; background: #e9f7ef; }
+        .typing-message { border-left-color: #ffc107; background: #fff3cd; }
+        .my-message { border-left-color: #6f42c1; background: #f8f9fa; }
+        .status { padding: 10px; margin: 5px 0; border-radius: 3px; font-weight: bold; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .user-info { background: #e3f2fd; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Simple WebSocket Chat Test</h1>
+        <p>This is a simplified test that doesn't require database setup!</p>
+        
+        <div class="section">
+            <h3>📡 Connection Status</h3>
+            <div id="status" class="status disconnected">Disconnected</div>
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+        </div>
+
+        <div class="section">
+            <h3>👤 User Setup</h3>
+            <div class="user-info">
+                <label>Your Name: <input type="text" id="userName" value="User1" placeholder="Enter your name" /></label>
+                <label>Room ID: <input type="text" id="roomId" value="testroom" placeholder="Enter room ID" /></label>
+                <button onclick="joinRoom()">Join Room</button>
+                <button onclick="leaveRoom()">Leave Room</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>💬 Chat</h3>
+            <div>
+                <input type="text" id="messageInput" placeholder="Type your message..." style="width: 70%;" />
+                <button onclick="sendMessage()">Send Message</button>
+            </div>
+            <div>
+                <button onclick="startTyping()">Start Typing</button>
+                <button onclick="stopTyping()">Stop Typing</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>📨 Messages</h3>
+            <div id="messages"></div>
+            <button onclick="clearMessages()">Clear Messages</button>
+        </div>
+
+        <div class="section">
+            <h3>📋 Instructions</h3>
+            <ol>
+                <li>Click "Connect" to establish WebSocket connection</li>
+                <li>Enter your name and room ID</li>
+                <li>Click "Join Room" to announce your presence</li>
+                <li>Type messages and send them</li>
+                <li>Open this page in another browser tab/window with a different name to test two-way communication</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let connected = false;
+
+        function connect() {
+            const socket = new SockJS('http://localhost:8080/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function (frame) {
+                console.log('✅ Connected: ' + frame);
+                connected = true;
+                updateConnectionStatus();
+                
+                // Subscribe to room messages
+                const roomId = document.getElementById('roomId').value;
+                
+                stompClient.subscribe('/topic/test/room/' + roomId, function (message) {
+                    const messageData = JSON.parse(message.body);
+                    displayMessage('💬 Chat', messageData, 'message');
+                });
+                
+                stompClient.subscribe('/topic/test/room/' + roomId + '/typing', function (message) {
+                    const typingData = JSON.parse(message.body);
+                    displayTypingIndicator(typingData);
+                });
+                
+                stompClient.subscribe('/topic/test/errors', function (message) {
+                    const errorData = JSON.parse(message.body);
+                    displayMessage('❌ Error', errorData, 'error-message');
+                });
+                
+                displaySystemMessage('🎉 Connected to WebSocket!');
+                
+            }, function(error) {
+                console.log('❌ Connection error: ' + error);
+                connected = false;
+                updateConnectionStatus();
+                displaySystemMessage('💥 Connection failed: ' + error);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            connected = false;
+            updateConnectionStatus();
+            displaySystemMessage('👋 Disconnected from WebSocket');
+        }
+
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('status');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            
+            if (connected) {
+                statusEl.textContent = '🟢 Connected';
+                statusEl.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+            } else {
+                statusEl.textContent = '🔴 Disconnected';
+                statusEl.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+            }
+        }
+
+        function joinRoom() {
+            if (!connected) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const message = {
+                userName: document.getElementById('userName').value,
+                roomId: document.getElementById('roomId').value
+            };
+            
+            stompClient.send("/app/test.join", {}, JSON.stringify(message));
+        }
+
+        function leaveRoom() {
+            if (!connected) return;
+            
+            const message = {
+                userName: document.getElementById('userName').value,
+                roomId: document.getElementById('roomId').value
+            };
+            
+            stompClient.send("/app/test.leave", {}, JSON.stringify(message));
+        }
+
+        function sendMessage() {
+            if (!connected) {
+                alert('Please connect first');
+                return;
+            }
+            
+            const messageText = document.getElementById('messageInput').value;
+            if (!messageText.trim()) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            const message = {
+                senderName: document.getElementById('userName').value,
+                roomId: document.getElementById('roomId').value,
+                content: messageText
+            };
+            
+            stompClient.send("/app/test.message", {}, JSON.stringify(message));
+            document.getElementById('messageInput').value = '';
+        }
+
+        function startTyping() {
+            if (!connected) return;
+            
+            const message = {
+                userName: document.getElementById('userName').value,
+                roomId: document.getElementById('roomId').value,
+                isTyping: true
+            };
+            
+            stompClient.send("/app/test.typing", {}, JSON.stringify(message));
+        }
+
+        function stopTyping() {
+            if (!connected) return;
+            
+            const message = {
+                userName: document.getElementById('userName').value,
+                roomId: document.getElementById('roomId').value,
+                isTyping: false
+            };
+            
+            stompClient.send("/app/test.typing", {}, JSON.stringify(message));
+        }
+
+        function displayMessage(type, data, className = 'message') {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = className;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if (data.messageType === 'SYSTEM_MESSAGE') {
+                messageEl.className = 'system-message';
+                messageEl.innerHTML = `<strong>[${timestamp}] 🔔 System:</strong> ${data.content}`;
+            } else {
+                const isMyMessage = data.senderName === document.getElementById('userName').value;
+                if (isMyMessage) messageEl.className = 'my-message';
+                
+                messageEl.innerHTML = `
+                    <strong>[${timestamp}] ${data.senderName}:</strong><br>
+                    ${data.content}
+                `;
+            }
+            
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function displayTypingIndicator(data) {
+            const messagesDiv = document.getElementById('messages');
+            const typingId = 'typing-' + data.userName;
+            
+            // Remove existing typing indicator for this user
+            const existingTyping = document.getElementById(typingId);
+            if (existingTyping) {
+                existingTyping.remove();
+            }
+            
+            // Add new typing indicator if user is typing
+            if (data.isTyping && data.userName !== document.getElementById('userName').value) {
+                const typingEl = document.createElement('div');
+                typingEl.id = typingId;
+                typingEl.className = 'typing-message';
+                typingEl.innerHTML = `<em>💭 ${data.userName} is typing...</em>`;
+                
+                messagesDiv.appendChild(typingEl);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                // Auto-remove after 3 seconds
+                setTimeout(() => {
+                    const el = document.getElementById(typingId);
+                    if (el) el.remove();
+                }, 3000);
+            }
+        }
+
+        function displaySystemMessage(message) {
+            const messagesDiv = document.getElementById('messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = 'system-message';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageEl.innerHTML = `<strong>[${timestamp}] 🔔 System:</strong> ${message}`;
+            
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Auto-connect on page load
+        window.addEventListener('load', function() {
+            displaySystemMessage('📖 Page loaded. Click Connect to start!');
+        });
+    </script>
+</body>
+</html>

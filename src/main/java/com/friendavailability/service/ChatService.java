@@ -240,9 +240,16 @@ public class ChatService {
         if (chatParticipantRepository.userExistsInRoom(userId, roomId)) {
             chatParticipantRepository.reactivateUserInRoom(userId, roomId);
         } else {
+            User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new RuntimeException("Chat room not found with ID: " + roomId));
+            
             ChatParticipant participant = ChatParticipant.builder()
-                    .userId(userId)
-                    .chatRoomId(roomId)
+                    .user(user)           
+                    .chatRoom(chatRoom)  
+                    .userId(userId)      
+                    .chatRoomId(roomId) 
                     .role(role)
                     .build();
             chatParticipantRepository.save(participant);

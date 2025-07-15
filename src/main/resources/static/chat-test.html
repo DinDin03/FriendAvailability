@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat System Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        input, button, select, textarea { margin: 5px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .response { background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px; margin: 10px 0; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .error { background: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .success { background: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .chat-messages { height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 8px; border-radius: 8px; }
+        .my-message { background: #007bff; color: white; margin-left: 50px; }
+        .other-message { background: white; margin-right: 50px; }
+        .system-message { background: #ffeaa7; text-align: center; font-style: italic; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 4px; font-weight: bold; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Complete Chat System Test</h1>
+        
+        <div class="section">
+            <h3>👤 User Settings</h3>
+            <label>Current User ID: <input type="number" id="currentUserId" value="1" /></label>
+            <label>Your Name: <input type="text" id="currentUserName" value="User1" /></label>
+        </div>
+
+        <div class="grid">
+            <!-- REST API Tests -->
+            <div class="section">
+                <h3>🌐 REST API Tests</h3>
+                
+                <h4>Get My Chat Rooms</h4>
+                <button onclick="getMyChatRooms()">Get My Rooms</button>
+                <div id="roomsResponse" class="response"></div>
+
+                <h4>Create Group Chat</h4>
+                <label>Group Name: <input type="text" id="groupName" value="Test Group" /></label>
+                <label>Add User ID: <input type="number" id="addUserId" value="1" /></label>
+                <button onclick="createGroupChat()">Create Group</button>
+                <div id="createGroupResponse" class="response"></div>
+
+                <h4>Get Room Details</h4>
+                <label>Room ID: <input type="number" id="roomIdDetail" value="" /></label>
+                <button onclick="getRoomDetails()">Get Details</button>
+                <div id="roomDetailsResponse" class="response"></div>
+
+                <h4>Get Room Messages</h4>
+                <label>Room ID: <input type="number" id="roomIdMessages" value="" /></label>
+                <button onclick="getRoomMessages()">Get Messages</button>
+                <div id="messagesResponse" class="response"></div>
+            </div>
+
+            <!-- WebSocket Tests -->
+            <div class="section">
+                <h3>⚡ WebSocket Tests</h3>
+                
+                <div id="wsStatus" class="status disconnected">WebSocket: Disconnected</div>
+                <button id="connectBtn" onclick="connectWebSocket()">Connect WebSocket</button>
+                <button id="disconnectBtn" onclick="disconnectWebSocket()" disabled>Disconnect</button>
+
+                <h4>Join Room</h4>
+                <label>Room ID: <input type="number" id="wsRoomId" value="" /></label>
+                <button onclick="joinRoom()" id="joinBtn" disabled>Join Room</button>
+
+                <h4>Send Message</h4>
+                <label>Message: <input type="text" id="messageInput" placeholder="Type your message..." /></label>
+                <button onclick="sendMessage()" id="sendBtn" disabled>Send</button>
+
+                <h4>Live Chat</h4>
+                <div id="chatMessages" class="chat-messages"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let connected = false;
+        let currentRoomId = null;
+
+        // REST API Functions
+        async function getMyChatRooms() {
+            const userId = document.getElementById('currentUserId').value;
+            try {
+                const response = await fetch(`/api/chat/rooms?userId=${userId}`);
+                const data = await response.json();
+                document.getElementById('roomsResponse').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('roomsResponse').className = 'response success';
+                
+                // Auto-fill room IDs if rooms exist
+                if (data.chatRooms && data.chatRooms.length > 0) {
+                    const firstRoomId = data.chatRooms[0].id;
+                    document.getElementById('roomIdDetail').value = firstRoomId;
+                    document.getElementById('roomIdMessages').value = firstRoomId;
+                    document.getElementById('wsRoomId').value = firstRoomId;
+                }
+            } catch (error) {
+                document.getElementById('roomsResponse').textContent = 'Error: ' + error.message;
+                document.getElementById('roomsResponse').className = 'response error';
+            }
+        }
+
+        async function createGroupChat() {
+            const userId = document.getElementById('currentUserId').value;
+            const groupName = document.getElementById('groupName').value;
+            const addUserId = document.getElementById('addUserId').value;
+            
+            try {
+                const response = await fetch('/api/chat/rooms/group', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        creatorId: parseInt(userId),
+                        chatName: groupName,
+                        participantIds: [parseInt(userId), parseInt(addUserId)]
+                    })
+                });
+                
+                const data = await response.json();
+                document.getElementById('createGroupResponse').textContent = JSON.stringify(data, null, 2);
+                
+                if (response.ok) {
+                    document.getElementById('createGroupResponse').className = 'response success';
+                    // Auto-fill the new room ID
+                    if (data.chatRoom) {
+                        document.getElementById('roomIdDetail').value = data.chatRoom.id;
+                        document.getElementById('roomIdMessages').value = data.chatRoom.id;
+                        document.getElementById('wsRoomId').value = data.chatRoom.id;
+                    }
+                } else {
+                    document.getElementById('createGroupResponse').className = 'response error';
+                }
+            } catch (error) {
+                document.getElementById('createGroupResponse').textContent = 'Error: ' + error.message;
+                document.getElementById('createGroupResponse').className = 'response error';
+            }
+        }
+
+        async function getRoomDetails() {
+            const userId = document.getElementById('currentUserId').value;
+            const roomId = document.getElementById('roomIdDetail').value;
+            
+            if (!roomId) {
+                alert('Please enter a room ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/chat/rooms/${roomId}?userId=${userId}`);
+                const data = await response.json();
+                document.getElementById('roomDetailsResponse').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('roomDetailsResponse').className = response.ok ? 'response success' : 'response error';
+            } catch (error) {
+                document.getElementById('roomDetailsResponse').textContent = 'Error: ' + error.message;
+                document.getElementById('roomDetailsResponse').className = 'response error';
+            }
+        }
+
+        async function getRoomMessages() {
+            const userId = document.getElementById('currentUserId').value;
+            const roomId = document.getElementById('roomIdMessages').value;
+            
+            if (!roomId) {
+                alert('Please enter a room ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/chat/rooms/${roomId}/messages/recent?userId=${userId}&limit=10`);
+                const data = await response.json();
+                document.getElementById('messagesResponse').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('messagesResponse').className = response.ok ? 'response success' : 'response error';
+            } catch (error) {
+                document.getElementById('messagesResponse').textContent = 'Error: ' + error.message;
+                document.getElementById('messagesResponse').className = 'response error';
+            }
+        }
+
+        // WebSocket Functions
+        function connectWebSocket() {
+            const socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            
+            stompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                connected = true;
+                updateWebSocketStatus();
+                
+                addChatMessage('🎉 Connected to WebSocket!', 'system');
+            }, function(error) {
+                console.log('Connection error: ' + error);
+                connected = false;
+                updateWebSocketStatus();
+                addChatMessage('💥 WebSocket connection failed', 'system');
+            });
+        }
+
+        function disconnectWebSocket() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+            }
+            connected = false;
+            currentRoomId = null;
+            updateWebSocketStatus();
+            addChatMessage('👋 Disconnected from WebSocket', 'system');
+        }
+
+        function joinRoom() {
+            if (!connected) {
+                alert('Please connect to WebSocket first');
+                return;
+            }
+            
+            const roomId = document.getElementById('wsRoomId').value;
+            if (!roomId) {
+                alert('Please enter a room ID');
+                return;
+            }
+            
+            // Unsubscribe from previous room
+            if (currentRoomId) {
+                // In a real app, you'd store and unsubscribe from previous subscriptions
+            }
+            
+            currentRoomId = roomId;
+            
+            // Subscribe to room messages
+            stompClient.subscribe(`/topic/chat/${roomId}`, function (message) {
+                const messageData = JSON.parse(message.body);
+                displayChatMessage(messageData);
+            });
+            
+            // Subscribe to typing indicators
+            stompClient.subscribe(`/topic/chat/${roomId}/typing`, function (message) {
+                const typingData = JSON.parse(message.body);
+                handleTypingIndicator(typingData);
+            });
+            
+            // Join the room
+            const userName = document.getElementById('currentUserName').value;
+            const userId = document.getElementById('currentUserId').value;
+            
+            stompClient.send("/app/chat.connectToChat", {}, JSON.stringify({
+                userId: parseInt(userId),
+                roomId: parseInt(roomId)
+            }));
+            
+            addChatMessage(`📍 Joined room ${roomId}`, 'system');
+        }
+
+        function sendMessage() {
+            if (!connected || !currentRoomId) {
+                alert('Please connect and join a room first');
+                return;
+            }
+            
+            const messageText = document.getElementById('messageInput').value;
+            if (!messageText.trim()) {
+                alert('Please enter a message');
+                return;
+            }
+            
+            const userId = document.getElementById('currentUserId').value;
+            
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
+                senderId: parseInt(userId),
+                roomId: parseInt(currentRoomId),
+                content: messageText
+            }));
+            
+            document.getElementById('messageInput').value = '';
+        }
+
+        function updateWebSocketStatus() {
+            const statusEl = document.getElementById('wsStatus');
+            const connectBtn = document.getElementById('connectBtn');
+            const disconnectBtn = document.getElementById('disconnectBtn');
+            const joinBtn = document.getElementById('joinBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (connected) {
+                statusEl.textContent = 'WebSocket: 🟢 Connected';
+                statusEl.className = 'status connected';
+                connectBtn.disabled = true;
+                disconnectBtn.disabled = false;
+                joinBtn.disabled = false;
+                sendBtn.disabled = !currentRoomId;
+            } else {
+                statusEl.textContent = 'WebSocket: 🔴 Disconnected';
+                statusEl.className = 'status disconnected';
+                connectBtn.disabled = false;
+                disconnectBtn.disabled = true;
+                joinBtn.disabled = true;
+                sendBtn.disabled = true;
+            }
+        }
+
+        function addChatMessage(content, type = 'system') {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `message ${type}-message`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            messageEl.innerHTML = `<strong>[${timestamp}]</strong> ${content}`;
+            
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function displayChatMessage(messageData) {
+            const currentUserId = parseInt(document.getElementById('currentUserId').value);
+            const isMyMessage = messageData.senderId === currentUserId;
+            const messageType = isMyMessage ? 'my' : 'other';
+            
+            if (messageData.messageType === 'SYSTEM_MESSAGE') {
+                addChatMessage(messageData.content, 'system');
+            } else {
+                addChatMessage(`${messageData.senderName}: ${messageData.content}`, messageType);
+            }
+        }
+
+        function handleTypingIndicator(typingData) {
+            const currentUserId = parseInt(document.getElementById('currentUserId').value);
+            if (typingData.userId !== currentUserId && typingData.isTyping) {
+                addChatMessage(`${typingData.userName} is typing...`, 'system');
+            }
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initialize
+        window.addEventListener('load', function() {
+            updateWebSocketStatus();
+            addChatMessage('🌟 Chat system ready! Start by getting your chat rooms.', 'system');
+        });
+    </script>
+</body>
+</html>
