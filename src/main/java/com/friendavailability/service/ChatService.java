@@ -197,7 +197,20 @@ public class ChatService {
         }
 
         User removedUser = getUserById(userId);
-        String message = isSelfRemoval ? removedUser.getName() + " left the chat " : 
+        String message = isSelfRemoval ? removedUser.getName() + " left the chat " : removedUser.getName() + " was removed from the chat";
+        createSystemMessage(roomId, message);
         
     } 
+
+    public void promoteUserToAdmin(Long roomId, Long userId, Long requestingUserId){
+        if(!chatParticipantRepository.isUserAdminInRoom(requestingUserId, roomId)){
+            throw new RuntimeException("Only admins can promote to other users");
+        }
+        if(chatParticipantRepository.isUserAdminInRoom(userId, roomId)){
+            throw new RuntimeException("User is an admin already");
+        }
+        if(!chatParticipantRepository.isUserActiveInRoom(userId, roomId)){
+            throw new RuntimeException("User is not in the room");
+        }
+    }
 }
