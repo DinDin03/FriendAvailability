@@ -727,6 +727,298 @@ class Dashboard {
     }
 }
 
+class DashboardChat {
+    constructor() {
+        this.stompClient = null;
+        this.connected = false;
+        this.currentRoomId = null;
+        this.currentUserId = null;
+        this.currentUserName = null;
+        this.chatRooms = [];
+        this.unreadCounts = new Map();
+        
+        this.init();
+    }
+    
+    async init() {
+        console.log('🚀 Initializing Dashboard Chat...');
+        
+        // Get current user info from dashboard state
+        this.currentUserId = DashboardState.currentUser?.id || 1; // Fallback for testing
+        this.currentUserName = DashboardState.currentUser?.name || 'User';
+        
+        // Load initial chat data
+        await this.loadChatRooms();
+        
+        // Connect to WebSocket
+        this.connectWebSocket();
+        
+        console.log('✅ Dashboard Chat initialized');
+    }
+    
+    async loadChatRooms() {
+        try {
+            document.getElementById('chatRoomsLoading').style.display = 'flex';
+            
+            const response = await fetch(`/api/chat/rooms?userId=${this.currentUserId}`);
+            const data = await response.json();
+            
+            if (response.ok) {
+                this.chatRooms = data.chatRooms || [];
+                await this.loadUnreadCounts();
+                this.renderChatRooms();
+            } else {
+                console.error('Failed to load chat rooms:', data.error);
+                this.showEmptyState();
+            }
+        } catch (error) {
+            console.error('Error loading chat rooms:', error);
+            this.showEmptyState();
+        } finally {
+            document.getElementById('chatRoomsLoading').style.display = 'none';
+        }
+    }
+    
+    async loadUnreadCounts() {
+        for (const room of this.chatRooms) {
+            try {
+                const response = await fetch(`/api/chat/rooms/${room.id}/messages/unread?userId=${this.currentUserId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    this.unreadCounts.set(room.id, data.unreadCount);
+                }
+            } catch (error) {
+                console.error(`Error loading unread count for room ${room.id}:`, error);
+            }
+        }
+        this.updateTotalUnreadBadge();
+    }
+    
+    renderChatRooms() {
+        const container = document.getElementById('chatRoomsItems');
+        const emptyState = document.getElementById('chatRoomsEmpty');
+        
+        if (this.chatRooms.length === 0) {
+            this.showEmptyState();
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        
+        container.innerHTML = this.chatRooms.map(room => {
+            const unreadCount = this.unreadCounts.get(room.id) || 0;
+            const displayName = room.displayName || room.name || 'Chat';
+            const roomType = room.type || 'PRIVATE';
+            const avatar = this.getRoomAvatar(room);
+            
+            return `
+                <div class="chat-room-item" onclick="openChatRoom(${room.id})">
+                    <div class="chat-room-avatar" style="background: ${avatar.bg}; color: ${avatar.color}">
+                        ${avatar.text}
+                    </div>
+                    <div class="chat-room-info">
+                        <div class="chat-room-name">${displayName}</div>
+                        <div class="chat-room-last-message">
+                            ${roomType === 'GROUP' ? 'Group Chat' : 'Private Chat'}
+                        </div>
+                    </div>
+                    <div class="chat-room-meta">
+                        <div class="chat-room-time">${this.formatTime(room.updatedAt)}</div>
+                        ${unreadCount > 0 ? `<div class="unread-badge">${unreadCount}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    showEmptyState() {
+        document.getElementById('chatRoomsEmpty').style.display = 'flex';
+        document.getElementById('chatRoomsItems').innerHTML = '';
+    }
+    
+    getRoomAvatar(room) {
+        const name = room.displayName || room.name || 'Chat';
+        const firstLetter = name.charAt(0).toUpperCase();
+        
+        // Generate consistent colors based on room ID
+        const colors = [
+            { bg: '#0052CC', color: '#ffffff' },
+            { bg: '#00875A', color: '#ffffff' },
+            { bg: '#DE350B', color: '#ffffff' },
+            { bg: '#FF8B00', color: '#ffffff' },
+            { bg: '#6554C0', color: '#ffffff' }
+        ];
+        
+        const colorIndex = room.id % colors.length;
+        return {
+            text: firstLetter,
+            ...colors[colorIndex]
+        };
+    }
+    
+    formatTime(dateString) {
+        if (!dateString) return '';
+        
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMins / 60);
+        const diffDays = Math.floor(diffHours / 24);
+        
+        if (diffMins < 1) return 'now';
+        if (diffMins < 60) return `${diffMins}m`;
+        if (diffHours < 24) return `${diffHours}h`;
+        if (diffDays < 7) return `${diffDays}d`;
+        
+        return date.toLocaleDateString();
+    }
+    
+    updateTotalUnreadBadge() {
+        const totalUnread = Array.from(this.unreadCounts.values()).reduce((sum, count) => sum + count, 0);
+        const badge = document.getElementById('totalUnreadBadge');
+        
+        if (totalUnread > 0) {
+            badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+            badge.style.display = 'inline-block';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    connectWebSocket() {
+        try {
+            const socket = new SockJS('/ws');
+            this.stompClient = Stomp.over(socket);
+            
+            this.stompClient.connect({}, (frame) => {
+                console.log('✅ WebSocket connected:', frame);
+                this.connected = true;
+                this.updateConnectionStatus();
+            }, (error) => {
+                console.error('❌ WebSocket connection failed:', error);
+                this.connected = false;
+                this.updateConnectionStatus();
+                
+                // Retry connection after 5 seconds
+                setTimeout(() => this.connectWebSocket(), 5000);
+            });
+        } catch (error) {
+            console.error('Error connecting to WebSocket:', error);
+        }
+    }
+    
+    updateConnectionStatus() {
+        const statusElement = document.getElementById('chatConnectionStatus');
+        const icon = statusElement.querySelector('i');
+        const text = statusElement.querySelector('span');
+        
+        if (this.connected) {
+            icon.className = 'fas fa-circle status-online';
+            text.textContent = 'Online';
+        } else {
+            icon.className = 'fas fa-circle status-offline';
+            text.textContent = 'Offline';
+        }
+    }
+}
+
+// === LIVE CHAT FRONTEND INTEGRATION ===
+
+let stompClient = null;
+let currentRoomId = null;
+
+function connectWebSocket() {
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function (frame) {
+        console.log('Connected: ' + frame);
+        // Optionally subscribe to a default room or user notifications here
+    }, function (error) {
+        console.error('WebSocket error:', error);
+        setTimeout(connectWebSocket, 5000); // Retry on disconnect
+    });
+}
+
+function subscribeToRoom(roomId) {
+    if (stompClient && stompClient.connected) {
+        stompClient.subscribe(`/topic/chat/${roomId}`, function (message) {
+            const msg = JSON.parse(message.body);
+            displayNewMessage(msg);
+        });
+    }
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chatMessageInput');
+    const message = input.value.trim();
+    if (!message || !stompClient || !stompClient.connected || !currentRoomId) return;
+
+    stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
+        senderId: DashboardState.currentUser.id,
+        roomId: currentRoomId,
+        content: message
+    }));
+
+    input.value = '';
+}
+
+function displayNewMessage(msg) {
+    const container = document.getElementById('chatMessagesContainer');
+    const isOwn = msg.senderId === DashboardState.currentUser.id;
+    const div = document.createElement('div');
+    div.className = 'message' + (isOwn ? ' own' : '');
+    div.innerHTML = `
+        <div class="message-bubble">
+            <div class="message-info">
+                <span class="sender-name">${isOwn ? 'You' : msg.senderName}</span>
+                <span class="message-time">${new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+            <div class="message-content">${msg.content}</div>
+        </div>
+    `;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
+
+async function openChatRoom(roomId) {
+    currentRoomId = roomId;
+    document.getElementById('chatRoomsList').style.display = 'none';
+    document.getElementById('activeChatView').style.display = 'flex';
+
+    await loadChatMessages(roomId);
+    subscribeToRoom(roomId);
+}
+
+async function loadChatMessages(roomId) {
+    const response = await fetch(`/api/chat/rooms/${roomId}/messages/recent?userId=${DashboardState.currentUser.id}&limit=50`);
+    const data = await response.json();
+    const container = document.getElementById('chatMessagesContainer');
+    container.innerHTML = '';
+    data.messages.reverse().forEach(displayNewMessage);
+    container.scrollTop = container.scrollHeight;
+}
+
+function handleMessageKeyPress(event) {
+    if (event.key === 'Enter') sendChatMessage();
+}
+
+function showChatRoomsList() {
+    document.getElementById('activeChatView').style.display = 'none';
+    document.getElementById('chatRoomsList').style.display = 'flex';
+    currentRoomId = null;
+}
+
+// Initialize chat when dashboard loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for dashboard to initialize first
+    setTimeout(() => {
+        dashboardChat = new DashboardChat();
+    }, 1000);
+});
+
 /**
  * GLOBAL DASHBOARD INSTANCE
  * Create and expose dashboard instance globally
@@ -791,3 +1083,4 @@ function logout() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Dashboard, DashboardState, DashboardConfig };
 }
+

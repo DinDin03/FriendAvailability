@@ -19,7 +19,318 @@
   Main dashboard container and grid system.
   Like having a structured service layer that organizes different data sources.
 */
+.chat-widget {
+    grid-column: span 1;
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+}
 
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-300);
+    background: var(--white);
+}
+
+.widget-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 600;
+}
+
+.widget-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.widget-content {
+    flex: 1;
+    overflow: hidden;
+}
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Chat Rooms List */
+.chat-rooms-section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-rooms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-300);
+}
+
+.chat-rooms-header h4 {
+    margin: 0;
+    color: var(--gray-900);
+}
+
+.chat-status {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+}
+
+.status-online { color: var(--success-green); }
+.status-offline { color: var(--gray-500); }
+
+.chat-rooms-list {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--gray-500);
+}
+
+.loading-state i {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--primary-blue);
+}
+
+.chat-room-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-100);
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.chat-room-item:hover {
+    background: var(--light-blue);
+}
+
+.chat-room-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gray-300);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-md);
+    font-weight: 600;
+    font-size: var(--font-size-sm);
+}
+
+.chat-room-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.chat-room-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-room-last-message {
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-room-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--spacing-xs);
+}
+
+.chat-room-time {
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+}
+
+.unread-badge, .notification-badge {
+    background: var(--danger-red);
+    color: var(--white);
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Active Chat View */
+.active-chat-section {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--gray-300);
+    background: var(--white);
+}
+
+.back-to-rooms {
+    margin-right: var(--spacing-md);
+}
+
+.chat-info {
+    flex: 1;
+}
+
+.chat-info h4 {
+    margin: 0;
+    font-size: var(--font-size-base);
+}
+
+.chat-info p {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--gray-500);
+}
+
+.chat-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+/* Chat Messages */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+    background: var(--gray-100);
+}
+
+.message {
+    margin-bottom: var(--spacing-md);
+    max-width: 80%;
+}
+
+.message.own {
+    margin-left: auto;
+}
+
+.message.own .message-bubble {
+    background: var(--primary-blue);
+    color: var(--white);
+}
+
+.message-bubble {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    box-shadow: var(--shadow-sm);
+    position: relative;
+}
+
+.message-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: var(--gray-500);
+}
+
+.message.own .message-info {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.message-content {
+    line-height: 1.4;
+}
+
+.system-message {
+    text-align: center;
+    margin: var(--spacing-md) 0;
+}
+
+.system-message .message-bubble {
+    background: var(--warning-orange);
+    color: var(--white);
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+}
+
+/* Chat Input */
+.chat-input-section {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--gray-300);
+    background: var(--white);
+}
+
+.chat-input-wrapper {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+#chatMessageInput {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    outline: none;
+}
+
+#chatMessageInput:focus {
+    border-color: var(--primary-blue);
+}
+
+.btn-send {
+    background: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-send:hover {
+    background: #0747A6;
+    transform: scale(1.05);
+}
+
+.btn-send:disabled {
+    background: var(--gray-500);
+    cursor: not-allowed;
+    transform: none;
+}
 .dashboard-page {
     background: var(--gray-100);
     min-height: 100vh;

@@ -50,7 +50,8 @@ public class SecurityConfig {
                                 "/js/**",
                                 "/websocket-test.html", 
                                 "/ws/**",
-                                "/api/chat/**"
+                                "/api/chat/**",
+                                "/chat-test.html"
                         ).permitAll()
 
                         // Email verification pages - MUST be accessible without authentication
