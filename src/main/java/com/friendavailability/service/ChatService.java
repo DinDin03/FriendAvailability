@@ -8,11 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
-import javax.management.RuntimeErrorException;
 
 @Service
 @Transactional
@@ -182,35 +179,87 @@ public class ChatService {
         return chatParticipantRepository.findByChatRoomIdAndIsActiveTrue(roomId);
     }
 
-    public void removeUsersFromChat(Long roomId, Long userId, Long requestingUserId){
+    public void removeUsersFromChat(Long roomId, Long userId, Long requestingUserId) {
         boolean isSelfRemoval = userId.equals(requestingUserId);
         boolean isAdmin = chatParticipantRepository.isUserAdminInRoom(requestingUserId, roomId);
 
-        if(!isSelfRemoval && !isAdmin){
+        if (!isSelfRemoval && !isAdmin) {
             throw new RuntimeException("Only admin or user can remove from the group chat");
         }
 
         int updated = chatParticipantRepository.removeUserFromRoom(userId, roomId);
 
-        if(updated == 0){
+        if (updated == 0) {
             throw new IllegalArgumentException("User not found in the chat");
         }
 
         User removedUser = getUserById(userId);
-        String message = isSelfRemoval ? removedUser.getName() + " left the chat " : removedUser.getName() + " was removed from the chat";
+        String message = isSelfRemoval ? removedUser.getName() + " left the chat "
+                : removedUser.getName() + " was removed from the chat";
         createSystemMessage(roomId, message);
-        
-    } 
 
-    public void promoteUserToAdmin(Long roomId, Long userId, Long requestingUserId){
-        if(!chatParticipantRepository.isUserAdminInRoom(requestingUserId, roomId)){
+    }
+
+    public void promoteUserToAdmin(Long roomId, Long userId, Long requestingUserId) {
+        if (!chatParticipantRepository.isUserAdminInRoom(requestingUserId, roomId)) {
             throw new RuntimeException("Only admins can promote to other users");
         }
-        if(chatParticipantRepository.isUserAdminInRoom(userId, roomId)){
+        if (chatParticipantRepository.isUserAdminInRoom(userId, roomId)) {
             throw new RuntimeException("User is an admin already");
         }
-        if(!chatParticipantRepository.isUserActiveInRoom(userId, roomId)){
+        if (!chatParticipantRepository.isUserActiveInRoom(userId, roomId)) {
             throw new RuntimeException("User is not in the room");
         }
+        int updated = chatParticipantRepository.updateUserRole(userId, roomId, ParticipantRole.ADMIN);
+
+        if (updated == 0) {
+            throw new RuntimeException("failed to update user role");
+        }
+        User promotedUser = getUserById(userId);
+        createSystemMessage(roomId, promotedUser.getName() + " was promoted to ADMIN");
+    }
+
+    public List<ChatRoom> searchGroupChats(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return List.of();
+        }
+        return chatRoomRepository.findGroupChatsByNameContaining(searchTerm);
+    }
+
+    private void addUserToPrivateChat(Long roomId, Long userId, ParticipantRole role) {
+        ChatParticipant participant = ChatParticipant.builder()
+                .userId(userId)
+                .chatRoomId(roomId)
+                .role(role)
+                .build();
+
+        chatParticipantRepository.save(participant);
+    }
+
+    private void addUserToGroupChatInternal(Long roomId, Long userId, ParticipantRole role) {
+        if (chatParticipantRepository.userExistsInRoom(userId, roomId)) {
+            chatParticipantRepository.reactivateUserInRoom(userId, roomId);
+        } else {
+            ChatParticipant participant = ChatParticipant.builder()
+                    .userId(userId)
+                    .chatRoomId(roomId)
+                    .role(role)
+                    .build();
+            chatParticipantRepository.save(participant);
+        }
+    }
+
+    private void createSystemMessage(Long roomId, String content) {
+        Message systMessage = Message.builder()
+                .chatRoomId(roomId)
+                .content(content)
+                .messageType(MessageType.SYSTEM_MESSAGE)
+                .senderId(null)
+                .build();
+        messageRepository.save(systMessage);
+    }
+
+    private User getUserById(Long userId){
+        return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id " + userId));
     }
 }
