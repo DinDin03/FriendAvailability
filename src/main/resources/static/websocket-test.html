@@ -57,20 +57,9 @@
         </div>
 
         <div class="section">
-            <h3>📨 Messages</h3>
+            <h3>Messages</h3>
             <div id="messages"></div>
             <button onclick="clearMessages()">Clear Messages</button>
-        </div>
-
-        <div class="section">
-            <h3>📋 Instructions</h3>
-            <ol>
-                <li>Click "Connect" to establish WebSocket connection</li>
-                <li>Enter your name and room ID</li>
-                <li>Click "Join Room" to announce your presence</li>
-                <li>Type messages and send them</li>
-                <li>Open this page in another browser tab/window with a different name to test two-way communication</li>
-            </ol>
         </div>
     </div>
 
@@ -83,11 +72,10 @@
             stompClient = Stomp.over(socket);
             
             stompClient.connect({}, function (frame) {
-                console.log('✅ Connected: ' + frame);
+                console.log('Connected: ' + frame);
                 connected = true;
                 updateConnectionStatus();
                 
-                // Subscribe to room messages
                 const roomId = document.getElementById('roomId').value;
                 
                 stompClient.subscribe('/topic/test/room/' + roomId, function (message) {
@@ -102,16 +90,16 @@
                 
                 stompClient.subscribe('/topic/test/errors', function (message) {
                     const errorData = JSON.parse(message.body);
-                    displayMessage('❌ Error', errorData, 'error-message');
+                    displayMessage('Error', errorData, 'error-message');
                 });
                 
-                displaySystemMessage('🎉 Connected to WebSocket!');
+                displaySystemMessage('Connected to WebSocket!');
                 
             }, function(error) {
-                console.log('❌ Connection error: ' + error);
+                console.log('Connection error: ' + error);
                 connected = false;
                 updateConnectionStatus();
-                displaySystemMessage('💥 Connection failed: ' + error);
+                displaySystemMessage('Connection failed: ' + error);
             });
         }
 
@@ -121,7 +109,7 @@
             }
             connected = false;
             updateConnectionStatus();
-            displaySystemMessage('👋 Disconnected from WebSocket');
+            displaySystemMessage('Disconnected from WebSocket');
         }
 
         function updateConnectionStatus() {
@@ -130,12 +118,12 @@
             const disconnectBtn = document.getElementById('disconnectBtn');
             
             if (connected) {
-                statusEl.textContent = '🟢 Connected';
+                statusEl.textContent = 'Connected';
                 statusEl.className = 'status connected';
                 connectBtn.disabled = true;
                 disconnectBtn.disabled = false;
             } else {
-                statusEl.textContent = '🔴 Disconnected';
+                statusEl.textContent = 'Disconnected';
                 statusEl.className = 'status disconnected';
                 connectBtn.disabled = false;
                 disconnectBtn.disabled = true;
@@ -222,7 +210,7 @@
             
             if (data.messageType === 'SYSTEM_MESSAGE') {
                 messageEl.className = 'system-message';
-                messageEl.innerHTML = `<strong>[${timestamp}] 🔔 System:</strong> ${data.content}`;
+                messageEl.innerHTML = `<strong>[${timestamp}] System:</strong> ${data.content}`;
             } else {
                 const isMyMessage = data.senderName === document.getElementById('userName').value;
                 if (isMyMessage) messageEl.className = 'my-message';
@@ -241,13 +229,11 @@
             const messagesDiv = document.getElementById('messages');
             const typingId = 'typing-' + data.userName;
             
-            // Remove existing typing indicator for this user
             const existingTyping = document.getElementById(typingId);
             if (existingTyping) {
                 existingTyping.remove();
             }
             
-            // Add new typing indicator if user is typing
             if (data.isTyping && data.userName !== document.getElementById('userName').value) {
                 const typingEl = document.createElement('div');
                 typingEl.id = typingId;
@@ -257,7 +243,6 @@
                 messagesDiv.appendChild(typingEl);
                 messagesDiv.scrollTop = messagesDiv.scrollHeight;
                 
-                // Auto-remove after 3 seconds
                 setTimeout(() => {
                     const el = document.getElementById(typingId);
                     if (el) el.remove();
@@ -281,16 +266,14 @@
             document.getElementById('messages').innerHTML = '';
         }
 
-        // Allow Enter key to send message
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 sendMessage();
             }
         });
 
-        // Auto-connect on page load
         window.addEventListener('load', function() {
-            displaySystemMessage('📖 Page loaded. Click Connect to start!');
+            displaySystemMessage('Page loaded. Click Connect to start!');
         });
     </script>
 </body>
