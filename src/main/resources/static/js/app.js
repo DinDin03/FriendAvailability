@@ -3,38 +3,30 @@ let currentUser = null;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Friend Availability App loaded');
     setupEventListeners();
-    loadUsers(); // Load users on startup
+    loadUsers();
 });
 
-// Set up all event listeners
 function setupEventListeners() {
-    // Form submissions
     document.getElementById('createUserForm').addEventListener('submit', handleCreateUser);
     document.getElementById('sendRequestForm').addEventListener('submit', handleSendRequest);
 
     console.log('Event listeners set up');
 }
 
-// Navigation function to show/hide sections
 function showSection(sectionName) {
-    // Hide all sections
     const sections = document.querySelectorAll('.section');
     sections.forEach(section => section.classList.remove('active'));
 
-    // Remove active class from all nav buttons
     const navButtons = document.querySelectorAll('.nav-btn');
     navButtons.forEach(btn => btn.classList.remove('active'));
 
-    // Show selected section
     document.getElementById(sectionName).classList.add('active');
 
-    // Highlight active nav button
     event.target.classList.add('active');
 
     console.log('Switched to section:', sectionName);
 }
 
-// Load all users from API
 async function loadUsers() {
     console.log('Loading users...');
     const usersList = document.getElementById('usersList');
@@ -59,7 +51,6 @@ async function loadUsers() {
     }
 }
 
-// Display users in the UI
 function displayUsers(users) {
     const usersList = document.getElementById('usersList');
 
@@ -83,7 +74,6 @@ function displayUsers(users) {
     document.querySelectorAll('.delete-user-btn').forEach(button => {
         button.addEventListener('click', () => {
             const userId = button.dataset.userid;
-            // Add a confirmation popup before deleting
             if (confirm(`Are you sure you want to delete this user?`)) {
                 deleteUser(userId);
             }
@@ -117,13 +107,10 @@ async function handleCreateUser(event) {
         const newUser = await response.json();
         console.log('User created:', newUser);
 
-        // Show success message
         showMessage('User created successfully!', 'success');
 
-        // Clear form
         document.getElementById('createUserForm').reset();
 
-        // Reload users list
         loadUsers();
 
     } catch (error) {
@@ -193,7 +180,6 @@ async function handleSendRequest(event) {
     }
 }
 
-// Load all friend data for a specific user
 async function loadFriendData() {
     const userId = document.getElementById('currentUserId').value;
 
@@ -207,7 +193,6 @@ async function loadFriendData() {
     friendsData.innerHTML = '<div class="loading">Loading your friends and requests...</div>';
 
     try {
-        // Load friends and pending requests in parallel
         const [friendsResponse, requestsResponse] = await Promise.all([
             fetch(`/api/friends/${userId}`, { credentials: 'include' }),
             fetch(`/api/friends/${userId}/pending`, { credentials: 'include' })
@@ -258,14 +243,12 @@ function getCurrentUserId() {
     return document.getElementById('currentUserId')?.value || null;
 }
 
-// Display friends and pending requests
 function displayFriendData(friends, pendingRequests) {
     const friendsData = document.getElementById('friendsData');
     const currentUserId = getCurrentUserId();
 
     let html = '';
 
-    // Display friends
     html += '<h4>Your Friends</h4>';
     if (friends.length === 0) {
         html += '<p class="loading">No friends yet. Send some friend requests!</p>';
@@ -286,7 +269,6 @@ function displayFriendData(friends, pendingRequests) {
         });
     }
 
-    // Display pending requests
     html += '<h4 style="margin-top: 30px;">Pending Friend Requests</h4>';
     if (pendingRequests.length === 0) {
         html += '<p class="loading">No pending requests</p>';
@@ -326,7 +308,6 @@ function displayFriendData(friends, pendingRequests) {
 
 }
 
-// Respond to friend request (accept or reject)
 async function respondToRequest(friendshipId, action) {
     const userId = document.getElementById('currentUserId').value;
 
@@ -353,7 +334,6 @@ async function respondToRequest(friendshipId, action) {
 
         showMessage(`Friend request ${action}ed successfully!`, 'success');
 
-        // Reload friend data to show updated state
         loadFriendData();
 
     } catch (error) {
@@ -362,28 +342,22 @@ async function respondToRequest(friendshipId, action) {
     }
 }
 
-// Show success/error messages to user
 function showMessage(message, type) {
-    // Remove existing messages
     const existingMessages = document.querySelectorAll('.success, .error');
     existingMessages.forEach(msg => msg.remove());
 
-    // Create new message element
     const messageDiv = document.createElement('div');
     messageDiv.className = type;
     messageDiv.textContent = message;
 
-    // Insert at top of current section
     const activeSection = document.querySelector('.section.active');
     activeSection.insertBefore(messageDiv, activeSection.firstChild);
 
-    // Auto-remove after 5 seconds
     setTimeout(() => {
         messageDiv.remove();
     }, 5000);
 }
 
-// Format date for display
 function formatDate(dateString) {
     return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -394,14 +368,12 @@ function formatDate(dateString) {
     });
 }
 
-// Debug function to log API responses
 function debugAPI() {
     console.log('=== API Debug Information ===');
     console.log('Base URL:', window.location.origin);
     console.log('Users endpoint:', '/api/users');
     console.log('Friends endpoint:', '/api/friends');
 
-    // Test if API is reachable
     fetch('/api/users', { credentials: 'include' })
         .then(response => {
             console.log('API Status:', response.ok ? 'Working' : 'Error');
@@ -412,5 +384,4 @@ function debugAPI() {
         });
 }
 
-// Run debug on page load (can be removed in production)
 debugAPI();

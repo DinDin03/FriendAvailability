@@ -1,21 +1,3 @@
-/* ===== API SERVICE ===== */
-/*
-  This file contains all HTTP communication logic and API calls.
-  Think of this as your @Service classes in Spring Boot that use
-  @RestTemplate, @WebClient, or @FeignClient to communicate with other services.
-
-  This centralizes all API communication, handles:
-  - HTTP requests and responses
-  - Error handling and retry logic
-  - Authentication headers
-  - Request/response interceptors
-  - Timeout management
-*/
-
-/**
- * HTTP Client Class
- * Similar to RestTemplate or WebClient in Spring Boot
- */
 class HttpClient {
     constructor(baseURL = API_CONFIG.BASE_URL) {
         this.baseURL = baseURL;
@@ -29,51 +11,23 @@ class HttpClient {
         debugLog('HttpClient initialized with baseURL:', baseURL);
     }
 
-    /**
-     * Add request interceptor
-     * Similar to ClientHttpRequestInterceptor in Spring Boot
-     *
-     * @param {Function} interceptor - Request interceptor function
-     */
     addRequestInterceptor(interceptor) {
         this.interceptors.request.push(interceptor);
     }
 
-    /**
-     * Add response interceptor
-     * Similar to ResponseEntityExceptionHandler in Spring Boot
-     *
-     * @param {Function} interceptor - Response interceptor function
-     */
     addResponseInterceptor(interceptor) {
         this.interceptors.response.push(interceptor);
     }
 
-    /**
-     * Add error interceptor
-     * Similar to @ControllerAdvice error handling
-     *
-     * @param {Function} interceptor - Error interceptor function
-     */
     addErrorInterceptor(interceptor) {
         this.interceptors.error.push(interceptor);
     }
 
-    /**
-     * Build full URL
-     * @param {string} endpoint - API endpoint
-     * @returns {string} Full URL
-     */
     buildUrl(endpoint) {
         const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
         return `${this.baseURL}/${cleanEndpoint}`;
     }
 
-    /**
-     * Apply request interceptors
-     * @param {Object} config - Request configuration
-     * @returns {Object} Modified configuration
-     */
     async applyRequestInterceptors(config) {
         let modifiedConfig = { ...config };
 
@@ -88,11 +42,6 @@ class HttpClient {
         return modifiedConfig;
     }
 
-    /**
-     * Apply response interceptors
-     * @param {Response} response - Fetch response
-     * @returns {Response} Modified response
-     */
     async applyResponseInterceptors(response) {
         let modifiedResponse = response;
 
@@ -107,11 +56,6 @@ class HttpClient {
         return modifiedResponse;
     }
 
-    /**
-     * Apply error interceptors
-     * @param {Error} error - Error object
-     * @returns {Error} Modified error
-     */
     async applyErrorInterceptors(error) {
         let modifiedError = error;
 
@@ -126,19 +70,10 @@ class HttpClient {
         return modifiedError;
     }
 
-    /**
-     * Make HTTP request
-     * Similar to RestTemplate.exchange() in Spring Boot
-     *
-     * @param {string} endpoint - API endpoint
-     * @param {Object} options - Request options
-     * @returns {Promise<Object>} API response
-     */
     async request(endpoint, options = {}) {
         const startTime = performance.now();
 
         try {
-            // Default configuration
             const defaultConfig = {
                 method: 'GET',
                 headers: getDefaultHeaders(),
@@ -146,32 +81,25 @@ class HttpClient {
                 timeout: this.defaultTimeout
             };
 
-            // Merge configurations
             let config = { ...defaultConfig, ...options };
             config.headers = { ...defaultConfig.headers, ...options.headers };
 
-            // Apply request interceptors
             config = await this.applyRequestInterceptors(config);
 
-            // Build full URL
             const url = this.buildUrl(endpoint);
 
             debugLog(`${config.method} ${url}`, config);
 
-            // Create AbortController for timeout
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), config.timeout);
 
             config.signal = controller.signal;
 
-            // Make the request
             let response = await fetch(url, config);
             clearTimeout(timeoutId);
 
-            // Apply response interceptors
             response = await this.applyResponseInterceptors(response);
 
-            // Parse response
             const result = await this.parseResponse(response);
 
             const duration = performance.now() - startTime;
@@ -183,27 +111,19 @@ class HttpClient {
             const duration = performance.now() - startTime;
             errorLog(`${options.method || 'GET'} ${endpoint} failed after ${duration.toFixed(2)}ms:`, error);
 
-            // Apply error interceptors
             const modifiedError = await this.applyErrorInterceptors(error);
             throw modifiedError;
         }
     }
 
-    /**
-     * Parse response based on content type
-     * @param {Response} response - Fetch response
-     * @returns {Promise<any>} Parsed response data
-     */
     async parseResponse(response) {
         const contentType = response.headers.get('content-type');
 
-        // Handle different response types
         if (!response.ok) {
             const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
             error.status = response.status;
             error.statusText = response.statusText;
 
-            // Try to parse error body
             try {
                 if (contentType && contentType.includes('application/json')) {
                     error.data = await response.json();
@@ -217,7 +137,6 @@ class HttpClient {
             throw error;
         }
 
-        // Parse successful response
         if (contentType && contentType.includes('application/json')) {
             return await response.json();
         } else if (contentType && contentType.includes('text/')) {
@@ -227,10 +146,6 @@ class HttpClient {
         }
     }
 
-    /**
-     * GET request
-     * Similar to RestTemplate.getForObject()
-     */
     async get(endpoint, params = {}, options = {}) {
         const queryString = new URLSearchParams(params).toString();
         const url = queryString ? `${endpoint}?${queryString}` : endpoint;
@@ -241,10 +156,6 @@ class HttpClient {
         });
     }
 
-    /**
-     * POST request
-     * Similar to RestTemplate.postForObject()
-     */
     async post(endpoint, data = null, options = {}) {
         return this.request(endpoint, {
             method: 'POST',
@@ -253,10 +164,6 @@ class HttpClient {
         });
     }
 
-    /**
-     * PUT request
-     * Similar to RestTemplate.put()
-     */
     async put(endpoint, data = null, options = {}) {
         return this.request(endpoint, {
             method: 'PUT',
@@ -265,10 +172,6 @@ class HttpClient {
         });
     }
 
-    /**
-     * PATCH request
-     * Similar to RestTemplate.patchForObject()
-     */
     async patch(endpoint, data = null, options = {}) {
         return this.request(endpoint, {
             method: 'PATCH',
@@ -277,10 +180,6 @@ class HttpClient {
         });
     }
 
-    /**
-     * DELETE request
-     * Similar to RestTemplate.delete()
-     */
     async delete(endpoint, options = {}) {
         return this.request(endpoint, {
             method: 'DELETE',
@@ -288,15 +187,10 @@ class HttpClient {
         });
     }
 
-    /**
-     * Upload file
-     * Similar to multipart file upload in Spring Boot
-     */
     async upload(endpoint, file, options = {}) {
         const formData = new FormData();
         formData.append('file', file);
 
-        // Add additional form fields if provided
         if (options.fields) {
             for (const [key, value] of Object.entries(options.fields)) {
                 formData.append(key, value);
@@ -307,7 +201,6 @@ class HttpClient {
             method: 'POST',
             body: formData,
             headers: {
-                // Don't set Content-Type for FormData - browser will set it with boundary
                 ...options.headers
             },
             timeout: API_CONFIG.TIMEOUTS.UPLOAD,
@@ -316,35 +209,19 @@ class HttpClient {
     }
 }
 
-/**
- * API Service Classes
- * Similar to @Service classes in Spring Boot
- */
-
-/**
- * Authentication Service
- * Similar to AuthService in Spring Boot
- */
 class AuthService {
     constructor(httpClient) {
         this.http = httpClient;
     }
 
-    /**
-     * User login
-     * @param {Object} credentials - Login credentials
-     * @returns {Promise<Object>} Login response
-     */
     async login(credentials) {
         try {
             const response = await this.http.post(API_CONFIG.ENDPOINTS.AUTH.LOGIN, credentials);
 
-            // Store auth token if provided
             if (response.token) {
                 localStorage.setItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN, response.token);
             }
 
-            // Store user data
             if (response.user) {
                 localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response.user));
             }
@@ -381,11 +258,6 @@ class AuthService {
         }
     }
 
-    /**
-     * User registration
-     * @param {Object} userData - Registration data
-     * @returns {Promise<Object>} Registration response
-     */
     async register(userData) {
         try {
             const response = await this.http.post(API_CONFIG.ENDPOINTS.AUTH.REGISTER, userData);
@@ -403,15 +275,10 @@ class AuthService {
         }
     }
 
-    /**
-     * User logout
-     * @returns {Promise<Object>} Logout response
-     */
     async logout() {
         try {
             await this.http.post(API_CONFIG.ENDPOINTS.AUTH.LOGOUT);
 
-            // Clear stored data
             localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.USER_DATA);
 
@@ -420,23 +287,17 @@ class AuthService {
 
         } catch (error) {
             errorLog('Logout failed:', error);
-            // Clear data anyway
             localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.USER_DATA);
 
-            return { success: true }; // Consider logout successful even if server call fails
+            return { success: true };
         }
     }
 
-    /**
-     * Get current user
-     * @returns {Promise<Object>} Current user data
-     */
     async getCurrentUser() {
         try {
             const response = await this.http.get(API_CONFIG.ENDPOINTS.AUTH.CURRENT_USER);
 
-            // Update stored user data
             localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response));
 
             return { success: true, data: response };
@@ -450,11 +311,6 @@ class AuthService {
         }
     }
 
-    /**
-     * Forgot password
-     * @param {string} email - Email address
-     * @returns {Promise<Object>} Response
-     */
     async forgotPassword(email) {
         try {
             const response = await this.http.post(API_CONFIG.ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
@@ -471,11 +327,6 @@ class AuthService {
         }
     }
 
-    /**
-     * Reset password
-     * @param {Object} resetData - Reset password data
-     * @returns {Promise<Object>} Response
-     */
     async resetPassword(resetData) {
         try {
             const response = await this.http.post(API_CONFIG.ENDPOINTS.AUTH.RESET_PASSWORD, resetData);
@@ -492,11 +343,6 @@ class AuthService {
         }
     }
 
-    /**
-     * Resend verification email
-     * @param {string} email - Email address
-     * @returns {Promise<Object>} Response
-     */
     async resendVerification(email) {
         try {
             const response = await this.http.post(API_CONFIG.ENDPOINTS.AUTH.RESEND_VERIFICATION, { email });
@@ -514,20 +360,11 @@ class AuthService {
     }
 }
 
-/**
- * User Service
- * Similar to UserService in Spring Boot
- */
 class UserService {
     constructor(httpClient) {
         this.http = httpClient;
     }
 
-    /**
-     * Get user by ID
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} User data
-     */
     async getUserById(userId) {
         try {
             const response = await this.http.get(API_CONFIG.ENDPOINTS.USERS.BY_ID(userId));
@@ -538,11 +375,6 @@ class UserService {
         }
     }
 
-    /**
-     * Get user by email
-     * @param {string} email - Email address
-     * @returns {Promise<Object>} User data
-     */
     async getUserByEmail(email) {
         try {
             const response = await this.http.get(API_CONFIG.ENDPOINTS.USERS.BY_EMAIL, { email });
@@ -553,16 +385,10 @@ class UserService {
         }
     }
 
-    /**
-     * Update user profile
-     * @param {Object} profileData - Profile data
-     * @returns {Promise<Object>} Updated user data
-     */
     async updateProfile(profileData) {
         try {
             const response = await this.http.put(API_CONFIG.ENDPOINTS.USERS.UPDATE_PROFILE, profileData);
 
-            // Update stored user data
             localStorage.setItem(APP_CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(response));
 
             return { success: true, data: response };
@@ -572,16 +398,10 @@ class UserService {
         }
     }
 
-    /**
-     * Delete user account
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} Response
-     */
     async deleteAccount(userId) {
         try {
             await this.http.delete(API_CONFIG.ENDPOINTS.USERS.DELETE_ACCOUNT(userId));
 
-            // Clear stored data
             localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.USER_DATA);
 
@@ -593,20 +413,11 @@ class UserService {
     }
 }
 
-/**
- * Friends Service
- * Similar to FriendsService in Spring Boot
- */
 class FriendsService {
     constructor(httpClient) {
         this.http = httpClient;
     }
 
-    /**
-     * Get user's friends
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} Friends list
-     */
     async getFriends(userId) {
         try {
             const response = await this.http.get(API_CONFIG.ENDPOINTS.FRIENDS.BASE(userId));
@@ -617,11 +428,6 @@ class FriendsService {
         }
     }
 
-    /**
-     * Get pending friend requests
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} Pending requests
-     */
     async getPendingRequests(userId) {
         try {
             const response = await this.http.get(API_CONFIG.ENDPOINTS.FRIENDS.PENDING(userId));
@@ -632,12 +438,6 @@ class FriendsService {
         }
     }
 
-    /**
-     * Send friend request
-     * @param {number} fromUserId - Sender user ID
-     * @param {number} toUserId - Recipient user ID
-     * @returns {Promise<Object>} Response
-     */
     async sendFriendRequest(fromUserId, toUserId) {
         try {
             const response = await this.http.post(
@@ -650,12 +450,6 @@ class FriendsService {
         }
     }
 
-    /**
-     * Accept friend request
-     * @param {number} requestId - Request ID
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} Response
-     */
     async acceptFriendRequest(requestId, userId) {
         try {
             const response = await this.http.put(API_CONFIG.ENDPOINTS.FRIENDS.ACCEPT(requestId, userId));
@@ -666,12 +460,6 @@ class FriendsService {
         }
     }
 
-    /**
-     * Reject friend request
-     * @param {number} requestId - Request ID
-     * @param {number} userId - User ID
-     * @returns {Promise<Object>} Response
-     */
     async rejectFriendRequest(requestId, userId) {
         try {
             const response = await this.http.put(API_CONFIG.ENDPOINTS.FRIENDS.REJECT(requestId, userId));
@@ -682,12 +470,6 @@ class FriendsService {
         }
     }
 
-    /**
-     * Remove friendship
-     * @param {number} userId1 - First user ID
-     * @param {number} userId2 - Second user ID
-     * @returns {Promise<Object>} Response
-     */
     async removeFriendship(userId1, userId2) {
         try {
             const response = await this.http.delete(
@@ -701,27 +483,17 @@ class FriendsService {
     }
 }
 
-/**
- * API Service Factory
- * Similar to @Configuration and @Bean in Spring Boot
- */
 class ApiServiceFactory {
     constructor() {
         this.httpClient = new HttpClient();
         this.setupInterceptors();
 
-        // Initialize services
         this.auth = new AuthService(this.httpClient);
         this.users = new UserService(this.httpClient);
         this.friends = new FriendsService(this.httpClient);
     }
 
-    /**
-     * Setup HTTP interceptors
-     * Similar to WebMvcConfigurer in Spring Boot
-     */
     setupInterceptors() {
-        // Request interceptor for authentication
         this.httpClient.addRequestInterceptor((config) => {
             const token = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
             if (token) {
@@ -731,9 +503,7 @@ class ApiServiceFactory {
             return config;
         });
 
-        // Response interceptor for token refresh
         this.httpClient.addResponseInterceptor(async (response) => {
-            // Handle token refresh if needed
             const newToken = response.headers.get('X-New-Token');
             if (newToken) {
                 localStorage.setItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN, newToken);
@@ -741,14 +511,11 @@ class ApiServiceFactory {
             return response;
         });
 
-        // Error interceptor for global error handling
         this.httpClient.addErrorInterceptor(async (error) => {
             if (error.status === API_CONFIG.STATUS_CODES.UNAUTHORIZED) {
-                // Clear auth data and redirect to login
                 localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.AUTH_TOKEN);
                 localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.USER_DATA);
 
-                // Only redirect if not already on login page
                 if (!window.location.pathname.includes('login') &&
                     !window.location.pathname.includes('index.html') &&
                     window.location.pathname !== '/') {
@@ -760,17 +527,9 @@ class ApiServiceFactory {
     }
 }
 
-/**
- * Create and export API service instance
- * Similar to having a singleton @Service in Spring Boot
- */
 const apiService = new ApiServiceFactory();
 
-/**
- * Export API services
- */
 if (typeof module !== 'undefined' && module.exports) {
-    // Node.js environment (for testing)
     module.exports = {
         HttpClient,
         AuthService,
@@ -780,6 +539,5 @@ if (typeof module !== 'undefined' && module.exports) {
         apiService
     };
 } else {
-    // Browser environment - make available globally
     window.ApiService = apiService;
 }

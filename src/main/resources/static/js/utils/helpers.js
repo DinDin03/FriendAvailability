@@ -1,28 +1,4 @@
-/* ===== UTILITY HELPERS ===== */
-/*
-  This file contains utility functions used throughout the application.
-  Think of this as your @Component utility classes in Spring Boot -
-  reusable methods that provide common functionality.
-
-  Similar to having utility classes like:
-  - StringUtils
-  - DateUtils
-  - ValidationUtils
-  - FileUtils
-
-  These functions are pure (no side effects) and can be easily tested.
-*/
-
-/**
- * DOM Manipulation Utilities
- * Similar to having DOM service methods in your frontend architecture
- */
 const DOMUtils = {
-    /**
-     * Safely get element by ID
-     * @param {string} id - Element ID
-     * @returns {HTMLElement|null} Element or null if not found
-     */
     getElementById(id) {
         try {
             return document.getElementById(id);
@@ -32,12 +8,6 @@ const DOMUtils = {
         }
     },
 
-    /**
-     * Safely query selector
-     * @param {string} selector - CSS selector
-     * @param {HTMLElement} parent - Parent element (defaults to document)
-     * @returns {HTMLElement|null} Element or null if not found
-     */
     querySelector(selector, parent = document) {
         try {
             return parent.querySelector(selector);
@@ -47,12 +17,6 @@ const DOMUtils = {
         }
     },
 
-    /**
-     * Safely query all selector
-     * @param {string} selector - CSS selector
-     * @param {HTMLElement} parent - Parent element (defaults to document)
-     * @returns {NodeList} NodeList of elements
-     */
     querySelectorAll(selector, parent = document) {
         try {
             return parent.querySelectorAll(selector);
@@ -62,13 +26,6 @@ const DOMUtils = {
         }
     },
 
-    /**
-     * Add event listener with error handling
-     * @param {HTMLElement} element - Element to add listener to
-     * @param {string} event - Event type
-     * @param {Function} handler - Event handler
-     * @param {Object} options - Event listener options
-     */
     addEventListener(element, event, handler, options = {}) {
         if (!element || typeof handler !== 'function') {
             errorLog('Invalid parameters for addEventListener');
@@ -82,12 +39,6 @@ const DOMUtils = {
         }
     },
 
-    /**
-     * Remove event listener safely
-     * @param {HTMLElement} element - Element to remove listener from
-     * @param {string} event - Event type
-     * @param {Function} handler - Event handler
-     */
     removeEventListener(element, event, handler) {
         if (!element || typeof handler !== 'function') {
             return;
@@ -100,11 +51,6 @@ const DOMUtils = {
         }
     },
 
-    /**
-     * Check if element exists and is visible
-     * @param {HTMLElement} element - Element to check
-     * @returns {boolean} True if element exists and is visible
-     */
     isElementVisible(element) {
         if (!element) return false;
 
@@ -114,11 +60,6 @@ const DOMUtils = {
             style.opacity !== '0';
     },
 
-    /**
-     * Scroll element into view smoothly
-     * @param {HTMLElement} element - Element to scroll to
-     * @param {Object} options - Scroll options
-     */
     scrollIntoView(element, options = {}) {
         if (!element) return;
 
@@ -131,41 +72,21 @@ const DOMUtils = {
         try {
             element.scrollIntoView({ ...defaultOptions, ...options });
         } catch (error) {
-            // Fallback for older browsers
             element.scrollIntoView();
         }
     }
 };
 
-/**
- * String Utilities
- * Similar to StringUtils in Apache Commons or your own utility classes
- */
 const StringUtils = {
-    /**
-     * Check if string is empty or null
-     * @param {string} str - String to check
-     * @returns {boolean} True if empty or null
-     */
     isEmpty(str) {
         return !str || str.trim().length === 0;
     },
 
-    /**
-     * Capitalize first letter of string
-     * @param {string} str - String to capitalize
-     * @returns {string} Capitalized string
-     */
     capitalize(str) {
         if (this.isEmpty(str)) return str;
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
     },
 
-    /**
-     * Convert string to title case
-     * @param {string} str - String to convert
-     * @returns {string} Title case string
-     */
     toTitleCase(str) {
         if (this.isEmpty(str)) return str;
 
@@ -174,24 +95,11 @@ const StringUtils = {
         ).join(' ');
     },
 
-    /**
-     * Truncate string with ellipsis
-     * @param {string} str - String to truncate
-     * @param {number} maxLength - Maximum length
-     * @param {string} suffix - Suffix to add (default: '...')
-     * @returns {string} Truncated string
-     */
     truncate(str, maxLength, suffix = '...') {
         if (this.isEmpty(str) || str.length <= maxLength) return str;
         return str.substring(0, maxLength - suffix.length) + suffix;
     },
 
-    /**
-     * Generate random string
-     * @param {number} length - Length of string
-     * @param {string} chars - Characters to use
-     * @returns {string} Random string
-     */
     generateRandom(length = 10, chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789') {
         let result = '';
         for (let i = 0; i < length; i++) {
@@ -200,11 +108,6 @@ const StringUtils = {
         return result;
     },
 
-    /**
-     * Sanitize string for HTML output
-     * @param {string} str - String to sanitize
-     * @returns {string} Sanitized string
-     */
     sanitizeHtml(str) {
         if (this.isEmpty(str)) return str;
 
@@ -213,12 +116,6 @@ const StringUtils = {
         return div.innerHTML;
     },
 
-    /**
-     * Extract initials from name
-     * @param {string} name - Full name
-     * @param {number} maxInitials - Maximum number of initials
-     * @returns {string} Initials
-     */
     getInitials(name, maxInitials = 2) {
         if (this.isEmpty(name)) return '';
 
@@ -231,17 +128,7 @@ const StringUtils = {
     }
 };
 
-/**
- * Date and Time Utilities
- * Similar to having DateTimeUtils in your Spring Boot application
- */
 const DateUtils = {
-    /**
-     * Format date for display
-     * @param {Date|string} date - Date to format
-     * @param {Object} options - Formatting options
-     * @returns {string} Formatted date string
-     */
     formatDate(date, options = {}) {
         try {
             const dateObj = date instanceof Date ? date : new Date(date);
@@ -259,12 +146,6 @@ const DateUtils = {
         }
     },
 
-    /**
-     * Format date and time for display
-     * @param {Date|string} date - Date to format
-     * @param {Object} options - Formatting options
-     * @returns {string} Formatted datetime string
-     */
     formatDateTime(date, options = {}) {
         try {
             const dateObj = date instanceof Date ? date : new Date(date);
@@ -284,11 +165,6 @@ const DateUtils = {
         }
     },
 
-    /**
-     * Get relative time (e.g., "2 hours ago")
-     * @param {Date|string} date - Date to compare
-     * @returns {string} Relative time string
-     */
     getRelativeTime(date) {
         try {
             const dateObj = date instanceof Date ? date : new Date(date);
@@ -307,11 +183,6 @@ const DateUtils = {
         }
     },
 
-    /**
-     * Check if date is today
-     * @param {Date|string} date - Date to check
-     * @returns {boolean} True if date is today
-     */
     isToday(date) {
         try {
             const dateObj = date instanceof Date ? date : new Date(date);
@@ -325,12 +196,6 @@ const DateUtils = {
         }
     },
 
-    /**
-     * Add days to date
-     * @param {Date|string} date - Base date
-     * @param {number} days - Number of days to add
-     * @returns {Date} New date
-     */
     addDays(date, days) {
         try {
             const dateObj = date instanceof Date ? new Date(date) : new Date(date);
@@ -343,16 +208,7 @@ const DateUtils = {
     }
 };
 
-/**
- * Array and Object Utilities
- * Similar to CollectionUtils or custom utility methods
- */
 const ObjectUtils = {
-    /**
-     * Deep clone an object
-     * @param {Object} obj - Object to clone
-     * @returns {Object} Cloned object
-     */
     deepClone(obj) {
         if (obj === null || typeof obj !== 'object') return obj;
 
@@ -364,24 +220,12 @@ const ObjectUtils = {
         }
     },
 
-    /**
-     * Check if object is empty
-     * @param {Object} obj - Object to check
-     * @returns {boolean} True if empty
-     */
     isEmpty(obj) {
         if (!obj) return true;
         if (Array.isArray(obj)) return obj.length === 0;
         return Object.keys(obj).length === 0;
     },
 
-    /**
-     * Get nested property safely
-     * @param {Object} obj - Object to search
-     * @param {string} path - Property path (e.g., 'user.profile.name')
-     * @param {any} defaultValue - Default value if not found
-     * @returns {any} Property value or default
-     */
     getNestedProperty(obj, path, defaultValue = undefined) {
         try {
             return path.split('.').reduce((current, key) =>
@@ -392,12 +236,6 @@ const ObjectUtils = {
         }
     },
 
-    /**
-     * Remove duplicates from array
-     * @param {Array} array - Array to deduplicate
-     * @param {string} key - Key to compare for objects
-     * @returns {Array} Deduplicated array
-     */
     removeDuplicates(array, key = null) {
         if (!Array.isArray(array)) return [];
 
@@ -414,12 +252,6 @@ const ObjectUtils = {
         return [...new Set(array)];
     },
 
-    /**
-     * Group array by property
-     * @param {Array} array - Array to group
-     * @param {string} key - Property to group by
-     * @returns {Object} Grouped object
-     */
     groupBy(array, key) {
         if (!Array.isArray(array)) return {};
 
@@ -432,16 +264,7 @@ const ObjectUtils = {
     }
 };
 
-/**
- * Browser and Device Utilities
- * Similar to having environment detection in your backend
- */
 const BrowserUtils = {
-    /**
-     * Check if browser supports feature
-     * @param {string} feature - Feature to check
-     * @returns {boolean} True if supported
-     */
     supportsFeature(feature) {
         const features = {
             localStorage: typeof Storage !== 'undefined',
@@ -456,10 +279,6 @@ const BrowserUtils = {
         return features[feature] || false;
     },
 
-    /**
-     * Get browser information
-     * @returns {Object} Browser info
-     */
     getBrowserInfo() {
         const userAgent = navigator.userAgent;
 
@@ -475,18 +294,12 @@ const BrowserUtils = {
         };
     },
 
-    /**
-     * Copy text to clipboard
-     * @param {string} text - Text to copy
-     * @returns {Promise<boolean>} True if successful
-     */
     async copyToClipboard(text) {
         try {
             if (navigator.clipboard && window.isSecureContext) {
                 await navigator.clipboard.writeText(text);
                 return true;
             } else {
-                // Fallback for older browsers
                 const textArea = document.createElement('textarea');
                 textArea.value = text;
                 textArea.style.position = 'fixed';
@@ -507,18 +320,7 @@ const BrowserUtils = {
     }
 };
 
-/**
- * Performance and Timing Utilities
- * Similar to having performance monitoring in your backend services
- */
 const PerformanceUtils = {
-    /**
-     * Debounce function execution
-     * @param {Function} func - Function to debounce
-     * @param {number} wait - Wait time in milliseconds
-     * @param {boolean} immediate - Execute immediately on first call
-     * @returns {Function} Debounced function
-     */
     debounce(func, wait, immediate = false) {
         let timeout;
 
@@ -536,12 +338,6 @@ const PerformanceUtils = {
         };
     },
 
-    /**
-     * Throttle function execution
-     * @param {Function} func - Function to throttle
-     * @param {number} limit - Time limit in milliseconds
-     * @returns {Function} Throttled function
-     */
     throttle(func, limit) {
         let lastFunc;
         let lastRan;
@@ -562,12 +358,6 @@ const PerformanceUtils = {
         };
     },
 
-    /**
-     * Measure function execution time
-     * @param {Function} func - Function to measure
-     * @param {...any} args - Function arguments
-     * @returns {Object} Result and execution time
-     */
     async measureExecutionTime(func, ...args) {
         const start = performance.now();
 
@@ -592,12 +382,7 @@ const PerformanceUtils = {
     }
 };
 
-/**
- * Export utilities for use in other modules
- * Similar to having @Component utility beans in Spring Boot
- */
 if (typeof module !== 'undefined' && module.exports) {
-    // Node.js environment (for testing)
     module.exports = {
         DOMUtils,
         StringUtils,
@@ -607,7 +392,6 @@ if (typeof module !== 'undefined' && module.exports) {
         PerformanceUtils
     };
 } else {
-    // Browser environment - make available globally
     window.LinkUpUtils = {
         DOMUtils,
         StringUtils,

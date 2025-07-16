@@ -1,55 +1,25 @@
-/**
- * LinkUp Dashboard JavaScript
- * Main dashboard functionality for managing friends, calendar, and user interactions
- */
-
-// Import dependencies (these will be loaded via script tags in HTML)
-// Assumes: api.js, auth.js, notifications.js are already loaded
-
-/**
- * GLOBAL STATE MANAGEMENT
- * Centralized state for dashboard data
- */
 const DashboardState = {
-    // User information
     currentUser: null,
-
-    // Friends and social data
     friends: [],
     pendingRequests: [],
-
-    // Calendar and time data
     currentDate: new Date(),
     events: [],
-
-    // UI state
     isLoading: false,
     activeView: 'dashboard',
-
-    // ADD THESE CHAT PROPERTIES:
     chat: {
         stompClient: null,
         connected: false,
         currentRoomId: null,
         availableRooms: [],
-        messages: new Map(), // roomId -> messages array
+        messages: new Map(),
         typingUsers: new Set()
     }
 };
-/**
- * DASHBOARD CONFIGURATION
- * Constants and settings for dashboard behavior
- */
 const DashboardConfig = {
-    // Refresh intervals (in milliseconds)
-    FRIENDS_REFRESH_INTERVAL: 30000,  // 30 seconds
-    REQUESTS_REFRESH_INTERVAL: 15000, // 15 seconds
-
-    // UI settings
+    FRIENDS_REFRESH_INTERVAL: 30000,
+    REQUESTS_REFRESH_INTERVAL: 15000,
     MAX_FRIENDS_DISPLAY: 50,
     CALENDAR_MONTHS_TO_SHOW: 1,
-
-    // API endpoints (extending base API config)
     ENDPOINTS: {
         CURRENT_USER: '/api/auth/current-user',
         FRIENDS: '/api/friends',
@@ -58,137 +28,82 @@ const DashboardConfig = {
     }
 };
 
-/**
- * DASHBOARD INITIALIZATION
- * Main entry point for dashboard functionality
- */
 class Dashboard {
     constructor() {
         this.state = DashboardState;
         this.config = DashboardConfig;
         this.refreshTimers = [];
-
-        console.log('🎯 Dashboard initialized');
+        console.log('Dashboard initialized');
     }
 
-    /**
-     * Initialize the complete dashboard
-     * This is the main entry point called when page loads
-     */
     async initialize() {
-        console.log('🚀 Starting dashboard initialization...');
-
+        console.log('Starting dashboard initialization...');
         try {
-            // Step 1: Load and verify current user
             await this.loadCurrentUser();
-
             if (!this.state.currentUser) {
-                console.log('❌ No authenticated user found, redirecting to login');
+                console.log('No authenticated user found, redirecting to login');
                 window.location.href = '/';
                 return;
             }
-
-            console.log('✅ User authenticated:', this.state.currentUser.name);
-
-            // Step 2: Load all dashboard data in parallel for better performance
+            console.log('User authenticated:', this.state.currentUser.name);
             this.state.isLoading = true;
             this.showLoadingStates();
-
             this.initializeChat();
-
             await Promise.all([
                 this.loadFriends(),
                 this.loadPendingRequests(),
                 this.loadUpcomingEvents()
             ]);
-
-            // Step 3: Render all UI components
             this.renderAllComponents();
-
-            // Step 4: Set up auto-refresh timers
             this.setupRefreshTimers();
-
-            // Step 5: Set up event listeners
             this.setupEventListeners();
-
             this.state.isLoading = false;
             this.hideLoadingStates();
-
-            // Show success message
             NotificationService.showSuccess('Dashboard loaded successfully!');
-
-            console.log('✅ Dashboard initialization complete');
-
+            console.log('Dashboard initialization complete');
         } catch (error) {
-            console.error('❌ Dashboard initialization failed:', error);
+            console.error('Dashboard initialization failed:', error);
             this.state.isLoading = false;
             this.hideLoadingStates();
             NotificationService.showError('Failed to load dashboard. Please refresh the page.');
         }
     }
 
-    /**
-     * Load current authenticated user data
-     */
     async loadCurrentUser() {
         console.log('👤 Loading current user...');
-
         try {
             const user = await ApiService.get(this.config.ENDPOINTS.CURRENT_USER);
             this.state.currentUser = user;
-
-            // Update UI with user information
             this.renderUserInfo(user);
-
-            console.log('✅ Current user loaded:', user.name);
-
+            console.log('Current user loaded:', user.name);
         } catch (error) {
-            console.error('❌ Failed to load current user:', error);
+            console.error('Failed to load current user:', error);
             throw new Error('Authentication failed');
         }
     }
 
-    /**
-     * Load user's friends list
-     */
     async loadFriends() {
         console.log('👥 Loading friends...');
-
         try {
             const userId = this.state.currentUser.id;
             console.log(`📡 Fetching friends for user ID: ${userId}`);
-
-            // Make API call to get friends
             const friends = await ApiService.get(`${this.config.ENDPOINTS.FRIENDS}/${userId}`);
-
             console.log(`✅ Loaded ${friends.length} friends:`, friends);
-
-            // Store in state
             this.state.friends = friends || [];
-
-            // Render friends list
             this.renderFriends();
-
         } catch (error) {
-            console.error('❌ Failed to load friends:', error);
+            console.error('Failed to load friends:', error);
             this.state.friends = [];
-            this.renderFriends(); // Render empty state
+            this.renderFriends();
         }
     }
 
-    /**
-     * Load pending friend requests
-     */
     async loadPendingRequests() {
-        console.log('📩 Loading pending friend requests...');
-
+        console.log('Loading pending friend requests...');
         try {
             const userId = this.state.currentUser.id;
             const requests = await ApiService.get(`${this.config.ENDPOINTS.FRIENDS}/${userId}/pending`);
-
-            console.log(`✅ Loaded ${requests.length} pending requests:`, requests);
-
-            // Enhance requests with sender information
+            console.log(`Loaded ${requests.length} pending requests:`, requests);
             for (const request of requests) {
                 try {
                     const sender = await ApiService.get(`${this.config.ENDPOINTS.USERS}/${request.userId}`);
@@ -196,45 +111,31 @@ class Dashboard {
                     request.senderEmail = sender.email;
                     request.senderAvatar = sender.profilePictureUrl || this.generateAvatar(sender.name);
                 } catch (error) {
-                    console.error('❌ Failed to load sender details for request:', request.id);
-                    // Set fallback values
+                    console.error('Failed to load sender details for request:', request.id);
                     request.senderName = 'Unknown User';
                     request.senderEmail = '';
                     request.senderAvatar = this.generateAvatar('Unknown');
                 }
             }
-
             this.state.pendingRequests = requests;
-            this.renderFriends(); // Re-render to include requests
-
+            this.renderFriends();
         } catch (error) {
-            console.error('❌ Failed to load pending requests:', error);
+            console.error('Failed to load pending requests:', error);
             this.state.pendingRequests = [];
         }
     }
 
-    /**
-     * Load upcoming events (placeholder for future implementation)
-     */
     async loadUpcomingEvents() {
-        console.log('📅 Loading upcoming events...');
-
-        // TODO: Implement when event system is ready
+        console.log('Loading upcoming events...');
         this.state.events = [];
         this.renderEvents();
     }
 
-    /**
-     * Render user information in header
-     */
     renderUserInfo(user) {
-        console.log('🎨 Rendering user info for:', user.name);
-
-        // Update user name and email
+        console.log('Rendering user info for:', user.name);
         const userNameEl = document.getElementById('userName');
         const userEmailEl = document.getElementById('userEmail');
         const userAvatarEl = document.getElementById('userAvatar');
-
         if (userNameEl) userNameEl.textContent = user.name;
         if (userEmailEl) userEmailEl.textContent = user.email;
         if (userAvatarEl) {
@@ -243,50 +144,35 @@ class Dashboard {
         }
     }
 
-    /**
-     * Render friends list and pending requests
-     */
     renderFriends() {
-        console.log('🎨 Rendering friends and requests...');
-        console.log(`📊 Rendering ${this.state.friends.length} friends, ${this.state.pendingRequests.length} requests`);
-
+        console.log('Rendering friends and requests...');
+        console.log(`Rendering ${this.state.friends.length} friends, ${this.state.pendingRequests.length} requests`);
         const container = document.getElementById('friendsContainer');
         if (!container) {
-            console.error('❌ Friends container not found');
+            console.error('Friends container not found');
             return;
         }
-
         let html = '';
-
-        // Render pending requests section first
         if (this.state.pendingRequests.length > 0) {
             html += this.renderPendingRequestsSection();
         }
-
-        // Render friends list
         if (this.state.friends.length === 0) {
             html += this.renderEmptyFriendsState();
         } else {
             html += this.renderFriendsList();
         }
-
         container.innerHTML = html;
-        console.log('✅ Friends rendering complete');
+        console.log('Friends rendering complete');
     }
 
-    /**
-     * Render pending requests section
-     */
     renderPendingRequestsSection() {
         const requestCount = this.state.pendingRequests.length;
-
         let html = `
             <div class="request-section">
                 <h3 style="color: var(--primary-blue); margin-bottom: var(--spacing-sm);">
                     Friend Requests (${requestCount})
                 </h3>
         `;
-
         this.state.pendingRequests.forEach(request => {
             html += `
                 <div class="request-item">
@@ -313,14 +199,10 @@ class Dashboard {
                 </div>
             `;
         });
-
         html += '</div>';
         return html;
     }
 
-    /**
-     * Render empty friends state
-     */
     renderEmptyFriendsState() {
         return `
             <div class="empty-state">
@@ -333,12 +215,8 @@ class Dashboard {
         `;
     }
 
-    /**
-     * Render friends list
-     */
     renderFriendsList() {
         let html = '<div class="friends-list">';
-
         this.state.friends.forEach(friend => {
             const avatar = friend.profilePictureUrl || this.generateAvatar(friend.name);
             html += `
@@ -359,57 +237,39 @@ class Dashboard {
                 </div>
             `;
         });
-
         html += '</div>';
         return html;
     }
 
-    /**
-     * Render calendar component
-     */
     renderCalendar() {
-        console.log('📅 Rendering calendar...');
-
+        console.log('Rendering calendar...');
         const year = this.state.currentDate.getFullYear();
         const month = this.state.currentDate.getMonth();
-
-        // Update month display
         const monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
-
         const currentMonthEl = document.getElementById('currentMonth');
         if (currentMonthEl) {
             currentMonthEl.textContent = `${monthNames[month]} ${year}`;
         }
-
-        // Calculate calendar days
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
         const startingDayOfWeek = firstDay.getDay();
-
         let html = '';
-
-        // Day headers
         const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         dayHeaders.forEach(day => {
             html += `<div class="calendar-day-header">${day}</div>`;
         });
-
-        // Empty cells before month starts
         for (let i = 0; i < startingDayOfWeek; i++) {
             html += `<div class="calendar-day other-month"></div>`;
         }
-
-        // Days of month
         const today = new Date();
         for (let day = 1; day <= daysInMonth; day++) {
             const isToday = year === today.getFullYear() &&
                 month === today.getMonth() &&
                 day === today.getDate();
-
             html += `
                 <div class="calendar-day ${isToday ? 'today' : ''}" 
                      onclick="dashboard.selectDate(${year}, ${month}, ${day})">
@@ -417,24 +277,17 @@ class Dashboard {
                 </div>
             `;
         }
-
         const calendarGrid = document.getElementById('calendarGrid');
         if (calendarGrid) {
             calendarGrid.innerHTML = html;
         }
-
-        console.log('✅ Calendar rendered');
+        console.log('Calendar rendered');
     }
 
-    /**
-     * Render events list
-     */
     renderEvents() {
-        console.log('📋 Rendering events...');
-
+        console.log('Rendering events...');
         const container = document.getElementById('eventsContainer');
         if (!container) return;
-
         if (this.state.events.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -446,34 +299,24 @@ class Dashboard {
                 </div>
             `;
         } else {
-            // TODO: Render actual events when event system is implemented
             container.innerHTML = '<div class="loading">Events coming soon...</div>';
         }
     }
 
-    /**
-     * Render all dashboard components
-     */
     renderAllComponents() {
-        console.log('🎨 Rendering all dashboard components...');
-
+        console.log('Rendering all dashboard components...');
         this.renderFriends();
         this.renderCalendar();
         this.renderEvents();
-
-        console.log('✅ All components rendered');
+        console.log('All components rendered');
     }
 
-    /**
-     * Show loading states for all components
-     */
     showLoadingStates() {
         const containers = [
             'friendsContainer',
             'calendarGrid',
             'eventsContainer'
         ];
-
         containers.forEach(containerId => {
             const container = document.getElementById(containerId);
             if (container) {
@@ -486,295 +329,176 @@ class Dashboard {
         });
     }
 
-    /**
-     * Hide loading states
-     */
     hideLoadingStates() {
-        // Loading states are replaced by actual content in render methods
-        console.log('✅ Loading states hidden');
+        console.log('Loading states hidden');
     }
 
-    /**
-     * USER ACTION HANDLERS
-     * Functions that handle user interactions
-     */
-
-    /**
-     * Accept a friend request
-     */
     async acceptRequest(requestId) {
-        console.log(`✅ Accepting friend request: ${requestId}`);
-
+        console.log(`Accepting friend request: ${requestId}`);
         try {
             await ApiService.put(`${this.config.ENDPOINTS.FRIENDS}/${requestId}/accept?userId=${this.state.currentUser.id}`);
-
             NotificationService.showSuccess('Friend request accepted!');
-
-            // Refresh data
             await Promise.all([
                 this.loadFriends(),
                 this.loadPendingRequests()
             ]);
-
         } catch (error) {
-            console.error('❌ Failed to accept request:', error);
+            console.error('Failed to accept request:', error);
             NotificationService.showError('Failed to accept friend request');
         }
     }
 
-    /**
-     * Reject a friend request
-     */
     async rejectRequest(requestId) {
-        console.log(`❌ Rejecting friend request: ${requestId}`);
-
+        console.log(`Rejecting friend request: ${requestId}`);
         try {
             await ApiService.put(`${this.config.ENDPOINTS.FRIENDS}/${requestId}/reject?userId=${this.state.currentUser.id}`);
-
             NotificationService.showInfo('Friend request rejected');
-
-            // Refresh pending requests
             await this.loadPendingRequests();
-
         } catch (error) {
-            console.error('❌ Failed to reject request:', error);
+            console.error('Failed to reject request:', error);
             NotificationService.showError('Failed to reject friend request');
         }
     }
 
-    /**
-     * Show add friend dialog
-     */
     async showAddFriend() {
-        console.log('👥 Showing add friend dialog...');
-
+        console.log('Showing add friend dialog...');
         const email = prompt('Enter friend\'s email address:');
         if (!email || !email.trim()) {
             return;
         }
-
         try {
-            // Find user by email
             const user = await ApiService.get(`${this.config.ENDPOINTS.USERS}/by-email?email=${encodeURIComponent(email.trim())}`);
-
             if (!user) {
                 NotificationService.showError('User not found with that email address');
                 return;
             }
-
-            // Check if already friends or request exists
             if (this.state.friends.some(friend => friend.id === user.id)) {
                 NotificationService.showWarning('You are already friends with this user');
                 return;
             }
-
-            // Send friend request
             await ApiService.post(`${this.config.ENDPOINTS.FRIENDS}/request?fromUserId=${this.state.currentUser.id}&toUserId=${user.id}`);
-
             NotificationService.showSuccess(`Friend request sent to ${user.name}!`);
-
         } catch (error) {
-            console.error('❌ Failed to send friend request:', error);
+            console.error('Failed to send friend request:', error);
             NotificationService.showError('Failed to send friend request');
         }
     }
 
-    /**
-     * View friend's profile (placeholder)
-     */
     viewFriendProfile(friendId) {
-        console.log(`👤 Viewing friend profile: ${friendId}`);
+        console.log(`Viewing friend profile: ${friendId}`);
         NotificationService.showInfo('Friend profiles coming soon!');
     }
 
-    /**
-     * View friend's calendar (placeholder)
-     */
     viewFriendCalendar(friendId) {
-        console.log(`📅 Viewing friend calendar: ${friendId}`);
+        console.log(`Viewing friend calendar: ${friendId}`);
         NotificationService.showInfo('Friend calendars coming soon!');
     }
 
-    /**
-     * CALENDAR ACTIONS
-     */
-
-    /**
-     * Change calendar month
-     */
     changeMonth(direction) {
-        console.log(`📅 Changing month by: ${direction}`);
-
+        console.log(`Changing month by: ${direction}`);
         this.state.currentDate.setMonth(this.state.currentDate.getMonth() + direction);
         this.renderCalendar();
     }
 
-    /**
-     * Select a date on calendar
-     */
     selectDate(year, month, day) {
-        console.log(`📅 Selected date: ${year}-${month + 1}-${day}`);
-
+        console.log(`Selected date: ${year}-${month + 1}-${day}`);
         const selectedDate = new Date(year, month, day);
         NotificationService.showInfo(`Selected: ${selectedDate.toLocaleDateString()}`);
-
-        // TODO: Show events for selected date or create new event
     }
 
-    /**
-     * Show add event dialog (placeholder)
-     */
     showAddEvent() {
-        console.log('📅 Showing add event dialog...');
+        console.log('Showing add event dialog...');
         NotificationService.showInfo('Event creation coming soon!');
     }
 
-    /**
-     * Logout user
-     */
     async logout() {
-        console.log('🚪 Logging out user...');
-
+        console.log('Logging out user...');
         try {
             await ApiService.post(this.config.ENDPOINTS.LOGOUT);
             NotificationService.showSuccess('Logged out successfully');
-
-            // Redirect to home page
             setTimeout(() => {
                 window.location.href = '/';
             }, 1000);
-
         } catch (error) {
-            console.error('❌ Logout failed:', error);
-            // Force redirect even if API call fails
+            console.error('Logout failed:', error);
             window.location.href = '/';
         }
     }
 
-    /**
-     * UTILITY FUNCTIONS
-     */
-
-    /**
-     * Generate avatar placeholder for users without profile pictures
-     */
     generateAvatar(name) {
         if (!name || name.trim() === '') {
             name = 'User';
         }
-
         const initials = name.split(' ')
             .map(n => n[0])
             .join('')
             .toUpperCase()
             .substring(0, 2);
-
-        // Use a variety of colors
         const colors = ['0052CC', '00875A', 'DE350B', 'FF8B00', '6554C0', '008DA6', 'BF2600'];
         const colorIndex = name.length % colors.length;
         const color = colors[colorIndex];
-
         return `https://via.placeholder.com/48x48/${color}/FFFFFF?text=${initials}`;
     }
 
-    /**
-     * Setup auto-refresh timers for real-time updates
-     */
     setupRefreshTimers() {
         console.log('⏰ Setting up refresh timers...');
-
-        // Refresh friends list periodically
         const friendsTimer = setInterval(() => {
             if (!this.state.isLoading) {
                 this.loadFriends();
             }
         }, this.config.FRIENDS_REFRESH_INTERVAL);
-
-        // Refresh requests more frequently
         const requestsTimer = setInterval(() => {
             if (!this.state.isLoading) {
                 this.loadPendingRequests();
             }
         }, this.config.REQUESTS_REFRESH_INTERVAL);
-
         this.refreshTimers.push(friendsTimer, requestsTimer);
-
-        console.log('✅ Refresh timers set up');
+        console.log('Refresh timers set up');
     }
 
-    /**
-     * Setup event listeners for dashboard interactions
-     */
     setupEventListeners() {
-        console.log('🎧 Setting up event listeners...');
-
-        // Keyboard shortcuts
+        console.log('Setting up event listeners...');
         document.addEventListener('keydown', (event) => {
-            // Ctrl/Cmd + F to focus on add friend
             if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
                 event.preventDefault();
                 this.showAddFriend();
             }
         });
-
-        // Window beforeunload to clean up timers
         window.addEventListener('beforeunload', () => {
             this.cleanup();
         });
-
-        console.log('✅ Event listeners set up');
+        console.log('Event listeners set up');
     }
 
-    /**
-     * Cleanup function to clear timers and prevent memory leaks
-     */
     cleanup() {
-        console.log('🧹 Cleaning up dashboard...');
-
+        console.log('Cleaning up dashboard...');
         this.refreshTimers.forEach(timer => clearInterval(timer));
         this.refreshTimers = [];
-
-        console.log('✅ Dashboard cleaned up');
+        console.log('Dashboard cleaned up');
     }
 
-    // ===== CHAT FUNCTIONALITY =====
-
-    /**
-     * Initialize chat system
-     */
     initializeChat() {
-        console.log('🚀 Initializing chat system...');
-
+        console.log('Initializing chat system...');
         this.connectWebSocket();
         this.setupChatEventListeners();
-        //this.loadUserChatRooms();
     }
 
-    /**
-     * Connect to WebSocket server
-     */
     connectWebSocket() {
         try {
             const socket = new SockJS('/ws');
             this.state.chat.stompClient = Stomp.over(socket);
-
             this.state.chat.stompClient.connect({}, (frame) => {
-                console.log('✅ WebSocket connected:', frame);
+                console.log('WebSocket connected:', frame);
                 this.state.chat.connected = true;
                 this.updateChatConnectionStatus();
-
-                // Subscribe to user-specific error messages
                 this.state.chat.stompClient.subscribe(
                     `/user/${this.state.currentUser.id}/queue/errors`,
                     (message) => this.handleChatError(JSON.parse(message.body))
                 );
-
             }, (error) => {
-                console.error('❌ WebSocket connection failed:', error);
+                console.error('WebSocket connection failed:', error);
                 this.state.chat.connected = false;
                 this.updateChatConnectionStatus();
-
-                // Retry connection after 5 seconds
                 setTimeout(() => this.connectWebSocket(), 5000);
             });
         } catch (error) {
@@ -782,16 +506,11 @@ class Dashboard {
         }
     }
 
-    /**
-     * Update connection status UI
-     */
     updateChatConnectionStatus() {
         const statusElement = document.getElementById('chatConnectionStatus');
         if (!statusElement) return;
-
         const icon = statusElement.querySelector('i');
         const text = statusElement.querySelector('span');
-
         if (this.state.chat.connected) {
             icon.className = 'fas fa-circle status-online';
             text.textContent = 'Online';
@@ -801,25 +520,17 @@ class Dashboard {
         }
     }
 
-    /**
-     * Setup chat event listeners
-     */
     setupChatEventListeners() {
-        // Room selection
         const roomSelect = document.getElementById('chatRoomSelect');
         if (roomSelect) {
             roomSelect.addEventListener('change', (e) => {
                 this.joinChatRoom(e.target.value);
             });
         }
-
-        // Send message button
         const sendBtn = document.getElementById('chatSendBtn');
         if (sendBtn) {
             sendBtn.addEventListener('click', () => this.sendChatMessage());
         }
-
-        // Message input (Enter key)
         const messageInput = document.getElementById('chatMessageInput');
         if (messageInput) {
             messageInput.addEventListener('keypress', (e) => {
@@ -827,13 +538,10 @@ class Dashboard {
                     this.sendChatMessage();
                 }
             });
-
-            // Typing indicators
             let typingTimer;
             messageInput.addEventListener('input', () => {
                 if (this.state.chat.currentRoomId) {
                     this.sendTypingIndicator(true);
-
                     clearTimeout(typingTimer);
                     typingTimer = setTimeout(() => {
                         this.sendTypingIndicator(false);
@@ -841,44 +549,30 @@ class Dashboard {
                 }
             });
         }
-
-        // Refresh rooms button
         const refreshBtn = document.getElementById('refreshRoomsBtn');
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => this.loadUserChatRooms());
         }
     }
 
-    /**
-     * Load user's chat rooms
-     */
     async loadUserChatRooms() {
         try {
             const response = await fetch(`/api/chat/rooms?userId=${this.state.currentUser.id}`);
             const rooms = await response.json();
-
             this.state.chat.availableRooms = rooms;
             this.renderChatRooms();
-
         } catch (error) {
             console.error('Error loading chat rooms:', error);
             NotificationService.showError('Failed to load chat rooms');
         }
     }
 
-    /**
-     * Render chat rooms in dropdown
-     */
     renderChatRooms() {
         const roomSelect = document.getElementById('chatRoomSelect');
         if (!roomSelect) return;
-
-        // Clear existing options except first
         while (roomSelect.children.length > 1) {
             roomSelect.removeChild(roomSelect.lastChild);
         }
-
-        // Add room options
         this.state.chat.availableRooms.forEach(room => {
             const option = document.createElement('option');
             option.value = room.id;
@@ -887,32 +581,20 @@ class Dashboard {
         });
     }
 
-    /**
-     * Join a chat room
-     */
     joinChatRoom(roomId) {
         if (!roomId || !this.state.chat.connected) return;
-
-        // Leave current room if any
         if (this.state.chat.currentRoomId) {
             this.leaveChatRoom();
         }
-
         this.state.chat.currentRoomId = roomId;
-
-        // Subscribe to room messages
         this.state.chat.stompClient.subscribe(
             `/topic/chat/${roomId}`,
             (message) => this.handleChatMessage(JSON.parse(message.body))
         );
-
-        // Subscribe to typing indicators
         this.state.chat.stompClient.subscribe(
             `/topic/chat/${roomId}/typing`,
             (message) => this.handleTypingIndicator(JSON.parse(message.body))
         );
-
-        // Enable chat input
         const messageInput = document.getElementById('chatMessageInput');
         const sendBtn = document.getElementById('chatSendBtn');
         if (messageInput && sendBtn) {
@@ -920,23 +602,15 @@ class Dashboard {
             sendBtn.disabled = false;
             messageInput.focus();
         }
-
-        // Load recent messages
         this.loadRoomMessages(roomId);
-
-        console.log(`✅ Joined chat room: ${roomId}`);
+        console.log(`Joined chat room: ${roomId}`);
     }
 
-    /**
-     * Leave current chat room
-     */
     leaveChatRoom() {
         if (this.state.chat.currentRoomId) {
-            console.log(`👋 Left chat room: ${this.state.chat.currentRoomId}`);
+            console.log(`Left chat room: ${this.state.chat.currentRoomId}`);
             this.state.chat.currentRoomId = null;
         }
-
-        // Disable chat input
         const messageInput = document.getElementById('chatMessageInput');
         const sendBtn = document.getElementById('chatSendBtn');
         if (messageInput && sendBtn) {
@@ -945,50 +619,34 @@ class Dashboard {
         }
     }
 
-    /**
-     * Send a chat message
-     */
     sendChatMessage() {
         const messageInput = document.getElementById('chatMessageInput');
         if (!messageInput || !this.state.chat.currentRoomId) return;
-
         const content = messageInput.value.trim();
         if (!content) return;
-
         const message = {
             senderId: this.state.currentUser.id,
             roomId: this.state.chat.currentRoomId,
             content: content
         };
-
         this.state.chat.stompClient.send('/app/chat.sendMessage', {}, JSON.stringify(message));
         messageInput.value = '';
     }
 
-    /**
-     * Handle incoming chat message
-     */
     handleChatMessage(messageData) {
-        console.log('📨 Received message:', messageData);
+        console.log('Received message:', messageData);
         this.displayChatMessage(messageData);
     }
 
-    /**
-     * Display chat message in UI
-     */
     displayChatMessage(messageData) {
         const messagesContainer = document.getElementById('chatMessages');
         if (!messagesContainer) return;
-
-        // Remove welcome message if present
         const welcomeMsg = messagesContainer.querySelector('.chat-welcome');
         if (welcomeMsg) {
             welcomeMsg.remove();
         }
-
         const messageElement = document.createElement('div');
         const isOwnMessage = messageData.senderId === this.state.currentUser.id;
-
         messageElement.className = `message ${isOwnMessage ? 'own' : 'other'}`;
         messageElement.innerHTML = `
         <div class="message-bubble">
@@ -999,73 +657,47 @@ class Dashboard {
             <div class="message-content">${this.escapeHtml(messageData.content)}</div>
         </div>
     `;
-
         messagesContainer.appendChild(messageElement);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
-    /**
-     * Send typing indicator
-     */
     sendTypingIndicator(isTyping) {
         if (!this.state.chat.currentRoomId || !this.state.chat.connected) return;
-
         const typingData = {
             userId: this.state.currentUser.id,
             userName: this.state.currentUser.name,
             roomId: this.state.chat.currentRoomId,
             isTyping: isTyping
         };
-
         this.state.chat.stompClient.send('/app/chat.typing', {}, JSON.stringify(typingData));
     }
 
-    /**
-     * Handle typing indicator
-     */
     handleTypingIndicator(typingData) {
-        // Don't show our own typing indicator
         if (typingData.userId === this.state.currentUser.id) return;
-
-        console.log('⌨️ Typing indicator:', typingData);
-        // You can implement visual typing indicators here later
+        console.log('⌨Typing indicator:', typingData);
     }
 
-    /**
-     * Load recent messages for a room
-     */
     async loadRoomMessages(roomId) {
         try {
             const response = await fetch(
                 `/api/chat/rooms/${roomId}/messages/recent?userId=${this.state.currentUser.id}&limit=20`
             );
             const messages = await response.json();
-
-            // Clear current messages
             const messagesContainer = document.getElementById('chatMessages');
             if (messagesContainer) {
                 messagesContainer.innerHTML = '';
             }
-
-            // Display messages
             messages.forEach(message => this.displayChatMessage(message));
-
         } catch (error) {
             console.error('Error loading room messages:', error);
         }
     }
 
-    /**
-     * Handle chat errors
-     */
     handleChatError(errorData) {
-        console.error('💥 Chat error:', errorData);
+        console.error('Chat error:', errorData);
         NotificationService.showError(`Chat Error: ${errorData.error}`);
     }
 
-    /**
-     * Escape HTML to prevent XSS
-     */
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -1082,33 +714,23 @@ class DashboardChat {
         this.currentUserName = null;
         this.chatRooms = [];
         this.unreadCounts = new Map();
-
         this.init();
     }
 
     async init() {
-        console.log('🚀 Initializing Dashboard Chat...');
-
-        // Get current user info from dashboard state
-        this.currentUserId = DashboardState.currentUser?.id || 1; // Fallback for testing
+        console.log('Initializing Dashboard Chat...');
+        this.currentUserId = DashboardState.currentUser?.id || 1;
         this.currentUserName = DashboardState.currentUser?.name || 'User';
-
-        // Load initial chat data
         await this.loadChatRooms();
-
-        // Connect to WebSocket
         this.connectWebSocket();
-
-        console.log('✅ Dashboard Chat initialized');
+        console.log('Dashboard Chat initialized');
     }
 
     async loadChatRooms() {
         try {
             document.getElementById('chatRoomsLoading').style.display = 'flex';
-
             const response = await fetch(`/api/chat/rooms?userId=${this.currentUserId}`);
             const data = await response.json();
-
             if (response.ok) {
                 this.chatRooms = data.chatRooms || [];
                 await this.loadUnreadCounts();
@@ -1130,7 +752,6 @@ class DashboardChat {
             try {
                 const response = await fetch(`/api/chat/rooms/${room.id}/messages/unread?userId=${this.currentUserId}`);
                 const data = await response.json();
-
                 if (response.ok) {
                     this.unreadCounts.set(room.id, data.unreadCount);
                 }
@@ -1144,20 +765,16 @@ class DashboardChat {
     renderChatRooms() {
         const container = document.getElementById('chatRoomsItems');
         const emptyState = document.getElementById('chatRoomsEmpty');
-
         if (this.chatRooms.length === 0) {
             this.showEmptyState();
             return;
         }
-
         emptyState.style.display = 'none';
-
         container.innerHTML = this.chatRooms.map(room => {
             const unreadCount = this.unreadCounts.get(room.id) || 0;
             const displayName = room.displayName || room.name || 'Chat';
             const roomType = room.type || 'PRIVATE';
             const avatar = this.getRoomAvatar(room);
-
             return `
                 <div class="chat-room-item" onclick="openChatRoom(${room.id})">
                     <div class="chat-room-avatar" style="background: ${avatar.bg}; color: ${avatar.color}">
@@ -1186,8 +803,6 @@ class DashboardChat {
     getRoomAvatar(room) {
         const name = room.displayName || room.name || 'Chat';
         const firstLetter = name.charAt(0).toUpperCase();
-
-        // Generate consistent colors based on room ID
         const colors = [
             { bg: '#0052CC', color: '#ffffff' },
             { bg: '#00875A', color: '#ffffff' },
@@ -1195,7 +810,6 @@ class DashboardChat {
             { bg: '#FF8B00', color: '#ffffff' },
             { bg: '#6554C0', color: '#ffffff' }
         ];
-
         const colorIndex = room.id % colors.length;
         return {
             text: firstLetter,
@@ -1205,26 +819,22 @@ class DashboardChat {
 
     formatTime(dateString) {
         if (!dateString) return '';
-
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now - date;
         const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMins / 60);
         const diffDays = Math.floor(diffHours / 24);
-
         if (diffMins < 1) return 'now';
         if (diffMins < 60) return `${diffMins}m`;
         if (diffHours < 24) return `${diffHours}h`;
         if (diffDays < 7) return `${diffDays}d`;
-
         return date.toLocaleDateString();
     }
 
     updateTotalUnreadBadge() {
         const totalUnread = Array.from(this.unreadCounts.values()).reduce((sum, count) => sum + count, 0);
         const badge = document.getElementById('totalUnreadBadge');
-
         if (totalUnread > 0) {
             badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
             badge.style.display = 'inline-block';
@@ -1237,17 +847,14 @@ class DashboardChat {
         try {
             const socket = new SockJS('/ws');
             this.stompClient = Stomp.over(socket);
-
             this.stompClient.connect({}, (frame) => {
-                console.log('✅ WebSocket connected:', frame);
+                console.log('WebSocket connected:', frame);
                 this.connected = true;
                 this.updateConnectionStatus();
             }, (error) => {
-                console.error('❌ WebSocket connection failed:', error);
+                console.error('WebSocket connection failed:', error);
                 this.connected = false;
                 this.updateConnectionStatus();
-
-                // Retry connection after 5 seconds
                 setTimeout(() => this.connectWebSocket(), 5000);
             });
         } catch (error) {
@@ -1259,7 +866,6 @@ class DashboardChat {
         const statusElement = document.getElementById('chatConnectionStatus');
         const icon = statusElement.querySelector('i');
         const text = statusElement.querySelector('span');
-
         if (this.connected) {
             icon.className = 'fas fa-circle status-online';
             text.textContent = 'Online';
@@ -1270,21 +876,17 @@ class DashboardChat {
     }
 }
 
-// === LIVE CHAT FRONTEND INTEGRATION ===
-
 let stompClient = null;
 let currentRoomId = null;
 
 function connectWebSocket() {
     const socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
-
     stompClient.connect({}, function (frame) {
         console.log('Connected: ' + frame);
-        // Optionally subscribe to a default room or user notifications here
     }, function (error) {
         console.error('WebSocket error:', error);
-        setTimeout(connectWebSocket, 5000); // Retry on disconnect
+        setTimeout(connectWebSocket, 5000);
     });
 }
 
@@ -1301,13 +903,11 @@ function sendChatMessage() {
     const input = document.getElementById('chatMessageInput');
     const message = input.value.trim();
     if (!message || !stompClient || !stompClient.connected || !currentRoomId) return;
-
     stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
         senderId: DashboardState.currentUser.id,
         roomId: currentRoomId,
         content: message
     }));
-
     input.value = '';
 }
 
@@ -1333,7 +933,6 @@ async function openChatRoom(roomId) {
     currentRoomId = roomId;
     document.getElementById('chatRoomsList').style.display = 'none';
     document.getElementById('activeChatView').style.display = 'flex';
-
     await loadChatMessages(roomId);
     subscribeToRoom(roomId);
 }
@@ -1357,56 +956,32 @@ function showChatRoomsList() {
     currentRoomId = null;
 }
 
-// Initialize chat when dashboard loads
 document.addEventListener('DOMContentLoaded', function () {
-    // Wait for dashboard to initialize first
     setTimeout(() => {
         dashboardChat = new DashboardChat();
     }, 1000);
 });
 
-/**
- * GLOBAL DASHBOARD INSTANCE
- * Create and expose dashboard instance globally
- */
 let dashboard;
 
-/**
- * INITIALIZATION
- * Initialize dashboard when DOM is ready
- */
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🌟 DOM loaded, initializing dashboard...');
-
+    console.log('DOM loaded, initializing dashboard...');
     try {
-        // Create dashboard instance
         dashboard = new Dashboard();
-
-        // Make dashboard available globally for onclick handlers
         window.dashboard = dashboard;
-
-        // Initialize dashboard
         await dashboard.initialize();
-
     } catch (error) {
-        console.error('💥 Fatal error initializing dashboard:', error);
+        console.error('Fatal error initializing dashboard:', error);
         NotificationService.showError('Failed to initialize dashboard. Please refresh the page.');
     }
 });
 
-/**
- * GLOBAL FUNCTIONS FOR HTML onclick HANDLERS
- * These functions bridge HTML onclick attributes to dashboard methods
- */
-
-// Calendar navigation
 function changeMonth(direction) {
     if (dashboard) {
         dashboard.changeMonth(direction);
     }
 }
 
-// User actions
 function showAddFriend() {
     if (dashboard) {
         dashboard.showAddFriend();
@@ -1425,8 +1000,6 @@ function logout() {
     }
 }
 
-// Export for module systems (if needed)
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = { Dashboard, DashboardState, DashboardConfig };
 }
-
