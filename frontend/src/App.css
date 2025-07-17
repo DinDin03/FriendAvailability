@@ -1,44 +1,83 @@
 @import "tailwindcss";
 
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+@theme {
+  --color-border: hsl(var(--border));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-card: hsl(var(--card));
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 226 0% 5%;
+    --card: 0 0% 100%;
+    --primary: 216 100% 40%;
+    --primary-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
   }
-  to {
-    transform: rotate(360deg);
+
+  .dark {
+    --background: 222 29% 4%;
+    --foreground: 213 31% 91%;
+    --card: 222 47% 8%;
+    --primary: 118, 59%, 50%;
+    --primary-foreground: 213 31% 91%;
+    --border: 217 33% 20%;
   }
+    * {
+        @apply border-border;
+    }
+
+    html {
+        @apply scroll-smooth;
+        /* font-family: Inter, sans-serif; */
+    }
+
+    body {
+        @apply bg-background text-foreground transition-colors duration-300;
+        font-feature-settings: "rlig" 1, "calt" 1;
+    }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+@utility container {
+    margin-inline: auto;
+    padding-inline: 2rem;
+
+    @media (width >= 640px) {
+        max-width: 640px;
+    }
+    @media (width >= 768px) { 
+        max-width: 768px;
+    }
+    @media (width >= 1024px) { 
+        max-width: 1024px;
+    }
+    @media (width >= 1280px) { 
+        max-width: 1280px;
+    }
+    @media (width >= 1400px) { 
+        max-width: 1400px;
+    }
 }
 
-.card {
-  padding: 2em;
+@utility card-hover {
+    @apply transition-transform duration-300 hover:scale-[1.02]
 }
 
-.read-the-docs {
-  color: #888;
+@utility button {
+    @apply px-8 py-2.5 rounded-full bg-primary text-primary-foreground font-medium
+           transition-all duration-300 hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]
+           hover:scale-105 active:scale-95;
 }
