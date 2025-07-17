@@ -116,8 +116,8 @@ public class SecurityConfig {
                 "http://localhost:8080",
                 "http://127.0.0.1:8080",
                 "https://friendavailability-production.up.railway.app",
-                "https://www.linkups.com.au"
-
+                "https://www.linkups.com.au",
+                "https://localhost:5173",
         ));
 
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -131,4 +131,16 @@ public class SecurityConfig {
 
         return source;
     }
+
+        @Bean
+        public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+                @Override
+                public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/api/**")
+                        .allowedOrigins("http://localhost:5173")
+                        .allowedMethods("*");
+                }
+        };
+        }
 }
