@@ -1,14 +1,14 @@
 # Requirements
 
-cd frontend
-npm install
+- cd frontend
+- npm install
 
 Seems to work? Had to downgrade from Vite 7.0.4 and react 4.6.0 to Vite 5.4.19 and react 4.6.0
 
 # Packages
 
-npm install react-router-dom
-npm install tailwindcss/cli
+- npm install react-router-dom
+- npm install tailwindcss/cli
 
 # 4. Production Build and Deployment
 - When ready to deploy, build the React app:
