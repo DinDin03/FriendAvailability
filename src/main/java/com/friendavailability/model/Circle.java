@@ -40,10 +40,6 @@ public class Circle {
     @Builder.Default
     private Boolean isActive = true;
 
-    @Column(name = "is_private", nullable = false)
-    @Builder.Default
-    private Boolean isPrivate = false;
-
     @Column(name = "max_members")
     private Integer maxMembers;
 
@@ -85,10 +81,6 @@ public class Circle {
         return this.isActive != null && this.isActive;
     }
 
-    public boolean isPrivateCircle() {
-        return this.isPrivate != null && this.isPrivate;
-    }
-
     public boolean hasMaxMembers() {
         return this.maxMembers != null && this.maxMembers > 0;
     }
@@ -97,7 +89,6 @@ public class Circle {
         return this.name != null ? this.name : "Unnamed Circle";
     }
 
-    // Helper methods for member count (will be useful with CircleMember entity)
     public int getMemberCount() {
         return this.members != null ? this.members.size() : 0;
     }
