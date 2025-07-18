@@ -116,6 +116,31 @@ public class CircleService{
 
         Circle circle = getCircleById(circleId);
 
+        if(circleMemberRepository.isUserActiveMemberOfCircle(userId, circleId)){
+            throw new RuntimeException("User is already a member of the circle");
+        }
+
+        if(circleMemberRepository.isUserAdminOrOwnerOfCircle(requestingUserId, circleId)){
+            throw new RuntimeException("Only the owner and admins can add users");
+        }
+        
+        if(!userId.equals(requestingUserId)){
+            if(!friendRepository.existsFriendshipBetweenUsers(userId, requestingUserId)){
+                throw new RuntimeException("Users must be friends first");
+            }
+        }
+
+        if(circle.hasMaxMembers()){
+            long currentMemberCount = circleMemberRepository.countActiveMembersInCircle(circleId);
+            if(currentMemberCount >= circle.getMaxMembers()){
+                throw new RuntimeException("Circle has reached its maximum member limit");
+            }
+        }
+
+        return addMemberToCircleInternal(circleId, userId, CircleRole.MEMBER, requestingUserId);
+    }
+
+    public boolean removeMemberFromCircle(Long circleId, Long userId, Long requestingUserId){
         
     }
 }
