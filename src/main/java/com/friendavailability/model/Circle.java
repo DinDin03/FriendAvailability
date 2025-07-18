@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
@@ -17,10 +19,12 @@ import java.util.List;
         @Index(name = "idx_circle_name", columnList = "name")
 })
 @Data
+@NoArgsConstructor 
+@AllArgsConstructor
 @Builder
 public class Circle {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
@@ -29,7 +33,7 @@ public class Circle {
     @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    @Size(max = 100, message = "Circle description can not exceed 500 characters")
+    @Size(max = 500, message = "Circle description can not exceed 500 characters")
     @Column(name = "description", length = 500)
     private String description;
 
