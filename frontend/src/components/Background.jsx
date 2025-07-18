@@ -1,4 +1,4 @@
-import placeholder from "@/assets/placeholder.webp"
+import herobackground from "@/assets/herobackground.png"
 import { useState, useEffect } from "react";
 
 export const Background = () => {
@@ -6,40 +6,44 @@ export const Background = () => {
 
     useEffect(() => {
       const handleScroll = () => {
-        setScroll(Math.min(window.scrollY, 300)); // change second argument to affect how far the images move
+        setScroll(window.scrollY); // change second argument to affect how far the images move
       };
       window.addEventListener("scroll", handleScroll);
       return () => window.removeEventListener("scroll", handleScroll);
     }, []);
   
-    const maxTranslate = 200;
-    const leftTranslate = -((scroll / 300) * maxTranslate);
-    const rightTranslate = (scroll / 300) * maxTranslate;
+    const maxTranslate = 100;
+    const leftTranslate = -((scroll / 100) * maxTranslate);
+    const rightTranslate = (scroll / 100) * maxTranslate;
+
+    const changeOpacity = 1 - Math.abs(leftTranslate) / maxTranslate * 0.2;
   
     return (
       <>
         <div
-          className="fixed left-0 top-0 h-full z-0 pointer-events-none"
+          className="fixed left-0 top-0 h-full w-full z-0 pointer-events-none -ml-125"
           style={{
             transform: `translateX(${leftTranslate}px)`,
-            transition: "transform 0.2s",
+            opacity: changeOpacity,
+            transition: "transform 0.4s",
           }}
         >
           <img
-            src={placeholder}
+            src={herobackground}
             alt="left background"
-            className="h-full object-cover"
+            className="h-full object-cover object-left"
           />
         </div>
         <div
-          className="fixed right-0 top-0 h-full z-0 pointer-events-none"
+          className="fixed right-0 top-0 h-full z-0 pointer-events-none -mr-130"
           style={{
             transform: `translateX(${rightTranslate}px)`,
-            transition: "transform 0.2s",
+            opacity: changeOpacity,
+            transition: "transform 0.4s",
           }}
         >
           <img
-            src={placeholder}
+            src={herobackground}
             alt="right background"
             className="h-full object-cover"
           />
