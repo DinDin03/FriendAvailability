@@ -256,22 +256,15 @@ public class CircleService {
         return circleRepository.findCirclesForUser(userId);
     }
 
-    /**
-     * Get circles created by a user
-     */
     public List<Circle> getCirclesCreatedByUser(Long userId) {
         validateUserExists(userId);
         return circleRepository.findCirclesCreatedByUser(userId);
     }
 
-    /**
-     * Get circle members (if user has permission to view)
-     */
     public List<CircleMember> getCircleMembers(Long circleId, Long requestingUserId) {
         validateUserExists(requestingUserId);
         getCircleById(circleId); // Validate circle exists
 
-        // Check if user is a member (members can see other members)
         if (!circleMemberRepository.isUserActiveMemberOfCircle(requestingUserId, circleId)) {
             throw new RuntimeException("You must be a member of the circle to view its members");
         }
@@ -279,9 +272,6 @@ public class CircleService {
         return circleMemberRepository.findActiveCircleMembers(circleId);
     }
 
-    /**
-     * Search circles by name
-     */
     public List<Circle> searchCircles(String searchTerm) {
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return List.of();
@@ -289,24 +279,15 @@ public class CircleService {
         return circleRepository.findActiveCirclesByNameContaining(searchTerm.trim());
     }
 
-    // ========== UTILITY METHODS ==========
-
-    /**
-     * Internal method to add member without all the business rule checks
-     * Used during circle creation and when business rules are already validated
-     */
     private CircleMember addMemberToCircleInternal(Long circleId, Long userId, CircleRole role, Long invitedBy) {
-        // Check if membership already exists (might be inactive)
         Optional<CircleMember> existingMembershipOpt = circleMemberRepository.findMembershipRecord(userId, circleId);
 
         if (existingMembershipOpt.isPresent()) {
-            // Reactivate existing membership
             CircleMember existingMembership = existingMembershipOpt.get();
             existingMembership.reactivate();
             existingMembership.updateRole(role);
             return circleMemberRepository.save(existingMembership);
         } else {
-            // Create new membership
             User user = getUserById(userId);
             Circle circle = getCircleById(circleId);
 
