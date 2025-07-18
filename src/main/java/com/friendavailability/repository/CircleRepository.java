@@ -69,7 +69,6 @@ public interface CircleRepository extends JpaRepository<Circle, Long> {
 
     @Query("SELECT c FROM Circle c " +
             "WHERE c.isActive = true " +
-            "AND c.isPrivate = false " +
             "ORDER BY SIZE(c.members) DESC")
     List<Circle> findPopularPublicCircles();
 
@@ -91,8 +90,6 @@ public interface CircleRepository extends JpaRepository<Circle, Long> {
     int reactivateCircle(@Param("circleId") Long circleId);
 
     List<Circle> findByIsActiveTrueOrderByCreatedAtDesc();
-
-    List<Circle> findByIsPrivateAndIsActiveTrueOrderByCreatedAtDesc(Boolean isPrivate);
 
     @Query("SELECT COUNT(c) > 0 FROM Circle c WHERE c.createdBy = :userId AND LOWER(c.name) = LOWER(:name) AND c.isActive = true")
     boolean existsActiveCircleWithNameForUser(@Param("userId") Long userId, @Param("name") String name);
