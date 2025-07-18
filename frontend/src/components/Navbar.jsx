@@ -1,4 +1,5 @@
 import {cn} from '@/lib/utils'
+import Logo from '@/assets/logo.png'
 import { Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -23,8 +24,8 @@ export const Navbar = () => {
     return (
         <nav
             className={cn(
-                "bg-white fixed w-full transition-all duration-300", 
-                isScrolled ? "py-3 bg-background/80 backdrop-blur-md shadow-xs" : "py-5"
+                "bg-white fixed w-full z-50 transition-all duration-300", 
+                isScrolled ? "py-3 bg-background/80 backdrop-blur-md shadow-xs" : "py-4.5"
             )}
         >
             <div className="container flex items-center justify-between">
@@ -32,22 +33,23 @@ export const Navbar = () => {
                     className="flex items-center"
                     href="#home"
                 >
-                    <span className="relative z-10">
+                    <span className="relative flex items-center z-10">
+                        <img src={Logo} alt="Logo" className="size-18" />
                         <span className="text-3xl font-bold text-primary transition-colors">Link Up</span>
                     </span>
                 </a>
 
                 {/* desktop nav */}
-                <div className="hidden md:flex space-x-20 items-center">
+                <div className="hidden md:flex space-x-18 items-center">
                         <a
                             href="login"
-                            className="font-bold text-foreground hover:text-neutral-700 transition-colors duration-300"
+                            className="font-semibold tracking-wide text-foreground hover:text-neutral-700 transition-colors duration-300"
                         >
                             Log In
                         </a>
                         <a
                             href="signup"
-                            className="font-bold text-gray-50 button"
+                            className=" text-gray-50 button"
                         >
                             Sign Up
                         </a>

@@ -1,3 +1,24 @@
+@font-face {
+    font-family: 'Satoshi';
+    src: url('/fonts/Satoshi-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Satoshi';
+    src: url('/fonts/Satoshi-Bold.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Satoshi';
+    src: url('/fonts/Satoshi-Medium.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
 @import "tailwindcss";
 
 #root {
@@ -23,7 +44,7 @@
     --background: 0 0% 100%;
     --foreground: 226 0% 5%;
     --card: 0 0% 100%;
-    --primary: 216 100% 40%;
+    --primary: 212, 81%, 49%;
     --primary-foreground: 210 40% 98%;
     --border: 214 32% 91%;
   }
@@ -32,7 +53,7 @@
     --background: 222 29% 4%;
     --foreground: 213 31% 91%;
     --card: 222 47% 8%;
-    --primary: 118, 59%, 50%;
+    --primary: 212, 81%, 49%;
     --primary-foreground: 213 31% 91%;
     --border: 217 33% 20%;
   }
@@ -42,14 +63,18 @@
 
     html {
         @apply scroll-smooth;
-        /* font-family: Inter, sans-serif; */
+        font-family: Satoshi, sans-serif;
     }
 
     body {
         @apply bg-background text-foreground transition-colors duration-300;
         font-feature-settings: "rlig" 1, "calt" 1;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
     }
 }
+
 
 @utility container {
     margin-inline: auto;
@@ -77,7 +102,7 @@
 }
 
 @utility button {
-    @apply px-8 py-2.5 rounded-full bg-primary text-primary-foreground font-medium
+    @apply px-8.5 py-3.5 rounded-full bg-primary text-primary-foreground font-medium
            transition-all duration-300 hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]
            hover:scale-105 active:scale-95;
 }

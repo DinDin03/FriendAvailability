@@ -11,7 +11,7 @@ export const Hero = () => {
     return (
         <section 
             id="hero" 
-            className="relative min-h-screen flex flex-col items-center justify-center px-4"
+            className="relative min-h-screen flex flex-col items-center justify-center p-6"
         >
             <div className="grid md:grid-cols-4 gap-8">
                 {items.map((item, key) => (
