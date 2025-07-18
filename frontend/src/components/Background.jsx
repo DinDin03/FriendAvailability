@@ -16,7 +16,7 @@ export const Background = () => {
     const leftTranslate = -((scroll / 100) * maxTranslate);
     const rightTranslate = (scroll / 100) * maxTranslate;
 
-    const changeOpacity = 1 - Math.abs(leftTranslate) / maxTranslate * 0.2;
+    const changeOpacity = 1 - Math.abs(leftTranslate + 100) / maxTranslate * 0.2;
   
     return (
       <>
@@ -24,7 +24,7 @@ export const Background = () => {
           className="fixed left-0 top-0 h-full w-full z-0 pointer-events-none -ml-125"
           style={{
             transform: `translateX(${leftTranslate}px)`,
-            opacity: changeOpacity,
+            opacity: scroll > 250 ? changeOpacity : 1,
             transition: "transform 0.4s",
           }}
         >
@@ -38,7 +38,7 @@ export const Background = () => {
           className="fixed right-0 top-0 h-full z-0 pointer-events-none -mr-130"
           style={{
             transform: `translateX(${rightTranslate}px)`,
-            opacity: changeOpacity,
+            opacity: scroll > 250 ? changeOpacity : 1,
             transition: "transform 0.4s",
           }}
         >
