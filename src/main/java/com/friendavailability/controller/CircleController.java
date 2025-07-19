@@ -61,9 +61,9 @@ public class CircleController {
                             "description", circle.getDescription(),
                             "updatedAt", circle.getUpdatedAt()
                     )));
-        }catch(Exception error) {
+        }catch(Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                    "error", error.getMessage(),
+                    "error", e.getMessage(),
                     "errorCode", "UPDATE_CIRCLE_FAILED"));
         }
     }
@@ -78,14 +78,14 @@ public class CircleController {
                     "message", "Circle deleted successfully"
                 ));
             }else{
-                return ResponseEntity.badRequest.body(Map.of(
-                    "error", error.getMessage(),
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Failed to delete circle",
                     "errorCode", "DELETE_CIRCLE_FAILED"
                 ));
             }
         }catch(Exception e){
-            return ResponseEntity.badRequest.body(Map.of(
-                    "error", error.getMessage(),
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
                     "errorCode", "DELETE_CIRCLE_FAILED"
                 ));
         }
