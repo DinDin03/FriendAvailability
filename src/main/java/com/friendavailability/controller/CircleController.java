@@ -49,6 +49,27 @@ public class CircleController {
         }
     }
 
-    
+    @PutMapping("/{circleId}")
+    public ResponseEntity<?> updateCircle(@PathVariable Long circleId, @RequestBody UpdateCircleRequest request, @RequestParam Long userId){
+        try{
+            Circle circle = circleService.updateCircle(circleId, request.getName(), request.getDescription(), userId);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Circle updated successfully",
+                    "circle", Map.of(
+                            "id", circle.getId(),
+                            "name", circle.getName(),
+                            "description", circle.getDescription(),
+                            "updatedAt", circle.getUpdatedAt()
+                    )));
+        }catch(Exception error) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", error.getMessage(),
+                    "errorCode", "UPDATE_CIRCLE_FAILED"));
+        }
+    }
+
+    @DeleteMapping("/{circleId}")
+
+
 
 }
