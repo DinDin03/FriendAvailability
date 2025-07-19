@@ -69,6 +69,29 @@ public class CircleController {
     }
 
     @DeleteMapping("/{circleId}")
+    public ResponseEntity<?> deleteCircle(@PathVariable Long circleId, @RequestParam Long userId){
+        try{
+            boolean deleted = circleService.deleteCircle(circleId, userId);
+
+            if(deleted){
+                return ResponseEntity.ok(Map.of(
+                    "message", "Circle deleted successfully"
+                ));
+            }else{
+                return ResponseEntity.badRequest.body(Map.of(
+                    "error", error.getMessage(),
+                    "errorCode", "DELETE_CIRCLE_FAILED"
+                ));
+            }
+        }catch(Exception e){
+            return ResponseEntity.badRequest.body(Map.of(
+                    "error", error.getMessage(),
+                    "errorCode", "DELETE_CIRCLE_FAILED"
+                ));
+        }
+    }
+
+    
 
 
 
