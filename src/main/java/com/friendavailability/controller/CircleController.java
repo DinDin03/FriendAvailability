@@ -9,6 +9,7 @@ import com.friendavailability.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,8 +51,9 @@ public class CircleController {
     }
 
     @PutMapping("/{circleId}")
-    public ResponseEntity<?> updateCircle(@PathVariable Long circleId, @RequestBody UpdateCircleRequest request, @RequestParam Long userId){
-        try{
+    public ResponseEntity<?> updateCircle(@PathVariable Long circleId, @RequestBody UpdateCircleRequest request,
+            @RequestParam Long userId) {
+        try {
             Circle circle = circleService.updateCircle(circleId, request.getName(), request.getDescription(), userId);
             return ResponseEntity.ok(Map.of(
                     "message", "Circle updated successfully",
@@ -59,9 +61,8 @@ public class CircleController {
                             "id", circle.getId(),
                             "name", circle.getName(),
                             "description", circle.getDescription(),
-                            "updatedAt", circle.getUpdatedAt()
-                    )));
-        }catch(Exception e) {
+                            "updatedAt", circle.getUpdatedAt())));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", e.getMessage(),
                     "errorCode", "UPDATE_CIRCLE_FAILED"));
@@ -69,37 +70,82 @@ public class CircleController {
     }
 
     @DeleteMapping("/{circleId}")
-    public ResponseEntity<?> deleteCircle(@PathVariable Long circleId, @RequestParam Long userId){
-        try{
+    public ResponseEntity<?> deleteCircle(@PathVariable Long circleId, @RequestParam Long userId) {
+        try {
             boolean deleted = circleService.deleteCircle(circleId, userId);
 
-            if(deleted){
+            if (deleted) {
                 return ResponseEntity.ok(Map.of(
-                    "message", "Circle deleted successfully"
-                ));
-            }else{
+                        "message", "Circle deleted successfully"));
+            } else {
                 return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Failed to delete circle",
-                    "errorCode", "DELETE_CIRCLE_FAILED"
-                ));
+                        "error", "Failed to delete circle",
+                        "errorCode", "DELETE_CIRCLE_FAILED"));
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
                     "error", e.getMessage(),
-                    "errorCode", "DELETE_CIRCLE_FAILED"
-                ));
+                    "errorCode", "DELETE_CIRCLE_FAILED"));
         }
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getUserCircles(@PathVariable Long userId){
-        try{
-            List<Circle> userCircles = circleService.getCirclesForUser()
+    public ResponseEntity<?> getUserCircles(@PathVariable Long userId) {
+        try {
+            List<Circle> userCircles = circleService.getCirclesForUser(userId);
+            List<Circle> createdCircles = circleService.getCirclesCreatedByUser(userId);
+
+            return ResponseEntity.ok(Map.of(
+                    "circles", userCircles,
+                    "totalCircles", userCircles.size(),
+                    "circlesAsOwner", createdCircles.size(),
+                    "circlesAsMember", userCircles.size() - createdCircles.size()));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "errorCode", "GET_CIRCLES_FAILED"));
         }
     }
 
-    
+    @GetMapping("/{circleId}")
+    public ResponseEntity<?> getCircle(@PathVariable Long circleId, @RequestParam Long userId) {
+        try {
+            boolean userAccess = circleService.canUserAccessCircle(circleId, userId);
 
+            if (!userAccess) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "You are not a member of this circle ",
+                        "errorCode", "ACCESS_DENIED"));
+            }
 
+            Circle circle = circleService.getCircle(circleId);
+
+            long memberCount = circleService.getMemberCountForCircle(circleId);
+
+            CircleMember userMembership = circleService.getUserMembershipInCircle(circleId, userId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", circle.getId());
+            response.put("name", circle.getName());
+            response.put("description", circle.getDescription());
+            response.put("createdBy", circle.getCreatedBy());
+            response.put("maxMembers", circle.getMaxMembers());
+            response.put("currentMemberCount", memberCount);
+            response.put("circleColor", circle.getCircleColor());
+            response.put("createdAt", circle.getCreatedAt());
+            response.put("updatedAt", circle.getUpdatedAt());
+            response.put("userRole", userMembership.getRole().name());
+            response.put("canManageMembers", userMembership.canManageMembers());
+            response.put("canModifyCircle", userMembership.canModifyCircle());
+            response.put("isAtMaxCapacity", circle.isAtMaxCapacity());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "errorCode", "GET_CIRCLE_FAILED"));
+        }
+    }
 
 }

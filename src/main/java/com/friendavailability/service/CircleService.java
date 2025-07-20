@@ -263,7 +263,7 @@ public class CircleService {
 
     public List<CircleMember> getCircleMembers(Long circleId, Long requestingUserId) {
         validateUserExists(requestingUserId);
-        getCircleById(circleId); // Validate circle exists
+        getCircleById(circleId); 
 
         if (!circleMemberRepository.isUserActiveMemberOfCircle(requestingUserId, circleId)) {
             throw new RuntimeException("You must be a member of the circle to view its members");
@@ -334,5 +334,33 @@ public class CircleService {
         if (name.trim().length() > 100) {
             throw new RuntimeException("Circle name cannot exceed 100 characters");
         }
+    }
+
+    public Circle getCircle(Long circleId) {
+        return getCircleById(circleId);
+    }
+
+    public boolean canUserAccessCircle(Long circleId, Long userId) {
+        if (userId == null || circleId == null) {
+            return false;
+        }
+        
+        try {
+            validateUserExists(userId);
+            return circleMemberRepository.isUserActiveMemberOfCircle(userId, circleId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public CircleMember getUserMembershipInCircle(Long circleId, Long userId) {
+        validateUserExists(userId);
+        
+        return circleMemberRepository.findActiveMembershipRecord(userId, circleId)
+                .orElseThrow(() -> new RuntimeException("You are not a member of this circle"));
+    }
+
+    public long getMemberCountForCircle(Long circleId){
+        return circleMemberRepository.countActiveMembersInCircle(circleId);
     }
 }
