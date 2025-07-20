@@ -91,6 +91,13 @@ public class CircleController {
         }
     }
 
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserCircles(@PathVariable Long userId){
+        try{
+            List<Circle> userCircles = circleService.getCirclesForUser()
+        }
+    }
+
     
 
 
