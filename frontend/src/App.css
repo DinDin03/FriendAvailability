@@ -43,7 +43,7 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 226 0% 5%;
-    --card: 0 0% 100%;
+    --card: 212, 81%, 49%;
     --primary: 212, 81%, 49%;
     --primary-foreground: 210 40% 98%;
     --border: 214 32% 91%;
@@ -105,4 +105,8 @@
     @apply px-8.5 py-3.5 rounded-full bg-primary text-primary-foreground font-medium
            transition-all duration-300 hover:shadow-[0_0_10px_rgba(139,92,246,0.5)]
            hover:scale-105 active:scale-95;
+}
+
+@utility transition-color {
+    @apply transition-all duration-300 hover:filter-none
 }
