@@ -7,10 +7,7 @@ import com.friendavailability.model.CircleRole;
 import com.friendavailability.service.CircleService;
 import com.friendavailability.service.UserService;
 
-import org.apache.catalina.connector.Response;
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties.Http;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -184,25 +181,121 @@ public class CircleController {
     public ResponseEntity<?> addMemberToCircle(@PathVariable Long circleId, @RequestParam Long requestingUserId,
             @RequestBody AddMemberToCircleRequest request) {
 
-        try{
+        try {
             CircleMember membership = circleService.addMemberToCircle(circleId, request.getUserId(), requestingUserId);
 
             return ResponseEntity.ok(Map.of(
-                "message", "Member added successfully",
-                "membership", Map.of(
-                        "id", membership.getId(),
-                        "userId", membership.getUserId(),
-                        "userName", membership.getUserName(),
-                        "role", membership.getRole().name(),
-                        "joinedAt", membership.getJoinedAt()
-                )
-            ));
-        }catch(Exception e){
+                    "message", "Member added successfully",
+                    "membership", Map.of(
+                            "id", membership.getId(),
+                            "userId", membership.getUserId(),
+                            "userName", membership.getUserName(),
+                            "role", membership.getRole().name(),
+                            "joinedAt", membership.getJoinedAt())));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
-                "error", e.getMessage(),
-                "errorCode", "ADD_MEMBER_FAILED"
-            ));
+                    "error", e.getMessage(),
+                    "errorCode", "ADD_MEMBER_FAILED"));
         }
     }
 
+    @DeleteMapping("/{circleId}/members/{userId}")
+    public ResponseEntity<?> removeMemberFromCircle(@PathVariable Long circleId, @PathVariable Long userId,
+            @RequestParam Long requestingUserId) {
+        try {
+            boolean deleted = circleService.removeMemberFromCircle(circleId, userId, requestingUserId);
+
+            if (deleted) {
+                return ResponseEntity.ok(Map.of(
+                        "message", "Member removed successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "erorr", "Failed to remove member",
+                        "errorCode", "REMOVE_FAILED"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "errorCode", "REMOVE_MEMBER_FAILED"));
+        }
+    }
+
+    @PutMapping("/{circleId}/members/{userId}/role")
+    public ResponseEntity<?> updateMemberRole(@PathVariable Long circleId,
+            @PathVariable Long userId,
+            @RequestBody UpdateMemberRoleRequest request,
+            @RequestParam Long requestingUserId) {
+        try {
+            CircleRole newRole = CircleRole.valueOf(request.getNewRole().toUpperCase());
+            CircleMember updatedMember = circleService.updateMemberRole(circleId, userId, newRole, requestingUserId);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Member role updated successfully",
+                    "member", Map.of(
+                            "userId", updatedMember.getUserId(),
+                            "userName", updatedMember.getUserName(),
+                            "newRole", updatedMember.getRole().name(),
+                            "roleDisplayName", updatedMember.getRoleDisplayName())));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Invalid role: " + request.getNewRole(),
+                    "errorCode", "INVALID_ROLE"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "errorCode", "UPDATE_ROLE_FAILED"));
+        }
+    }
+
+    @PostMapping("/{circleId}/transfer-ownership")
+    public ResponseEntity<?> transferOwnership(@PathVariable Long circleId,
+            @RequestBody TransferOwnershipRequest request,
+            @RequestParam Long currentOwnerId) {
+        try {
+            boolean transferred = circleService.transferOwnership(
+                    circleId,
+                    request.getNewOwnerId(),
+                    currentOwnerId);
+
+            if (transferred) {
+                return ResponseEntity.ok(Map.of(
+                        "message", "Ownership transferred successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "Failed to transfer ownership",
+                        "errorCode", "TRANSFER_FAILED"));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "errorCode", "TRANSFER_OWNERSHIP_FAILED"));
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCircles(@RequestParam String searchTerm, @RequestParam Long userId) {
+        try {
+            List<Circle> allResults = circleService.searchCircles(searchTerm);
+            List<Circle> userCircles = circleService.getCirclesForUser(userId);
+
+            List<Circle> filteredResults = allResults.stream()
+                    .filter(circle -> userCircles.stream()
+                            .anyMatch(userCircle -> userCircle.getId().equals(circle.getId())))
+                    .toList();
+
+            return ResponseEntity.ok(Map.of(
+                    "searchResults", filteredResults,
+                    "totalResults", filteredResults.size(),
+                    "searchTerm", searchTerm,
+                    "message", "Search completed successfully"));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage(),
+                    "errorCode", "SEARCH_FAILED"));
+        }
+
+    }
 }

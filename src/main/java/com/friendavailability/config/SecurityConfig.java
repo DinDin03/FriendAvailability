@@ -54,7 +54,6 @@ public class SecurityConfig {
                                 "/chat-test.html"
                         ).permitAll()
 
-                        // Email verification pages - MUST be accessible without authentication
                         .requestMatchers(
                                 "/email/**",           // All email directory files
                                 "/check-email.html",   // Redirect after registration
@@ -63,7 +62,6 @@ public class SecurityConfig {
                                 "/email/email-verification-failed.html"
                         ).permitAll()
 
-                        // Password reset pages - MUST be accessible without authentication
                         .requestMatchers(
                                 "/pages/auth/reset-password.html",
                                 "/pages/auth/**"
@@ -103,7 +101,6 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID")
                 )
-                // Add our custom session authentication filter
                 .addFilterBefore(sessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
