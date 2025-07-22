@@ -18,114 +18,114 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final CustomOAuth2UserService customOAuth2UserService;
+        private final CustomOAuth2UserService customOAuth2UserService;
 
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
-        this.customOAuth2UserService = customOAuth2UserService;
-        System.out.println("SecurityConfig created with CustomOAuth2UserService injected");
-    }
+        public SecurityConfig(CustomOAuth2UserService customOAuth2UserService) {
+                this.customOAuth2UserService = customOAuth2UserService;
+                System.out.println("SecurityConfig created with CustomOAuth2UserService injected");
+        }
 
-    @Bean
-    public SessionAuthenticationFilter sessionAuthenticationFilter() {
-        return new SessionAuthenticationFilter();
-    }
+        @Bean
+        public SessionAuthenticationFilter sessionAuthenticationFilter() {
+                return new SessionAuthenticationFilter();
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
 
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authz -> authz
-                        // Static resources and public pages
-                        .requestMatchers(
-                                "/",
-                                "/index.html",
-                                "/style.css",
-                                "/app.js",
-                                "/default-ui.css",
-                                "/favicon.ico",
-                                "/css/**",
-                                "/js/**",
-                                "/websocket-test.html", 
-                                "/ws/**",
-                                "/api/chat/**",
-                                "/chat-test.html"
-                        ).permitAll()
+                http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(AbstractHttpConfigurer::disable)
+                                .authorizeHttpRequests(authz -> authz
+                                                // Static resources and public pages
+                                                .requestMatchers(
+                                                                "/",
+                                                                "/index.html",
+                                                                "/style.css",
+                                                                "/app.js",
+                                                                "/default-ui.css",
+                                                                "/favicon.ico",
+                                                                "/css/**",
+                                                                "/js/**",
+                                                                "/websocket-test.html",
+                                                                "/ws/**",
+                                                                "/api/chat/**",
+                                                                "/chat-test.html",
+                                                                "/circle-test.html",
+                                                                "/api/circles/**", 
+                                                                "/api/friends/**",
+                                                                "/api/users/**")
+                                                .permitAll()
 
-                        .requestMatchers(
-                                "/email/**",           // All email directory files
-                                "/check-email.html",   // Redirect after registration
-                                "/email/check-email.html",
-                                "/email/email-verified.html",
-                                "/email/email-verification-failed.html"
-                        ).permitAll()
+                                                .requestMatchers(
+                                                                "/email/**", // All email directory files
+                                                                "/check-email.html", // Redirect after registration
+                                                                "/email/check-email.html",
+                                                                "/email/email-verified.html",
+                                                                "/email/email-verification-failed.html")
+                                                .permitAll()
 
-                        .requestMatchers(
-                                "/pages/auth/reset-password.html",
-                                "/pages/auth/**"
-                        ).permitAll()
+                                                .requestMatchers(
+                                                                "/pages/auth/reset-password.html",
+                                                                "/pages/auth/**")
+                                                .permitAll()
 
-                        // Authentication endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
+                                                // Authentication endpoints
+                                                .requestMatchers("/api/auth/**").permitAll()
 
-                        // OAuth2 endpoints
-                        .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                                                // OAuth2 endpoints
+                                                .requestMatchers("/oauth2/**", "/login/**").permitAll()
 
-                        // Dashboard requires authentication
-                        .requestMatchers("/dashboard.html").authenticated()
+                                                // Dashboard requires authentication
+                                                .requestMatchers("/dashboard.html").authenticated()
 
-                        // All other API endpoints require authentication
-                        .requestMatchers("/api/**").authenticated()
+                                                // All other API endpoints require authentication
+                                                .requestMatchers("/api/**").authenticated()
 
-                        // Everything else requires authentication
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                        .loginPage("/index.html")
-                        .defaultSuccessUrl("/dashboard.html", true)
-                        .permitAll()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .successHandler(new SimpleUrlAuthenticationSuccessHandler("/pages/dashboard.html"))
-                        .failureUrl("/index.html?error=login_failed")
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .oidcUserService(customOAuth2UserService)
-                        )
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/index.html")
-                        .invalidateHttpSession(true)
-                        .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
-                )
-                .addFilterBefore(sessionAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+                                                .anyRequest().authenticated())
+                                .formLogin(form -> form
+                                                .loginPage("/index.html")
+                                                .defaultSuccessUrl("/dashboard.html", true)
+                                                .permitAll())
+                                .oauth2Login(oauth2 -> oauth2
+                                                .successHandler(new SimpleUrlAuthenticationSuccessHandler(
+                                                                "/pages/dashboard.html"))
+                                                .failureUrl("/index.html?error=login_failed")
+                                                .userInfoEndpoint(userInfo -> userInfo
+                                                                .oidcUserService(customOAuth2UserService)))
+                                .logout(logout -> logout
+                                                .logoutUrl("/logout")
+                                                .logoutSuccessUrl("/index.html")
+                                                .invalidateHttpSession(true)
+                                                .clearAuthentication(true)
+                                                .deleteCookies("JSESSIONID"))
+                                .addFilterBefore(sessionAuthenticationFilter(),
+                                                UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:8080",
-                "http://127.0.0.1:8080",
-                "https://friendavailability-production.up.railway.app",
-                "https://www.linkups.com.au"
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(List.of(
+                                "http://localhost:8080",
+                                "http://127.0.0.1:8080",
+                                "https://friendavailability-production.up.railway.app",
+                                "https://www.linkups.com.au"
 
-        ));
+                ));
 
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
-        configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowedHeaders(List.of("*"));
 
-        configuration.setAllowCredentials(true);
+                configuration.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
 
-        return source;
-    }
+                return source;
+        }
 }
