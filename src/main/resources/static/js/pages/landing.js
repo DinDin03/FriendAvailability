@@ -2,33 +2,22 @@ class LandingPageController {
     constructor() {
         this.currentModal = null;
         this.isLoading = false;
-
-        // Initialize page
         this.initialize();
-
         debugLog('LandingPageController initialized');
     }
 
-    /**
-     * Initialize landing page
-     * Similar to @PostConstruct method
-     */
     async initialize() {
         try {
-            // Check if user is already authenticated
             const authStatus = await AuthService.checkAuthStatus();
             if (authStatus.isAuthenticated) {
                 debugLog('User already authenticated, redirecting to dashboard');
                 window.location.href = '/pages/dashboard.html';
                 return;
             }
-
-            // Setup page components
             this.setupEventListeners();
             this.setupFormValidation();
             this.setupScrollAnimations();
             this.setupNavigationEffects();
-
             debugLog('Landing page initialized successfully');
         } catch (error) {
             errorLog('Error initializing landing page:', error);
@@ -36,12 +25,7 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Setup event listeners
-     * Similar to mapping request handlers in Spring Boot
-     */
     setupEventListeners() {
-        // Navigation buttons
         const loginButtons = DOMUtils.querySelectorAll('[data-action="login"]');
         loginButtons.forEach(button => {
             DOMUtils.addEventListener(button, 'click', (e) => {
@@ -58,7 +42,6 @@ class LandingPageController {
             });
         });
 
-        // Google OAuth button
         const googleButtons = DOMUtils.querySelectorAll('[data-action="google-auth"]');
         googleButtons.forEach(button => {
             DOMUtils.addEventListener(button, 'click', (e) => {
@@ -67,7 +50,6 @@ class LandingPageController {
             });
         });
 
-        // Smooth scrolling for navigation links
         const navLinks = DOMUtils.querySelectorAll('a[href^="#"]');
         navLinks.forEach(link => {
             DOMUtils.addEventListener(link, 'click', (e) => {
@@ -76,22 +58,16 @@ class LandingPageController {
             });
         });
 
-        // Header scroll effect
         DOMUtils.addEventListener(window, 'scroll',
             PerformanceUtils.throttle(() => {
                 this.handleHeaderScroll();
-            }, 16) // ~60fps
+            }, 16)
         );
 
         debugLog('Event listeners setup completed');
     }
 
-    /**
-     * Setup form validation
-     * Similar to @Valid annotations in Spring Boot
-     */
     setupFormValidation() {
-        // Setup validation for login modal
         FormValidator.registerRules('loginForm', {
             email: [
                 (value) => FieldValidators.required(value, 'Email'),
@@ -102,7 +78,6 @@ class LandingPageController {
             ]
         });
 
-        // Setup validation for signup modal
         FormValidator.registerRules('signupForm', {
             name: [
                 (value) => FieldValidators.required(value, 'Full name'),
@@ -121,7 +96,6 @@ class LandingPageController {
             ]
         });
 
-        // Setup real-time validation
         FormValidator.setupRealTimeValidation('loginForm', {
             validateOnBlur: true,
             debounceTime: 300
@@ -135,12 +109,7 @@ class LandingPageController {
         debugLog('Form validation setup completed');
     }
 
-    /**
-     * Setup scroll animations
-     * Similar to AOP aspects in Spring Boot
-     */
     setupScrollAnimations() {
-        // Intersection Observer for scroll animations
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -154,7 +123,6 @@ class LandingPageController {
             });
         }, observerOptions);
 
-        // Observe elements for animation
         const animatedElements = DOMUtils.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right');
         animatedElements.forEach(element => {
             observer.observe(element);
@@ -163,11 +131,7 @@ class LandingPageController {
         debugLog('Scroll animations setup completed');
     }
 
-    /**
-     * Setup navigation effects
-     */
     setupNavigationEffects() {
-        // Mobile menu toggle (if exists)
         const navToggle = DOMUtils.querySelector('.nav-toggle');
         const navLinks = DOMUtils.querySelector('.nav-links');
 
@@ -181,20 +145,11 @@ class LandingPageController {
         debugLog('Navigation effects setup completed');
     }
 
-    /**
-     * Open login modal
-     * Similar to handling GET /login in Spring Boot
-     */
     openLoginModal() {
         try {
             this.currentModal = 'loginModal';
-
-            // Clear any previous form data
             this.resetForm('loginForm');
-
-            // Open modal
             Modals.open('loginModal');
-
             debugLog('Login modal opened');
         } catch (error) {
             errorLog('Error opening login modal:', error);
@@ -202,20 +157,11 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Open signup modal
-     * Similar to handling GET /register in Spring Boot
-     */
     openSignupModal() {
         try {
             this.currentModal = 'signupModal';
-
-            // Clear any previous form data
             this.resetForm('signupForm');
-
-            // Open modal
             Modals.open('signupModal');
-
             debugLog('Signup modal opened');
         } catch (error) {
             errorLog('Error opening signup modal:', error);
@@ -223,10 +169,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle login form submission - FIXED VERSION
-     * Similar to POST /login endpoint in Spring Boot
-     */
     async handleLogin(event) {
         event.preventDefault();
 
@@ -235,41 +177,35 @@ class LandingPageController {
             return;
         }
 
-        let loadingId = null; // Track loading notification ID
+        let loadingId = null;
         let submitButton = null;
         let originalButtonText = '';
 
         try {
-            // Validate form
             const validationResult = FormValidator.validateForm('loginForm');
             if (!validationResult.isValid) {
                 Notifications.showValidationErrors(validationResult.errors);
                 return;
             }
 
-            // Get form data
             const formData = {
                 email: DOMUtils.getElementById('loginEmail')?.value?.trim(),
                 password: DOMUtils.getElementById('loginPassword')?.value
             };
 
-            // Set loading state BEFORE API call
             this.isLoading = true;
             loadingId = Notifications.loading('Signing you in...');
 
-            // Also show spinner on the button
             submitButton = event.target.querySelector('button[type="submit"]');
             if (submitButton) {
                 originalButtonText = submitButton.innerHTML;
                 submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+                submitButton.innerHTML = 'Sign In...';
             }
 
-            // Attempt login
             const result = await AuthService.login(formData);
 
             if (result.success) {
-                // Success path
                 Notifications.hide(loadingId);
                 if (submitButton) {
                     submitButton.disabled = false;
@@ -282,10 +218,7 @@ class LandingPageController {
                     window.location.href = result.redirectUrl || '/pages/dashboard.html';
                 }, 1500);
             } else {
-                // Handle authentication errors (wrong password, etc.)
                 this.handleLoginError(result);
-
-                // Clear password field for security
                 const passwordField = DOMUtils.getElementById('loginPassword');
                 if (passwordField) {
                     passwordField.value = '';
@@ -293,10 +226,8 @@ class LandingPageController {
             }
 
         } catch (error) {
-            // Handle network errors and unexpected errors
             errorLog('Login error:', error);
 
-            // Determine error type
             if (error.message && (error.message.includes('fetch') ||
                 error.message.includes('Network') ||
                 error.name === 'TypeError')) {
@@ -305,14 +236,12 @@ class LandingPageController {
                 Notifications.error('An unexpected error occurred. Please try again.');
             }
 
-            // Clear password field
             const passwordField = DOMUtils.getElementById('loginPassword');
             if (passwordField) {
                 passwordField.value = '';
             }
 
         } finally {
-            // CRITICAL: Always cleanup loading state and button
             this.isLoading = false;
             if (loadingId) {
                 Notifications.hide(loadingId);
@@ -324,20 +253,13 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle login errors - ENHANCED VERSION
-     * @param {Object} result - Login result with error info
-     */
     handleLoginError(result) {
-        // Clear loading state first
         this.isLoading = false;
-
-        // Always re-enable the button and hide spinner if present
         const loginForm = document.getElementById('loginForm');
         const submitButton = loginForm ? loginForm.querySelector('button[type="submit"]') : null;
         if (submitButton) {
             submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            submitButton.innerHTML = 'Sign In';
         }
 
         switch (result.errorCode) {
@@ -368,19 +290,12 @@ class LandingPageController {
                 break;
 
             default:
-                // Generic error handling
                 const errorMessage = result.error || 'Login failed. Please try again.';
                 Notifications.error(errorMessage);
-
-                // Log for debugging
                 errorLog('Unhandled login error:', result);
         }
     }
 
-    /**
-     * Show email not verified dialog
-     * @param {string} email - User email
-     */
     async showEmailNotVerifiedDialog(email) {
         const confirmed = await Modals.confirm({
             title: 'Email Not Verified',
@@ -394,10 +309,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle signup form submission
-     * Similar to POST /register endpoint in Spring Boot
-     */
     async handleSignup(event) {
         event.preventDefault();
 
@@ -407,14 +318,12 @@ class LandingPageController {
         }
 
         try {
-            // Validate form
             const validationResult = FormValidator.validateForm('signupForm');
             if (!validationResult.isValid) {
                 Notifications.showValidationErrors(validationResult.errors);
                 return;
             }
 
-            // Get form data
             const formData = {
                 name: DOMUtils.getElementById('signupName')?.value?.trim(),
                 email: DOMUtils.getElementById('signupEmail')?.value?.trim(),
@@ -422,7 +331,6 @@ class LandingPageController {
                 confirmPassword: DOMUtils.getElementById('confirmPassword')?.value
             };
 
-            // Additional validation for password confirmation
             if (formData.password !== formData.confirmPassword) {
                 Notifications.error('Passwords do not match.');
                 return;
@@ -431,18 +339,15 @@ class LandingPageController {
             this.isLoading = true;
             const loadingId = Notifications.loading('Creating your account...');
 
-            // Attempt registration
             const result = await AuthService.register(formData);
 
             Notifications.hide(loadingId);
             this.isLoading = false;
 
             if (result.success) {
-                // Success - redirect to email verification page
                 Modals.close('signupModal');
                 window.location.href = `/email/check-email.html?email=${encodeURIComponent(formData.email)}`;
             } else {
-                // Handle different error types
                 this.handleSignupError(result, formData.email);
             }
         } catch (error) {
@@ -452,11 +357,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle signup errors
-     * @param {Object} result - Signup result with error info
-     * @param {string} email - User email
-     */
     handleSignupError(result, email) {
         switch (result.errorCode) {
             case 'EMAIL_EXISTS':
@@ -476,16 +376,10 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle Google OAuth authentication
-     * Similar to OAuth2 configuration in Spring Boot
-     */
     handleGoogleAuth() {
         try {
             debugLog('Initiating Google OAuth');
             Notifications.loading('Redirecting to Google...');
-
-            // Redirect to Google OAuth endpoint
             window.location.href = API_CONFIG.ENDPOINTS.AUTH.OAUTH_GOOGLE;
         } catch (error) {
             errorLog('Google auth error:', error);
@@ -493,10 +387,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle forgot password
-     * Similar to POST /forgot-password endpoint
-     */
     async handleForgotPassword() {
         const email = DOMUtils.getElementById('loginEmail')?.value?.trim();
 
@@ -512,9 +402,7 @@ class LandingPageController {
 
         try {
             const loadingId = Notifications.loading('Sending reset email...');
-
             const result = await ApiService.auth.forgotPassword(email);
-
             Notifications.hide(loadingId);
 
             if (result.success) {
@@ -529,16 +417,10 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Resend verification email
-     * @param {string} email - Email address
-     */
     async resendVerificationEmail(email) {
         try {
             const loadingId = Notifications.loading('Sending verification email...');
-
             const result = await ApiService.auth.resendVerification(email);
-
             Notifications.hide(loadingId);
 
             if (result.success) {
@@ -552,10 +434,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle smooth scrolling
-     * @param {string} target - Target element selector
-     */
     handleSmoothScroll(target) {
         const targetElement = DOMUtils.querySelector(target);
         if (targetElement) {
@@ -566,9 +444,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Handle header scroll effects
-     */
     handleHeaderScroll() {
         const header = DOMUtils.querySelector('.header');
         if (header) {
@@ -580,22 +455,14 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Reset form
-     * @param {string} formId - Form ID
-     */
     resetForm(formId) {
         const form = DOMUtils.getElementById(formId);
         if (form) {
             form.reset();
-
-            // Clear validation errors
             const errorElements = form.querySelectorAll('.form-error');
             errorElements.forEach(element => {
                 element.style.display = 'none';
             });
-
-            // Remove error classes
             const inputElements = form.querySelectorAll('.form-input');
             inputElements.forEach(element => {
                 element.classList.remove('error', 'success');
@@ -603,9 +470,6 @@ class LandingPageController {
         }
     }
 
-    /**
-     * Switch between login and signup modals
-     */
     switchToSignup() {
         Modals.close('loginModal');
         setTimeout(() => {
@@ -620,32 +484,20 @@ class LandingPageController {
         }, 200);
     }
 
-    /**
-     * Show forgot password form
-     */
     showForgotPasswordForm() {
         Modals.close('loginModal');
         setTimeout(() => {
-            // You could open a dedicated forgot password modal here
-            // For now, we'll handle it inline
             this.handleForgotPassword();
         }, 200);
     }
 }
 
-/**
- * Landing Page Service
- * Initialize and manage landing page
- */
 class LandingPageService {
     constructor() {
         this.controller = null;
         this.initialized = false;
     }
 
-    /**
-     * Initialize landing page
-     */
     async initialize() {
         if (this.initialized) {
             debugLog('Landing page already initialized');
@@ -653,15 +505,9 @@ class LandingPageService {
         }
 
         try {
-            // Create controller
             this.controller = new LandingPageController();
-
-            // Setup form handlers
             this.setupFormHandlers();
-
-            // Setup modal event handlers
             this.setupModalHandlers();
-
             this.initialized = true;
             debugLog('Landing page service initialized');
         } catch (error) {
@@ -670,11 +516,7 @@ class LandingPageService {
         }
     }
 
-    /**
-     * Setup form event handlers
-     */
     setupFormHandlers() {
-        // Login form
         const loginForm = DOMUtils.getElementById('loginForm');
         if (loginForm) {
             DOMUtils.addEventListener(loginForm, 'submit', (e) => {
@@ -682,7 +524,6 @@ class LandingPageService {
             });
         }
 
-        // Signup form
         const signupForm = DOMUtils.getElementById('signupForm');
         if (signupForm) {
             DOMUtils.addEventListener(signupForm, 'submit', (e) => {
@@ -691,11 +532,7 @@ class LandingPageService {
         }
     }
 
-    /**
-     * Setup modal event handlers
-     */
     setupModalHandlers() {
-        // Global functions for modal switching (legacy support)
         window.switchToSignup = () => this.controller.switchToSignup();
         window.switchToLogin = () => this.controller.switchToLogin();
         window.showForgotPasswordForm = () => this.controller.showForgotPasswordForm();
@@ -704,23 +541,13 @@ class LandingPageService {
         window.openSignupModal = () => this.controller.openSignupModal();
     }
 
-    /**
-     * Get controller instance
-     * @returns {LandingPageController} Controller instance
-     */
     getController() {
         return this.controller;
     }
 }
 
-/**
- * Create and initialize landing page service
- */
 const landingPageService = new LandingPageService();
 
-/**
- * Auto-initialize when DOM is ready
- */
 if (document.readyState === 'loading') {
     DOMUtils.addEventListener(document, 'DOMContentLoaded', async () => {
         try {
@@ -732,16 +559,12 @@ if (document.readyState === 'loading') {
         }
     });
 } else {
-    // DOM already loaded
     landingPageService.initialize().catch(error => {
         errorLog('Landing page initialization failed:', error);
         Notifications.error('Page failed to load properly. Please refresh the page.');
     });
 }
 
-/**
- * Export for testing and external use
- */
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         LandingPageController,

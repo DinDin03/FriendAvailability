@@ -1,24 +1,4 @@
-/* ===== DASHBOARD PAGE SPECIFIC STYLES ===== */
-/*
-  This file contains styles that are ONLY used on the dashboard page.
-  Think of this as a "DashboardController" in Spring Boot - it handles
-  functionality specific to the authenticated user's main interface.
 
-  Dashboard-specific components:
-  - Dashboard layout and grid
-  - User profile section
-  - Friends management interface
-  - Calendar widget
-  - Activity feeds
-  - Quick actions
-  - Statistics cards
-*/
-
-/* ===== DASHBOARD LAYOUT ===== */
-/*
-  Main dashboard container and grid system.
-  Like having a structured service layer that organizes different data sources.
-*/
 .chat-widget {
     grid-column: span 1;
     height: 600px;
@@ -455,12 +435,6 @@
     margin-top: 2px;
 }
 
-/* ===== DASHBOARD GRID SYSTEM ===== */
-/*
-  Flexible grid layout for dashboard widgets.
-  Like having different microservices that can be composed together.
-*/
-
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
@@ -517,12 +491,6 @@
 .widget-body.no-padding {
     padding: 0;
 }
-
-/* ===== FRIENDS WIDGET ===== */
-/*
-  Friends management interface.
-  Like having a user relationship service with CRUD operations.
-*/
 
 .friends-widget {
     grid-column: 1;
@@ -673,12 +641,6 @@
     gap: var(--spacing-sm);
 }
 
-/* ===== CALENDAR WIDGET ===== */
-/*
-  Calendar interface for availability and scheduling.
-  Like having a time-based data service with scheduling logic.
-*/
-
 .calendar-widget {
     grid-column: 2;
 }
@@ -763,12 +725,6 @@
     background: var(--light-blue);
 }
 
-/* ===== ACTIVITY WIDGET ===== */
-/*
-  Recent activity and events feed.
-  Like having an audit log service that tracks user actions.
-*/
-
 .activity-widget {
     grid-column: 3;
 }
@@ -837,12 +793,6 @@
     font-size: var(--font-size-xs);
     color: var(--gray-500);
 }
-
-/* ===== QUICK ACTIONS SECTION ===== */
-/*
-  Quick action buttons and shortcuts.
-  Like having a shortcuts API for common operations.
-*/
 
 .quick-actions {
     display: grid;
@@ -1055,13 +1005,6 @@
         display: none;
     }
 }
-
-/* ===== DARK MODE SUPPORT (Future Enhancement) ===== */
-/*
-  Prepared for dark mode implementation.
-  Like having different configuration profiles in Spring Boot.
-*/
-
 @media (prefers-color-scheme: dark) {
     .dashboard-page {
         background: #1a1a1a;
@@ -1077,7 +1020,6 @@
         background: #333333;
     }
 
-    /* This would be expanded with full dark mode variables */
 }
 
 /* ===== PRINT STYLES FOR DASHBOARD ===== */

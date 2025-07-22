@@ -1,23 +1,4 @@
-/* ===== LAYOUT SYSTEM ===== */
-/*
-  This file contains the structural layout components that define how pages are organized.
-  Think of this as the "architecture" of your application - similar to how you structure
-  your Spring Boot application with different layers (Controller, Service, Repository).
 
-  Layout components included:
-  - Header and Navigation
-  - Grid Systems
-  - Page Containers
-  - Section layouts
-  - Footer
-  - Responsive breakpoints
-*/
-
-/* ===== CONTAINER SYSTEM ===== */
-/*
-  Container system for consistent content width and padding.
-  Similar to having consistent data structures in your Java application.
-*/
 
 .container {
     width: 100%;
@@ -47,11 +28,6 @@
     max-width: 1200px;
 }
 
-/* ===== HEADER & NAVIGATION ===== */
-/*
-  Navigation system that works across all pages.
-  Like having a consistent API interface that different services implement.
-*/
 
 .header {
     position: fixed;
@@ -174,11 +150,6 @@
     transform: rotate(-45deg) translate(7px, -6px);
 }
 
-/* ===== MAIN CONTENT AREA ===== */
-/*
-  Main content structure that accounts for fixed header.
-  Similar to how your Spring Boot controllers handle routing to different views.
-*/
 
 .main {
     min-height: 100vh;
@@ -201,11 +172,6 @@
     padding: calc(70px + var(--spacing-lg)) var(--spacing-lg) var(--spacing-lg);
 }
 
-/* ===== SECTION LAYOUTS ===== */
-/*
-  Section system for organizing page content.
-  Like having different service layers with specific responsibilities.
-*/
 
 .section {
     padding: var(--spacing-3xl) 0;
@@ -247,12 +213,6 @@
     margin: 0;
 }
 
-/* ===== GRID SYSTEMS ===== */
-/*
-  Flexible grid system for organizing content.
-  Similar to how you might organize your database tables and relationships.
-*/
-
 /* Basic Grid */
 .grid {
     display: grid;
@@ -287,11 +247,6 @@
 .col-span-4 { grid-column: span 4; }
 .col-span-full { grid-column: span 12; }
 
-/* ===== FLEXBOX LAYOUTS ===== */
-/*
-  Flexbox utilities for simple layouts.
-  Like having utility methods for common operations.
-*/
 
 .flex {
     display: flex;
@@ -335,11 +290,6 @@
     align-items: center;
 }
 
-/* ===== HERO SECTION LAYOUT ===== */
-/*
-  Hero section structure used on landing pages.
-  Like having a standardized response format for your APIs.
-*/
 
 .hero {
     padding: calc(70px + var(--spacing-3xl)) var(--spacing-xl) var(--spacing-3xl);
@@ -390,11 +340,6 @@
     flex-wrap: wrap;
 }
 
-/* ===== DASHBOARD LAYOUT ===== */
-/*
-  Dashboard-specific layout structure.
-  Similar to having a different service layer for admin functionality.
-*/
 
 .dashboard-container {
     max-width: 1400px;
@@ -446,11 +391,7 @@
     margin: 0;
 }
 
-/* ===== FOOTER ===== */
-/*
-  Footer structure for all pages.
-  Like having consistent error handling across all your endpoints.
-*/
+
 
 .footer {
     background: var(--gray-900);
@@ -495,12 +436,6 @@
     font-size: var(--font-size-sm);
 }
 
-/* ===== CTA SECTION ===== */
-/*
-  Call-to-action section layout.
-  Like having a standardized success response format.
-*/
-
 .cta-section {
     background: var(--primary-blue);
     color: var(--white);
@@ -516,13 +451,6 @@
     color: rgba(255, 255, 255, 0.9);
 }
 
-/* ===== RESPONSIVE DESIGN ===== */
-/*
-  Mobile-first responsive design system.
-  Like handling different client types in your API (mobile app, web app, etc.)
-*/
-
-/* Tablet Styles (768px and up) */
 @media (min-width: 768px) {
     .container {
         padding: 0 var(--spacing-xl);

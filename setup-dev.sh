@@ -1,4 +1,3 @@
-#!/bin/bash
 
 echo "Setting up FriendAvailability Local Development Environment..."
 
@@ -33,14 +32,13 @@ done
 echo "MySQL is ready!"
 
 echo "Setting up application-local.properties..."
-# This will be created automatically by Spring Boot using our .env.local values
 
 echo "Development Environment Status:"
 echo "Database: http://localhost:3306"
 echo "phpMyAdmin: http://localhost:8081"
 echo "Application: http://localhost:8080 (when started)"
 echo ""
-echo "To start your Spring Boot application:"
+echo "To start the Spring Boot application:"
 echo "   ./mvnw spring-boot:run"
 echo ""
 echo "Development environment is ready!"

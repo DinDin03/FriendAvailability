@@ -1,8 +1,3 @@
-/* ===== BUTTON COMPONENT SYSTEM ===== */
-/*
-  Button system with different variants and states.
-  Similar to having different method overloads in Java.
-*/
 
 .btn {
     display: inline-flex;
@@ -21,8 +16,8 @@
     white-space: nowrap;
     user-select: none;
     line-height: 1.2;
-    min-height: 44px; /* Accessibility: minimum touch target */
-    border: 2px solid transparent; /* Consistent border for all variants */
+    min-height: 44px; 
+    border: 2px solid transparent;
 }
 
 .btn:disabled {
@@ -147,12 +142,6 @@
 .btn:active:not(:disabled) {
     transform: translateY(0);
 }
-
-/* ===== FORM COMPONENT SYSTEM ===== */
-/*
-  Form system with validation states and consistent styling.
-  Similar to having validation annotations in Spring Boot.
-*/
 
 .form-group {
     margin-bottom: 20px;
@@ -322,11 +311,6 @@
     cursor: pointer;
 }
 
-/* ===== CARD COMPONENT SYSTEM ===== */
-/*
-  Card system for organizing content into sections.
-  Like having different container types in your Java application.
-*/
 
 .card {
     background: var(--white);
@@ -384,11 +368,6 @@
     border: 1px solid var(--gray-300);
 }
 
-/* ===== MODERN MODAL COMPONENT SYSTEM ===== */
-/*
-  Modal system for overlays and dialogs.
-  Similar to having different service layers that handle specific responsibilities.
-*/
 
 .modal {
     display: none;
@@ -479,11 +458,6 @@
     line-height: 1.5;
 }
 
-/* ===== MESSAGE/NOTIFICATION COMPONENT ===== */
-/*
-  Notification system for user feedback.
-  Like having a consistent logging/messaging system in your backend.
-*/
 
 #messageContainer {
     position: fixed;
@@ -559,11 +533,6 @@
     color: var(--white);
 }
 
-/* ===== LOADING COMPONENT ===== */
-/*
-  Loading states for async operations.
-  Similar to showing progress in long-running backend operations.
-*/
 
 .loading {
     text-align: center;
@@ -628,11 +597,6 @@
     border-width: 2px;
     margin: 0;
 }
-
-/* ===== EMPTY STATE COMPONENT ===== */
-/*
-  Empty states for when there's no data to display.
-*/
 
 .empty-state {
     text-align: center;

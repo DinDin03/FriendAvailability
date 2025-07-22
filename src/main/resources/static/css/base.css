@@ -1,14 +1,3 @@
-/* ===== RESET & BASE STYLES ===== */
-/*
-  This file contains the foundational styles that every page needs:
-  - CSS Reset to ensure consistent styling across browsers
-  - Base typography rules
-  - Common animations
-  - Utility classes
-
-  Think of this like a "base class" in Java - it provides the foundation
-  that other components inherit from.
-*/
 
 * {
     margin: 0;
@@ -41,11 +30,6 @@ body {
     text-rendering: optimizeLegibility;
 }
 
-/* ===== TYPOGRAPHY SYSTEM ===== */
-/*
-  Consistent typography hierarchy that matches your design system.
-  Similar to having standard naming conventions in your Java code.
-*/
 
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
@@ -90,7 +74,6 @@ p {
     color: var(--gray-700);
 }
 
-/* Remove margin from last child to prevent extra spacing */
 p:last-child {
     margin-bottom: 0;
 }
@@ -136,12 +119,6 @@ img {
     display: block;
 }
 
-/* ===== ACCESSIBILITY ===== */
-/*
-  These styles improve accessibility - important for enterprise applications
-  like what you'll work on at Atlassian
-*/
-
 /* Screen reader only content */
 .sr-only {
     position: absolute;
@@ -175,11 +152,6 @@ input[type="reset"],
     min-height: 44px;
     min-width: 44px;
 }
-
-/* ===== UTILITY CLASSES ===== */
-/*
-  Similar to utility methods in Java - small, reusable pieces of functionality
-*/
 
 /* Text alignment */
 .text-center { text-align: center; }
@@ -240,11 +212,6 @@ input[type="reset"],
     flex-direction: column;
 }
 
-/* ===== ANIMATIONS ===== */
-/*
-  Reusable animations that components can use.
-  Keeping them here prevents duplication across files.
-*/
 
 @keyframes fadeIn {
     from {
@@ -340,15 +307,6 @@ input[type="reset"],
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
-/* ===== RESPONSIVE DESIGN FOUNDATION ===== */
-/*
-  Mobile-first approach - start with mobile styles, then add larger screens.
-  This is industry best practice.
-*/
-
-/* Base styles above are for mobile */
-
 /* Tablet styles */
 @media (min-width: 768px) {
     html {
@@ -363,10 +321,6 @@ input[type="reset"],
     }
 }
 
-/* ===== PRINT STYLES ===== */
-/*
-  Ensure pages print nicely - good practice for business applications
-*/
 @media print {
     * {
         background: transparent !important;
@@ -399,10 +353,6 @@ input[type="reset"],
     }
 }
 
-/* ===== BROWSER-SPECIFIC FIXES ===== */
-/*
-  Handle browser inconsistencies - important for cross-browser compatibility
-*/
 
 /* Fix for iOS Safari */
 input[type="search"] {

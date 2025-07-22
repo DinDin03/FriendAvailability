@@ -1,25 +1,3 @@
-/* ===== AUTHENTICATION PAGES SPECIFIC STYLES ===== */
-/*
-  This file contains styles for all authentication-related interfaces.
-  Think of this as your "AuthController" styling - it handles login, signup,
-  password reset, email verification, and other auth flows.
-
-  Authentication components:
-  - Login and Signup modals
-  - Password reset pages
-  - Email verification pages
-  - Social login buttons
-  - Form validation states
-  - Auth success/error states
-  - Security information displays
-*/
-
-/* ===== AUTH MODAL SYSTEM ===== */
-/*
-  Modal-based authentication for landing page.
-  Like having secure authentication endpoints that handle different auth flows.
-*/
-
 .auth-modal .modal-content {
     max-width: 450px;
     padding: var(--spacing-2xl);
@@ -111,12 +89,6 @@
     text-decoration: underline;
 }
 
-/* ===== AUTH PAGE LAYOUTS ===== */
-/*
-  Full-page authentication layouts (password reset, email verification).
-  Like having dedicated auth service pages with consistent branding.
-*/
-
 .auth-page {
     background: linear-gradient(135deg, var(--light-blue) 0%, var(--white) 100%);
     min-height: 100vh;
@@ -154,12 +126,6 @@
     height: 4px;
     background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
 }
-
-/* ===== EMAIL VERIFICATION STYLING ===== */
-/*
-  Email verification and confirmation pages.
-  Like having email service confirmation workflows.
-*/
 
 .email-icon-wrapper {
     width: 100px;
@@ -274,12 +240,6 @@
     background: #f8d7da;
     color: var(--error);
 }
-
-/* ===== PASSWORD RESET STYLING ===== */
-/*
-  Password reset workflow pages.
-  Like having secure password management service endpoints.
-*/
 
 .password-reset-form {
     text-align: left;
@@ -406,12 +366,6 @@
     margin-bottom: 0;
 }
 
-/* ===== SUCCESS/ERROR STATES ===== */
-/*
-  Authentication result pages (success, failure, expired).
-  Like having standardized API response formats.
-*/
-
 .auth-success {
     color: var(--success);
 }
@@ -481,12 +435,6 @@
 .next-steps-list li:last-child {
     margin-bottom: 0;
 }
-
-/* ===== HELP AND SUPPORT SECTIONS ===== */
-/*
-  Help information and support contact details.
-  Like having comprehensive API documentation and support channels.
-*/
 
 .help-info {
     margin-top: var(--spacing-xl);
@@ -567,12 +515,6 @@
     text-decoration: underline;
 }
 
-/* ===== FORM VALIDATION ENHANCEMENTS ===== */
-/*
-  Enhanced form validation for auth forms.
-  Like having comprehensive input validation in your Spring Boot controllers.
-*/
-
 .auth-form .form-input.success {
     border-color: var(--success);
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='%2300875A' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.061L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z'/%3e%3c/svg%3e");
@@ -607,12 +549,6 @@
 .form-validation-summary li {
     margin-bottom: var(--spacing-xs);
 }
-
-/* ===== LOADING STATES FOR AUTH ===== */
-/*
-  Loading indicators during authentication processes.
-  Like showing progress during async auth operations.
-*/
 
 .auth-loading {
     position: relative;
