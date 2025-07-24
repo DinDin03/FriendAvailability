@@ -21,11 +21,9 @@ import java.util.Map;
 public class CircleController {
 
     private final CircleService circleService;
-    private final UserService userService;
 
     public CircleController(CircleService circleService, UserService userService) {
         this.circleService = circleService;
-        this.userService = userService;
     }
 
     @PostMapping
