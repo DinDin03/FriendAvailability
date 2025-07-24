@@ -20,8 +20,12 @@ export const Background = () => {
   
     return (
       <>
+      <div className="">
+
+      </div>
+      <div className="hidden md:block">
         <div
-          className="fixed left-0 top-0 h-full w-full z-0 pointer-events-none -ml-125"
+          className="fixed left-0 top-0 h-full w-full z-0 pointer-events-none -ml-130"
           style={{
             transform: `translateX(${leftTranslate}px)`,
             opacity: scroll > 10 ? changeOpacity : 1,
@@ -48,6 +52,7 @@ export const Background = () => {
             className="h-full object-cover"
           />
         </div>
+      </div>
       </>
     );
 }

@@ -34,8 +34,8 @@ export const Navbar = () => {
                     href="#hero"
                 >
                     <span className="relative flex items-center z-10">
-                        <img src={Logo} alt="Logo" className="size-18" />
-                        <span className="text-3xl font-bold text-primary transition-colors">Link Up</span>
+                        <img src={Logo} alt="Logo" className="lg:size-18 size-10" />
+                        <span className="lg:text-3xl text-xl font-bold text-primary transition-colors">Link Up</span>
                     </span>
                 </a>
 
@@ -79,7 +79,7 @@ export const Navbar = () => {
                             <a 
                                 key={key} 
                                 href={item.href} 
-                                className="text-foreground hover:text-primary transition-colors duration-300"
+                                className="text-foreground text-2xl hover:text-primary transition-colors duration-300"
                                 onClick={() => setIsMenuOpen(false)}
                             >
                                 {item.name}
