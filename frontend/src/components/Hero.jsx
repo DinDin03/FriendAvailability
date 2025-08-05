@@ -21,7 +21,7 @@ export const Hero = () => {
     return (
         <section 
             id="hero" 
-            className="relative min-h-screen flex flex-col items-center lg:pt-40 pt-25 pl-3 pr-5 w-full"
+            className="relative min-h-screen flex flex-col items-center lg:pt-40 pt-25 px-4 w-full"
         >
             <div className="grid grid-cols-4 lg:gap-8 gap-x-4 gap-y-2">
                 {Array.from({ length: 12 }).map((_, i) => (
@@ -46,13 +46,22 @@ export const Hero = () => {
                 ))}
             </div>
             <img src={herobackground} alt="herobackground" className="md:hidden -mt-25"/>
-            <div className="md:flex flex-col items-center justify-center lg:mt-20 w-130">
-                <h1 className="text-2xl lg:text-4xl font-bold">
+            <div className="md:flex flex-col items-center justify-center lg:mt-20 w-full max-w-4xl">
+                <h1 className="text-2xl lg:text-4xl font-bold text-center">
                     Find your perfect time, <span className="text-primary">together.</span>
                 </h1>
                 <p className="text-lg mt-10 text-center">
                     No more endless texts, no more missed hangouts, just seamless plans.
                 </p>
+            </div>
+            
+            <div className='flex lg:flex-row flex-col items-center justify-center gap-4 mt-10'>
+                <button className='border-2 border-primary button'>
+                    Login with Google
+                </button>
+                <button className='border-2 border-primary bg-white text-primary button w-60'>
+                    Sign Up
+                </button>
             </div>
         </section>
     )
