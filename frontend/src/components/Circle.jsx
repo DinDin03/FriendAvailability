@@ -4,7 +4,7 @@ import friendsChat from "@/assets/Circles/friends-chat-1.png"
 
 export const Circle = () => {
     return (
-        <section id="circle" className="relative pt-12 flex flex-col items-center justify-center">
+        <section id="circle" className="relative p-12 flex flex-col items-center justify-center">
             <div className="bg-zinc-800 rounded-full size-200 p-30 flex flex-col items-center justify-start">
                 <h1 className="text-3xl font-bold text-white">All your friends, one circle</h1>
                     <p className="text-white m-10 w-80">

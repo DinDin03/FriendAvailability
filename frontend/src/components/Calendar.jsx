@@ -1,6 +1,7 @@
 import friend from '@/assets/gmail_groups.png'
 import bell from '@/assets/Bell.png'
-import placeholder from '@/assets/placeholder.webp'
+import eyecon from '@/assets/eyecon.png'
+import dashboard from '@/assets/Dashboard.png'
 import { ArrowRight } from 'lucide-react'
 
 const cards = [
@@ -20,7 +21,7 @@ const cards = [
     },
     {
         id: 3,
-        img: placeholder,
+        img: eyecon,
         title: "Availability",
         description: "See everyone's availability through a simple click",
         link: "/",
@@ -34,9 +35,15 @@ export const Calendar = () => {
             <p className='mt-6'>Make planning fun again with our reactive dashboard</p>
             <button className='button mt-6'>Learn more</button>
             
-            <div className='mt-8 w-265 h-100 bg-gray-100 border-gray-400 rounded-4xl flex flex-col items-center justify-center'>
+            {/* <div className='mt-8 w-265 h-100 bg-gray-100 border-gray-400 rounded-4xl flex flex-col items-center justify-center'>
                 Julian's a bitch ass idiot and didn't give me all the components
-            </div>
+            </div> */}
+            <img 
+                    src={dashboard} 
+                    alt="dashboard"
+                    className='mt-8 w-265 border-2 border-gray-100 rounded-4xl card-hover'
+                />
+            
 
             <div className='grid grid-cols-3 gap-12 pt-10 px-60'>
                 {cards.map((card, key) => (
