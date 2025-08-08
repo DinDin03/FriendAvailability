@@ -425,19 +425,35 @@ class Dashboard {
         }
     }
 
+
     generateAvatar(name) {
         if (!name || name.trim() === '') {
             name = 'User';
         }
+
         const initials = name.split(' ')
             .map(n => n[0])
             .join('')
             .toUpperCase()
             .substring(0, 2);
-        const colors = ['0052CC', '00875A', 'DE350B', 'FF8B00', '6554C0', '008DA6', 'BF2600'];
+
+        const colors = ['#0052CC', '#00875A', '#DE350B', '#FF8B00', '#6554C0', '#008DA6', '#BF2600'];
         const colorIndex = name.length % colors.length;
-        const color = colors[colorIndex];
-        return `https://via.placeholder.com/48x48/${color}/FFFFFF?text=${initials}`;
+        const backgroundColor = colors[colorIndex];
+
+        const svg = `
+        <svg width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="24" cy="24" r="24" fill="${backgroundColor}"/>
+            <text x="24" y="32" text-anchor="middle" fill="white" 
+                  font-family="Arial, sans-serif" font-size="16" font-weight="bold">
+                ${initials}
+            </text>
+        </svg>
+    `;
+
+        const dataUrl = `data:image/svg+xml;base64,${btoa(svg)}`;
+
+        return dataUrl;
     }
 
     setupRefreshTimers() {
