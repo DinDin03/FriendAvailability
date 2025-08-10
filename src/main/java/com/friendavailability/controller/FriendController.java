@@ -56,11 +56,13 @@ public class FriendController {
                 "message", "Friend request sent successfully",
                 "friendship", Map.of(
                     "fromUserId", friendship.getUserId(),
-                    "toUserId", friendship.getFriendId();
+                    "toUserId", friendship.getFriendId()
                 )
             ));
         }catch(Exception e){
-            
+            System.err.println("Error sending friend request: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to send friend request"));
         }
     }
 
