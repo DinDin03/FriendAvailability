@@ -1,5 +1,3 @@
 package com.friendavailability.domain.exception;
 
-public class DuplicateResourceException {
-    
-}
+import org.springframework.http.HttpStatus;
