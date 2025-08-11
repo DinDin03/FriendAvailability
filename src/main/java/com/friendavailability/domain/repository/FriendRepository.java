@@ -1,6 +1,6 @@
-package com.friendavailability.repository;
+package com.friendavailability.domain.repository;
 
-import com.friendavailability.model.Friend;
+import com.friendavailability.domain.entity.Friend;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

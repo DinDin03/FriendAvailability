@@ -1,4 +1,4 @@
-package com.friendavailability.model;
+package com.friendavailability.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
@@ -9,6 +9,7 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.friendavailability.domain.entity.enums.ChatType;
 
 @Entity
 @Table(name = "chat_rooms",

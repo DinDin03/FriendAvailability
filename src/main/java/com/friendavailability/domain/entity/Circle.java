@@ -1,4 +1,4 @@
-package com.friendavailability.model;
+package com.friendavailability.domain.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

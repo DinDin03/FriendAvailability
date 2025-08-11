@@ -1,4 +1,4 @@
-package com.friendavailability.model;
+package com.friendavailability.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
+import com.friendavailability.domain.entity.enums.CircleRole;
 
 @Entity
 @Table(name = "circle_members",

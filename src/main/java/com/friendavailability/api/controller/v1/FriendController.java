@@ -1,8 +1,8 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.model.Friend;
-import com.friendavailability.model.User;
-import com.friendavailability.service.FriendService;
+import com.friendavailability.domain.entity.Friend;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.service.FriendService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,6 @@
-package com.friendavailability.dto.auth;
+package com.friendavailability.api.dto.response.auth;
 
-import com.friendavailability.model.User;
+import com.friendavailability.domain.entity.User;
 import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDateTime;

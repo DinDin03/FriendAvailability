@@ -1,4 +1,4 @@
-package com.friendavailability.model;
+package com.friendavailability.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -10,6 +10,7 @@ import lombok.Builder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.friendavailability.domain.entity.enums.AvailabilitySource;
 
 @Entity
 @Table(name = "availabilities",

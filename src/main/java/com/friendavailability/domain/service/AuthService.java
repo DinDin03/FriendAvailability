@@ -1,7 +1,7 @@
-package com.friendavailability.service;
+package com.friendavailability.domain.service;
 
-import com.friendavailability.model.User;
-import com.friendavailability.repository.UserRepository;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

@@ -1,11 +1,11 @@
 package com.friendavailability.api.controller.v1;
 
 import com.friendavailability.dto.circle.*;
-import com.friendavailability.model.Circle;
-import com.friendavailability.model.CircleMember;
-import com.friendavailability.model.CircleRole;
-import com.friendavailability.service.CircleService;
-import com.friendavailability.service.UserService;
+import com.friendavailability.domain.entity.Circle;
+import com.friendavailability.domain.entity.CircleMember;
+import com.friendavailability.domain.entity.enums.CircleRole;
+import com.friendavailability.domain.service.CircleService;
+import com.friendavailability.domain.service.UserService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

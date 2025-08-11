@@ -1,14 +1,14 @@
-package com.friendavailability.service;
+package com.friendavailability.domain.service;
 
-import com.friendavailability.model.Circle;
-import com.friendavailability.model.CircleMember;
-import com.friendavailability.model.CircleRole;
-import com.friendavailability.model.Friend;
-import com.friendavailability.model.User;
-import com.friendavailability.repository.CircleRepository;
-import com.friendavailability.repository.CircleMemberRepository;
-import com.friendavailability.repository.UserRepository;
-import com.friendavailability.repository.FriendRepository;
+import com.friendavailability.domain.entity.Circle;
+import com.friendavailability.domain.entity.CircleMember;
+import com.friendavailability.domain.entity.enums.CircleRole;
+import com.friendavailability.domain.entity.Friend;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.repository.CircleRepository;
+import com.friendavailability.domain.repository.CircleMemberRepository;
+import com.friendavailability.domain.repository.UserRepository;
+import com.friendavailability.domain.repository.FriendRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,7 +1,7 @@
-package com.friendavailability.repository;
+package com.friendavailability.domain.repository;
 
-import com.friendavailability.model.PasswordResetToken;
-import com.friendavailability.model.User;
+import com.friendavailability.domain.entity.PasswordResetToken;
+import com.friendavailability.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

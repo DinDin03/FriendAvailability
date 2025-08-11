@@ -1,8 +1,8 @@
-package com.friendavailability.service;
+package com.friendavailability.domain.service;
 
-import com.friendavailability.model.Friend;
-import com.friendavailability.model.User;
-import com.friendavailability.repository.FriendRepository;
+import com.friendavailability.domain.entity.Friend;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.repository.FriendRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

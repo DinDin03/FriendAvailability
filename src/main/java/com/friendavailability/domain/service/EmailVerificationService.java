@@ -1,9 +1,9 @@
-package com.friendavailability.service;
+package com.friendavailability.domain.service;
 
-import com.friendavailability.model.EmailVerificationToken;
-import com.friendavailability.model.User;
-import com.friendavailability.repository.EmailVerificationTokenRepository;
-import com.friendavailability.repository.UserRepository;
+import com.friendavailability.domain.entity.EmailVerificationToken;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.repository.EmailVerificationTokenRepository;
+import com.friendavailability.domain.repository.UserRepository;
 import lombok.Getter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,12 +1,12 @@
 package com.friendavailability.api.controller.v1;
 
 import com.friendavailability.api.dto.request.chat.*;
-import com.friendavailability.model.ChatRoom;
-import com.friendavailability.model.ChatParticipant;
-import com.friendavailability.model.Message;
-import com.friendavailability.service.ChatService;
-import com.friendavailability.service.MessageService;
-import com.friendavailability.service.UserService;
+import com.friendavailability.domain.entity.ChatRoom;
+import com.friendavailability.domain.entity.ChatParticipant;
+import com.friendavailability.domain.entity.Message;
+import com.friendavailability.domain.service.ChatService;
+import com.friendavailability.domain.service.MessageService;
+import com.friendavailability.domain.service.UserService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
-package com.friendavailability.repository;
+package com.friendavailability.domain.repository;
 
-import com.friendavailability.model.ChatParticipant;
-import com.friendavailability.model.ParticipantRole;
+import com.friendavailability.domain.entity.ChatParticipant;
+import com.friendavailability.domain.entity.enums.ParticipantRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

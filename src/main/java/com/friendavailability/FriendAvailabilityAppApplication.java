@@ -1,7 +1,7 @@
 package com.friendavailability;
 
-import com.friendavailability.model.User;
-import com.friendavailability.service.UserService;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.service.UserService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;

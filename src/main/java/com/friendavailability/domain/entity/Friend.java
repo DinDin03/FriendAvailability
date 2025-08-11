@@ -1,4 +1,4 @@
-package com.friendavailability.model;
+package com.friendavailability.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

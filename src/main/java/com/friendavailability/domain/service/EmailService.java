@@ -1,6 +1,6 @@
-package com.friendavailability.service;
+package com.friendavailability.domain.service;
 
-import com.friendavailability.model.User;
+import com.friendavailability.domain.entity.User;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;

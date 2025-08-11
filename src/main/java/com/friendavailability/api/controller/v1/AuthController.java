@@ -1,13 +1,13 @@
 package com.friendavailability.api.controller.v1;
 
 import com.friendavailability.api.dto.request.auth.AuthRequest;
-import com.friendavailability.dto.auth.AuthResponse;
-import com.friendavailability.dto.auth.UserDto;
-import com.friendavailability.model.User;
-import com.friendavailability.service.EmailService;
-import com.friendavailability.service.EmailVerificationService;
-import com.friendavailability.service.UserService;
-import com.friendavailability.service.AuthService;
+import com.friendavailability.api.dto.response.auth.AuthResponse;
+import com.friendavailability.api.dto.response.auth.UserDto;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.service.EmailService;
+import com.friendavailability.domain.service.EmailVerificationService;
+import com.friendavailability.domain.service.UserService;
+import com.friendavailability.domain.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

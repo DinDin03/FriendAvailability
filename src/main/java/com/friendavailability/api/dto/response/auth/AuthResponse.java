@@ -1,4 +1,4 @@
-package com.friendavailability.dto.auth;
+package com.friendavailability.api.dto.response.auth;
 
 import lombok.Builder;
 import lombok.Data;

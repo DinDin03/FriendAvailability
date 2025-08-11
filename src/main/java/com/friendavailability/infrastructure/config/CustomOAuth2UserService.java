@@ -1,7 +1,7 @@
 package com.friendavailability.infrastructure.config;
 
-import com.friendavailability.model.User;
-import com.friendavailability.service.UserService;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;

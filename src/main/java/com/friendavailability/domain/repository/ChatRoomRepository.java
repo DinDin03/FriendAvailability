@@ -1,7 +1,7 @@
-package com.friendavailability.repository;
+package com.friendavailability.domain.repository;
 
-import com.friendavailability.model.ChatRoom;
-import com.friendavailability.model.ChatType;
+import com.friendavailability.domain.entity.ChatRoom;
+import com.friendavailability.domain.entity.enums.ChatType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,9 +1,9 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.dto.availability.CreateAvailabilityRequest;
-import com.friendavailability.dto.availability.UpdateAvailabilityRequest;
-import com.friendavailability.model.Availability;
-import com.friendavailability.service.AvailabilityService;
+import com.friendavailability.api.dto.CreateAvailabilityRequest;
+import com.friendavailability.api.dto.UpdateAvailabilityRequest;
+import com.friendavailability.domain.entity.Availability;
+import com.friendavailability.domain.service.AvailabilityService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

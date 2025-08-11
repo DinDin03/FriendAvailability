@@ -1,7 +1,7 @@
-package com.friendavailability.service;
+package com.friendavailability.domain.service;
 
-import com.friendavailability.model.*;
-import com.friendavailability.repository.*;
+import com.friendavailability.domain.entity.*;
+import com.friendavailability.domain.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

@@ -1,10 +1,10 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.dto.auth.AuthResponse;
-import com.friendavailability.dto.auth.ForgotPasswordRequest;
-import com.friendavailability.dto.auth.ResetPasswordRequest;
-import com.friendavailability.model.User;
-import com.friendavailability.service.PasswordResetService;
+import com.friendavailability.api.dto.response.auth.AuthResponse;
+import com.friendavailability.api.dto.request.auth.ForgotPasswordRequest;
+import com.friendavailability.api.dto.request.auth.ResetPasswordRequest;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.service.PasswordResetService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

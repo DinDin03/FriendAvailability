@@ -1,4 +1,4 @@
-package com.friendavailability.model;
+package com.friendavailability.domain.entity.enums;
 
 import lombok.Getter;
 

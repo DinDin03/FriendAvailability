@@ -1,7 +1,7 @@
-package com.friendavailability.repository;
+package com.friendavailability.domain.repository;
 
-import com.friendavailability.model.Availability;
-import com.friendavailability.model.AvailabilitySource;
+import com.friendavailability.domain.entity.Availability;
+import com.friendavailability.domain.entity.enums.AvailabilitySource;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

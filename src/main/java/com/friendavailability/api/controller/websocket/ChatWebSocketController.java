@@ -1,10 +1,10 @@
 package com.friendavailability.api.controller.websocket;
 
 import com.friendavailability.dto.chat.*;
-import com.friendavailability.model.Message;
-import com.friendavailability.service.ChatService;
-import com.friendavailability.service.MessageService;
-import com.friendavailability.service.UserService;
+import com.friendavailability.domain.entity.Message;
+import com.friendavailability.domain.service.ChatService;
+import com.friendavailability.domain.service.MessageService;
+import com.friendavailability.domain.service.UserService;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;

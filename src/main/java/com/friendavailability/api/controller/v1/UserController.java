@@ -2,8 +2,8 @@ package com.friendavailability.api.controller.v1;
 
 import com.friendavailability.dto.user.CreateUserRequest;
 import com.friendavailability.dto.user.UpdateUserRequest;
-import com.friendavailability.model.User;
-import com.friendavailability.service.UserService;
+import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
