@@ -20,6 +20,8 @@ public class FriendController {
         System.out.println("FriendController created and connected to FriendService");
     }
 
+    /*
+    
     @PostMapping("/request")
     public ResponseEntity<Friend> sendFriendRequest(@RequestParam Long fromUserId, @RequestParam Long toUserId) {
         System.out.println("Sending friend request from " + fromUserId + " to " + toUserId);
@@ -40,6 +42,27 @@ public class FriendController {
         } catch (Exception e) {
             System.err.println("Unexpected error sending friend request: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    */
+
+    @PostMapping("/request")
+    public ResponseEntity<?> sendFriendRequest(@RequestParam Long fromUserId, @RequestParam Long toUserId){
+        try{
+            Friend friendship = friendService.sendFriendRequest(fromUserId, toUserId);
+
+            return ResponseEntity.ok(Map.of(
+                "message", "Friend request sent successfully",
+                "friendship", Map.of(
+                    "fromUserId", friendship.getUserId(),
+                    "toUserId", friendship.getFriendId()
+                )
+            ));
+        }catch(Exception e){
+            System.err.println("Error sending friend request: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Failed to send friend request"));
         }
     }
 
