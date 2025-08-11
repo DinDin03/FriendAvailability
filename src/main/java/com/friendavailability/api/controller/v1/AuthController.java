@@ -1,6 +1,6 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.dto.auth.AuthRequest;
+import com.friendavailability.api.dto.request.auth.AuthRequest;
 import com.friendavailability.dto.auth.AuthResponse;
 import com.friendavailability.dto.auth.UserDto;
 import com.friendavailability.model.User;

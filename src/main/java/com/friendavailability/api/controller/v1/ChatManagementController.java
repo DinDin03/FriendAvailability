@@ -1,6 +1,6 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.dto.chat.*;
+import com.friendavailability.api.dto.request.chat.*;
 import com.friendavailability.model.ChatRoom;
 import com.friendavailability.model.ChatParticipant;
 import com.friendavailability.model.Message;

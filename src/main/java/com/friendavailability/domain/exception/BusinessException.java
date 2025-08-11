@@ -1,10 +1,13 @@
 package com.friendavailability.domain.exception;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import java.util.HashMap;
 import java.util.Map;
 
 public abstract class BusinessException extends RuntimeException{
+    @Getter
     private final String errorCode;
+    @Getter
     private final HttpStatus httpStatus;
     private final Map<String, Object> details;
 
@@ -20,14 +23,6 @@ public abstract class BusinessException extends RuntimeException{
         this.errorCode = errorCode;
         this.httpStatus = httpStatus;
         this.details = new HashMap<>();
-    }
-
-    public String getErrorCode(){
-        return errorCode;
-    }
-
-    public HttpStatus getHttpStatus(){
-        return httpStatus;
     }
 
     public Map<String, Object> getDetails(){

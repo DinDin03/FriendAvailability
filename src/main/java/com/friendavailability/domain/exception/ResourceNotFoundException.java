@@ -17,7 +17,7 @@ public class ResourceNotFoundException extends BusinessException{
         super(
             String.format("%s with id %s not found", resourceName, identifier),
             "RESOURCE_NOT_FOUND",
-            HttpStatus.NOT_FOUND;
+            HttpStatus.NOT_FOUND
         );
         withDetail("resource", resourceName);
         withDetail("identifier", identifier);
