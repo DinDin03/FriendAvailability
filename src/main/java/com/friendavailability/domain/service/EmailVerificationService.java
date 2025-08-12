@@ -1,6 +1,6 @@
 package com.friendavailability.domain.service;
 
-import com.friendavailability.domain.entity.EmailVerificationToken;
+import com.friendavailability.domain.entity.token.EmailVerificationToken;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.repository.EmailVerificationTokenRepository;
 import com.friendavailability.domain.repository.UserRepository;

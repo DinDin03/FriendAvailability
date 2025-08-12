@@ -1,6 +1,7 @@
 package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.*;
+import com.friendavailability.domain.entity.enums.MessageType;
 import com.friendavailability.domain.repository.*;
 
 import org.springframework.data.domain.Page;

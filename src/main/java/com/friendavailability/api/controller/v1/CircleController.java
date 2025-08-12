@@ -1,6 +1,6 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.dto.circle.*;
+import com.friendavailability.api.dto.request.circle.*;
 import com.friendavailability.domain.entity.Circle;
 import com.friendavailability.domain.entity.CircleMember;
 import com.friendavailability.domain.entity.enums.CircleRole;

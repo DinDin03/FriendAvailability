@@ -1,7 +1,7 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.dto.user.CreateUserRequest;
-import com.friendavailability.dto.user.UpdateUserRequest;
+import com.friendavailability.api.dto.request.user.CreateUserRequest;
+import com.friendavailability.api.dto.request.user.UpdateUserRequest;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.service.UserService;
 import org.springframework.http.HttpStatus;

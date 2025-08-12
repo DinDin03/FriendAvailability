@@ -1,4 +1,4 @@
-package com.friendavailability.dto.circle;
+package com.friendavailability.api.dto.request.circle;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

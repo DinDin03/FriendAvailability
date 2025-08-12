@@ -1,6 +1,8 @@
 package com.friendavailability.api.controller.websocket;
 
-import com.friendavailability.dto.chat.*;
+import com.friendavailability.api.dto.request.chat.*;
+import com.friendavailability.api.dto.common.ChatMessageDto;
+import com.friendavailability.api.dto.response.chat.*;
 import com.friendavailability.domain.entity.Message;
 import com.friendavailability.domain.service.ChatService;
 import com.friendavailability.domain.service.MessageService;

@@ -1,4 +1,4 @@
-package com.friendavailability.dto.user;
+package com.friendavailability.api.dto.request.user;
 
 import lombok.*;
 

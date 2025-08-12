@@ -1,6 +1,6 @@
 package com.friendavailability.domain.service;
 
-import com.friendavailability.domain.entity.PasswordResetToken;
+import com.friendavailability.domain.entity.token.PasswordResetToken;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.repository.PasswordResetTokenRepository;
 import com.friendavailability.domain.repository.UserRepository;

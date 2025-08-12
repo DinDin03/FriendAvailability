@@ -1,4 +1,4 @@
-package com.friendavailability.dto.availability;
+package com.friendavailability.api.dto.request.availability;
 
 import lombok.Getter;
 import lombok.Setter;

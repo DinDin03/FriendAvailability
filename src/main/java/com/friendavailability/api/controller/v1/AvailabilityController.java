@@ -1,7 +1,7 @@
 package com.friendavailability.api.controller.v1;
 
-import com.friendavailability.api.dto.CreateAvailabilityRequest;
-import com.friendavailability.api.dto.UpdateAvailabilityRequest;
+import com.friendavailability.api.dto.request.availability.CreateAvailabilityRequest;
+import com.friendavailability.api.dto.request.availability.UpdateAvailabilityRequest;
 import com.friendavailability.domain.entity.Availability;
 import com.friendavailability.domain.service.AvailabilityService;
 import jakarta.validation.Valid;

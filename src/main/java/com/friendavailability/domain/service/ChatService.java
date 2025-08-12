@@ -1,6 +1,9 @@
 package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.*;
+import com.friendavailability.domain.entity.enums.ChatType;
+import com.friendavailability.domain.entity.enums.MessageType;
+import com.friendavailability.domain.entity.enums.ParticipantRole;
 import com.friendavailability.domain.repository.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

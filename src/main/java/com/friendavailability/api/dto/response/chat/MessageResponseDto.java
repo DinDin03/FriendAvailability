@@ -1,4 +1,4 @@
-package com.friendavailability.dto.chat;
+package com.friendavailability.api.dto.response.chat;
 
 import java.time.LocalDateTime;
 

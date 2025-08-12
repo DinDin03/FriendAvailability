@@ -1,4 +1,4 @@
-package com.friendavailability.dto.chat;
+package com.friendavailability.api.dto.request.chat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
