@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkUp Dashboard</title>
+
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Styles -->
+    <style>
+        /* CSS Variables */
+        :root {
+            --primary-blue: #0052CC;
+            --light-blue: #E6F2FF;
+            --success-green: #00875A;
+            --danger-red: #DE350B;
+            --warning-orange: #FF8B00;
+            --gray-900: #172B4D;
+            --gray-700: #344563;
+            --gray-500: #6B778C;
+            --gray-300: #C1C7D0;
+            --gray-100: #F4F5F7;
+            --white: #FFFFFF;
+
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --font-size-xs: 12px;
+            --font-size-sm: 14px;
+            --font-size-base: 16px;
+            --font-size-lg: 18px;
+            --font-size-xl: 24px;
+
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Reset & Base */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            color: var(--gray-900);
+            background-color: var(--gray-100);
+            line-height: 1.6;
+        }
+
+        /* Layout */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+        }
+
+        /* Header */
+        .dashboard-header {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .user-details h1 {
+            font-size: var(--font-size-xl);
+            font-weight: 600;
+        }
+
+        .user-details p {
+            color: var(--gray-500);
+            font-size: var(--font-size-sm);
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        /* Cards */
+        .dashboard-card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .card-title {
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #0747A6;
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+
+        .btn-icon {
+            padding: var(--spacing-sm);
+            background: transparent;
+            color: var(--gray-500);
+        }
+
+        .btn-icon:hover {
+            color: var(--gray-700);
+            background: var(--gray-100);
+        }
+
+        /* Friends List */
+        .friends-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-sm);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .friend-item:hover {
+            background: var(--gray-100);
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: 500;
+        }
+
+        .friend-email {
+            font-size: var(--font-size-sm);
+            color: var(--gray-500);
+        }
+
+        /* Friend Requests */
+        .request-section {
+            background: var(--light-blue);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .request-item {
+            background: var(--white);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        /* Calendar */
+        .calendar-container {
+            grid-column: span 2;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--gray-300);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: var(--gray-100);
+            padding: var(--spacing-sm);
+            text-align: center;
+            font-weight: 600;
+            font-size: var(--font-size-sm);
+            color: var(--gray-700);
+        }
+
+        .calendar-day {
+            background: var(--white);
+            min-height: 80px;
+            padding: var(--spacing-sm);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .calendar-day:hover {
+            background: var(--gray-100);
+        }
+
+        .calendar-day.other-month {
+            color: var(--gray-500);
+        }
+
+        .calendar-day.today {
+            background: var(--light-blue);
+        }
+
+        /* Empty States */
+        .empty-state {
+            text-align: center;
+            padding: var(--spacing-xl);
+            color: var(--gray-500);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: var(--spacing-md);
+            opacity: 0.5;
+        }
+
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: var(--spacing-lg);
+            color: var(--gray-500);
+        }
+
+        /* Messages */
+        .message {
+            position: fixed;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            color: var(--white);
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        .message.success {
+            background: var(--success-green);
+        }
+
+        .message.error {
+            background: var(--danger-red);
+        }
+
+        .message.info {
+            background: var(--primary-blue);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .calendar-container {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .calendar-container {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-left">
+                <div class="user-info">
+                    <img id="userAvatar" src="" alt="User Avatar" class="user-avatar">
+                    <div class="user-details">
+                        <h1 id="userName">Loading...</h1>
+                        <p id="userEmail">Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-secondary" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Friends Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Friends</h2>
+                    <button class="btn btn-primary" onclick="showAddFriend()">
+                        <i class="fas fa-user-plus"></i> Add Friend
+                    </button>
+                </div>
+                <div id="friendsContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Loading friends...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Card -->
+            <div class="dashboard-card calendar-container">
+                <div class="card-header">
+                    <h2 class="card-title">Calendar</h2>
+                    <div class="calendar-header">
+                        <button class="btn btn-icon" onclick="changeMonth(-1)">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <span id="currentMonth">Loading...</span>
+                        <button class="btn btn-icon" onclick="changeMonth(1)">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="calendarGrid" class="calendar-grid">
+                    <div class="loading">Loading calendar...</div>
+                </div>
+            </div>
+
+            <!-- Events Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Upcoming Events</h2>
+                    <button class="btn btn-primary" onclick="showAddEvent()">
+                        <i class="fas fa-plus"></i> Add Event
+                    </button>
+                </div>
+                <div id="eventsContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-calendar-alt"></i>
+                        <p>No upcoming events</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Circles Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Circles</h2>
+                    <button class="btn btn-primary" onclick="showCreateCircle()">
+                        <i class="fas fa-circle-plus"></i> Create Circle
+                    </button>
+                </div>
+                <div id="circlesContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>No circles yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replace your existing chat widget with this complete version -->
+            <div class="dashboard-widget chat-widget">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <i class="fas fa-comments"></i>
+                        <span>Live Chat</span>
+                    </div>
+                    <div class="widget-actions">
+                        <div id="chatConnectionStatus" class="connection-status">
+                            <i class="fas fa-circle status-offline"></i>
+                            <span>Offline</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget-body chat-container">
+                    <!-- Chat Rooms List View -->
+                    <div id="chatRoomsList" class="chat-rooms-section">
+                        <div class="chat-rooms-header">
+                            <h4>Chat Rooms</h4>
+                            <button id="refreshRoomsBtn" class="btn-icon" title="Refresh rooms">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="chatRoomsLoading" class="loading-state" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading chat rooms...</p>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="chatRoomsEmpty" class="loading-state" style="display: none;">
+                            <i class="fas fa-comments"></i>
+                            <p>No chat rooms yet</p>
+                            <button class="btn btn-primary" onclick="createTestChatRoom()">
+                                <i class="fas fa-plus"></i> Create Test Room
+                            </button>
+                        </div>
+
+                        <!-- Chat Rooms List -->
+                        <div id="chatRoomsItems" class="chat-rooms-list">
+                            <!-- Chat rooms will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Active Chat View -->
+                    <div id="activeChatView" class="active-chat-section" style="display: none;">
+                        <div class="chat-header">
+                            <button class="btn-icon" onclick="showChatRoomsList()">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h4 id="activeChatTitle">Chat Room</h4>
+                        </div>
+
+                        <!-- Messages Container -->
+                        <div id="chatMessagesContainer" class="chat-messages">
+                            <!-- Messages will be populated here -->
+                        </div>
+
+                        <!-- Message Input -->
+                        <div class="chat-input-section">
+                            <div class="chat-input-wrapper">
+                                <input type="text" id="chatMessageInput" placeholder="Type your message..."
+                                    onkeypress="handleMessageKeyPress(event)">
+                                <button id="chatSendBtn" class="btn-send" onclick="sendChatMessage()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simple Room Selection (Fallback) -->
+                    <div class="chat-room-selector" style="display: none;">
+                        <select id="chatRoomSelect" class="chat-room-dropdown">
+                            <option value="">Select a chat room...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+        <!-- Load utilities first -->
+        <script src="../js/utils/helpers.js"></script>
+        <script src="../js/utils/validation.js"></script>
+        <script src="../js/utils/dom.js"></script>
+
+        <!-- Load configuration -->
+        <script src="../js/config/api.js"></script>
+
+        <!-- Load services -->
+        <script src="../js/services/api.js"></script>
+        <script src="../js/services/auth.js"></script>
+        <script src="../js/services/notifications.js"></script>
+
+        <!-- Load components -->
+        <script src="../js/components/modal.js"></script>
+        <script src="../js/components/forms.js"></script>
+        <script src="../js/components/calendar.js"></script>
+
+        <!-- APPLY SERVICE FIXES BEFORE DASHBOARD LOADS -->
+        <script>
+            // Immediate service fixes (no setTimeout delay)
+            console.log('🔧 Applying immediate service fixes...');
+
+            // Fix ApiService immediately
+            if (!window.ApiService || typeof window.ApiService.get !== 'function') {
+                console.log('🔧 Creating ApiService...');
+                window.ApiService = {
+                    async get(endpoint) {
+                        console.log('📡 ApiService.get:', endpoint);
+                        try {
+                            const response = await fetch(endpoint, {
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                }
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            const data = await response.json();
+                            console.log('✅ ApiService.get response:', data);
+                            return data;
+                        } catch (error) {
+                            console.error('❌ ApiService.get error:', error);
+                            throw error;
+                        }
+                    },
+
+                    async post(endpoint, data) {
+                        console.log('📡 ApiService.post:', endpoint, data);
+                        try {
+                            const response = await fetch(endpoint, {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: data ? JSON.stringify(data) : undefined
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return await response.json();
+                        } catch (error) {
+                            console.error('❌ ApiService.post error:', error);
+                            throw error;
+                        }
+                    },
+
+                    async put(endpoint, data) {
+                        console.log('📡 ApiService.put:', endpoint, data);
+                        try {
+                            const response = await fetch(endpoint, {
+                                method: 'PUT',
+                                credentials: 'include',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: data ? JSON.stringify(data) : undefined
+                            });
+                            if (!response.ok) {
+                                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                            }
+                            return await response.json();
+                        } catch (error) {
+                            console.error('❌ ApiService.put error:', error);
+                            throw error;
+                        }
+                    }
+                };
+                console.log('✅ ApiService created successfully');
+            }
+
+            // Fix NotificationService immediately
+            const showNotification = (message, color, icon) => {
+                console.log(`📢 Notification (${color}): ${message}`);
+
+                // Create visual notification
+                const div = document.createElement('div');
+                div.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+                div.style.cssText = `
+        position: fixed; top: 20px; right: 20px; 
+        background: ${color}; color: white; 
+        padding: 16px 20px; border-radius: 8px; 
+        z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px; font-weight: 500;
+        display: flex; align-items: center; gap: 8px;
+        max-width: 350px; word-wrap: break-word;
+    `;
+
+                document.body.appendChild(div);
+                setTimeout(() => div.remove(), 5000);
+            };
+
+            // Override NotificationService immediately
+            window.NotificationService = {
+                showSuccess: (message) => showNotification(message, '#00875A', 'fa-check-circle'),
+                showError: (message) => showNotification(message, '#DE350B', 'fa-exclamation-circle'),
+                showInfo: (message) => showNotification(message, '#0052CC', 'fa-info-circle'),
+                showWarning: (message) => showNotification(message, '#FF8B00', 'fa-exclamation-triangle'),
+
+                // Fallback methods
+                success: (message) => window.NotificationService.showSuccess(message),
+                error: (message) => window.NotificationService.showError(message),
+                info: (message) => window.NotificationService.showInfo(message),
+                warning: (message) => window.NotificationService.showWarning(message)
+            };
+
+            console.log('✅ Service fixes applied BEFORE dashboard loads');
+            console.log('✅ ApiService.get available:', typeof window.ApiService.get === 'function');
+            console.log('✅ NotificationService.showError available:', typeof window.NotificationService.showError === 'function');
+        </script>
+
+        <!-- Load main dashboard script LAST -->
+        <script src="../js/pages/dashboard.js"></script>
+    </div>
+</body>
+
+</html>
