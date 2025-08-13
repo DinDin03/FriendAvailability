@@ -37,28 +37,28 @@
 
  :: Spring Boot ::                (v3.5.0)
 
-2025-08-13T16:10:54.234+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : Starting FriendAvailabilityAppApplication using Java 17.0.15 with PID 1488 (/mnt/c/Users/dinet/IdeaProjects/FriendAvailability/backend/target/classes started by dindin in /mnt/c/Users/dinet/IdeaProjects/FriendAvailability/backend)
-2025-08-13T16:10:54.238+09:30 DEBUG 1488 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : Running with Spring Boot v3.5.0, Spring v6.2.7
-2025-08-13T16:10:54.239+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : The following 1 profile is active: "local"
-2025-08-13T16:10:54.338+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2025-08-13T16:10:54.338+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2025-08-13T16:10:58.294+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-08-13T16:10:59.001+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 683 ms. Found 10 JPA repository interfaces.
-2025-08-13T16:11:00.529+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-08-13T16:11:00.561+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-08-13T16:11:00.562+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
-2025-08-13T16:11:00.640+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-08-13T16:11:00.640+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6301 ms
-2025-08-13T16:11:01.247+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-08-13T16:11:01.542+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
-2025-08-13T16:11:01.700+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-08-13T16:11:02.917+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-08-13T16:11:03.057+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-08-13T16:11:03.754+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@19f72414
-2025-08-13T16:11:03.762+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-08-13T16:11:03.913+09:30  WARN 1488 --- [Friend Availability App] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-08-13T16:11:03.918+09:30  WARN 1488 --- [Friend Availability App] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
-2025-08-13T16:11:03.983+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+2025-08-13T16:24:53.142+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : Starting FriendAvailabilityAppApplication using Java 17.0.15 with PID 3668 (/mnt/c/Users/dinet/IdeaProjects/FriendAvailability/backend/target/classes started by dindin in /mnt/c/Users/dinet/IdeaProjects/FriendAvailability/backend)
+2025-08-13T16:24:53.146+09:30 DEBUG 3668 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : Running with Spring Boot v3.5.0, Spring v6.2.7
+2025-08-13T16:24:53.146+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : The following 1 profile is active: "local"
+2025-08-13T16:24:53.246+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-08-13T16:24:53.247+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-08-13T16:24:57.302+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-13T16:24:58.251+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 922 ms. Found 10 JPA repository interfaces.
+2025-08-13T16:24:59.875+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-08-13T16:24:59.908+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-08-13T16:24:59.909+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.41]
+2025-08-13T16:24:59.995+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-08-13T16:24:59.996+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 6747 ms
+2025-08-13T16:25:00.670+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-13T16:25:00.976+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.15.Final
+2025-08-13T16:25:01.131+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-08-13T16:25:02.342+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-13T16:25:02.478+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-08-13T16:25:03.099+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@5e9f5db3
+2025-08-13T16:25:03.106+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-08-13T16:25:03.256+09:30  WARN 3668 --- [Friend Availability App] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-13T16:25:03.261+09:30  WARN 3668 --- [Friend Availability App] [  restartedMain] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2025-08-13T16:25:03.323+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
 	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
 	Database driver: undefined/unknown
 	Database version: 8.0
@@ -66,7 +66,7 @@
 	Isolation level: undefined/unknown
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2025-08-13T16:11:07.948+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-13T16:25:07.265+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
 Hibernate: 
     alter table availabilities 
        modify column source enum ('GOOGLE_CALENDAR','MANUAL','OVERRIDE','RECURRING') not null
@@ -82,10 +82,10 @@ Hibernate:
 Hibernate: 
     alter table messages 
        modify column message_type enum ('SYSTEM_MESSAGE','TEXT','TYPING_INDICATOR') not null
-2025-08-13T16:11:08.255+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-08-13T16:11:09.040+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-13T16:25:07.582+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13T16:25:08.374+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
 SecurityConfig created with CustomOAuth2UserService injected
-2025-08-13T16:11:10.780+09:30 DEBUG 1488 --- [Friend Availability App] [  restartedMain] c.f.i.c.SessionAuthenticationFilter      : Filter 'sessionAuthenticationFilter' configured for use
+2025-08-13T16:25:10.156+09:30 DEBUG 3668 --- [Friend Availability App] [  restartedMain] c.f.i.c.SessionAuthenticationFilter      : Filter 'sessionAuthenticationFilter' configured for use
 EmailService initialized successfully
 AvailabilityService created
 AvailabilityController created and connected to AvailabilityService
@@ -93,111 +93,30 @@ Friend service created
 FriendController created and connected to FriendService
 UserController created and connected to UserService
 Configuring message broker
-2025-08-13T16:11:12.660+09:30  WARN 1488 --- [Friend Availability App] [  restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-13T16:25:12.237+09:30  WARN 3668 --- [Friend Availability App] [  restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
 Configuring web sockets STOMP endpoints
-2025-08-13T16:11:12.868+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-08-13T16:25:12.475+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
 Configuring view controllers...
 View controllers configured successfully
 Configuring static resource handlers...
 Static resource handlers configured successfully
-2025-08-13T16:11:13.110+09:30 DEBUG 1488 --- [Friend Availability App] [  restartedMain] swordEncoderAuthenticationManagerBuilder : No authenticationProviders and no parentAuthenticationManager defined. Returning null.
+2025-08-13T16:25:12.731+09:30 DEBUG 3668 --- [Friend Availability App] [  restartedMain] swordEncoderAuthenticationManagerBuilder : No authenticationProviders and no parentAuthenticationManager defined. Returning null.
 Configuring SecurityFilterChain with custom OAuth2 service
-2025-08-13T16:11:13.507+09:30 DEBUG 1488 --- [Friend Availability App] [  restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, OAuth2AuthorizationRequestRedirectFilter, OAuth2LoginAuthenticationFilter, SessionAuthenticationFilter, UsernamePasswordAuthenticationFilter, DefaultResourcesFilter, DefaultLoginPageGeneratingFilter, DefaultLogoutPageGeneratingFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, ExceptionTranslationFilter, AuthorizationFilter
-2025-08-13T16:11:14.103+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:mysql://localhost:3306/linkup_db'
-2025-08-13T16:11:17.450+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2025-08-13T16:11:17.481+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
-2025-08-13T16:11:17.482+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@436cceac]]
-2025-08-13T16:11:17.484+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
-2025-08-13T16:11:17.509+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
-2025-08-13T16:11:17.517+09:30  INFO 1488 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : Started FriendAvailabilityAppApplication in 24.484 seconds (process running for 25.221)
+2025-08-13T16:25:13.136+09:30 DEBUG 3668 --- [Friend Availability App] [  restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, OAuth2AuthorizationRequestRedirectFilter, OAuth2LoginAuthenticationFilter, SessionAuthenticationFilter, UsernamePasswordAuthenticationFilter, DefaultResourcesFilter, DefaultLoginPageGeneratingFilter, DefaultLogoutPageGeneratingFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, ExceptionTranslationFilter, AuthorizationFilter
+2025-08-13T16:25:13.758+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:mysql://localhost:3306/linkup_db'
+2025-08-13T16:25:17.345+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-08-13T16:25:17.380+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2025-08-13T16:25:17.381+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6007434]]
+2025-08-13T16:25:17.383+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2025-08-13T16:25:17.410+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-08-13T16:25:17.418+09:30  INFO 3668 --- [Friend Availability App] [  restartedMain] c.f.FriendAvailabilityAppApplication     : Started FriendAvailabilityAppApplication in 25.474 seconds (process running for 26.182)
 Friend Availability App is running!
 Visit: http://localhost:8080
-2025-08-13T16:11:45.548+09:30  INFO 1488 --- [Friend Availability App] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-08-13T16:11:45.548+09:30  INFO 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-08-13T16:11:45.549+09:30  INFO 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2025-08-13T16:11:45.576+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /js/utils/dom.js
-2025-08-13T16:11:45.576+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /js/components/forms.js
-2025-08-13T16:11:45.576+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /js/components/calendar.js
-2025-08-13T16:11:45.596+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /js/utils/dom.js
-2025-08-13T16:11:45.596+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /js/components/forms.js
-2025-08-13T16:11:45.596+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /js/components/calendar.js
-2025-08-13T16:11:45.627+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.627+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.627+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.635+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.635+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.635+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.638+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.638+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.638+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.652+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.652+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.652+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.654+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.654+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.654+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.655+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.656+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.655+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.656+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] s.w.a.DelegatingAuthenticationEntryPoint : No match found. Using default entry point org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.656+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] s.w.a.DelegatingAuthenticationEntryPoint : No match found. Using default entry point org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.656+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] s.w.a.DelegatingAuthenticationEntryPoint : No match found. Using default entry point org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.658+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-1] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.658+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-2] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.658+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-3] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.665+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /js/components/forms.js
-2025-08-13T16:11:45.666+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /js/components/calendar.js
-2025-08-13T16:11:45.666+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /js/components/forms.js
-2025-08-13T16:11:45.667+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /js/components/calendar.js
-2025-08-13T16:11:45.668+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /js/utils/dom.js
-2025-08-13T16:11:45.670+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /js/utils/dom.js
-2025-08-13T16:11:45.673+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.674+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.673+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.675+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.675+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.675+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.677+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.677+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.677+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.678+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.678+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.678+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.679+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.679+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.679+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.680+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.680+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.681+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] s.w.a.DelegatingAuthenticationEntryPoint : No match found. Using default entry point org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.680+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.681+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] s.w.a.DelegatingAuthenticationEntryPoint : No match found. Using default entry point org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.681+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-5] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.682+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] s.w.a.DelegatingAuthenticationEntryPoint : No match found. Using default entry point org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.682+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-6] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.683+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-4] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.688+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
-2025-08-13T16:11:45.690+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /favicon.ico
-2025-08-13T16:11:45.698+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.700+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.701+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.703+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.703+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.704+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] s.w.a.DelegatingAuthenticationEntryPoint : Match found! Executing org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.704+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-7] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:45.839+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /favicon.ico
-2025-08-13T16:11:45.841+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /favicon.ico
-2025-08-13T16:11:45.851+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.852+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /error
-2025-08-13T16:11:45.854+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-08-13T16:11:45.856+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.s.w.s.HttpSessionRequestCache        : Saved request http://localhost:8080/error?continue to session
-2025-08-13T16:11:45.856+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] s.w.a.DelegatingAuthenticationEntryPoint : Trying to match using And [Not [RequestHeaderRequestMatcher [expectedHeaderName=X-Requested-With, expectedHeaderValue=XMLHttpRequest]], MediaTypeRequestMatcher [contentNegotiationStrategy=org.springframework.web.accept.ContentNegotiationManager@69b625ca, matchingMediaTypes=[application/xhtml+xml, image/*, text/html, text/plain], useEquals=false, ignoredMediaTypes=[*/*]]]
-2025-08-13T16:11:45.857+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] s.w.a.DelegatingAuthenticationEntryPoint : Match found! Executing org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint@285fd7a1
-2025-08-13T16:11:45.857+09:30 DEBUG 1488 --- [Friend Availability App] [nio-8080-exec-8] o.s.s.web.DefaultRedirectStrategy        : Redirecting to http://localhost:8080/index.html
-2025-08-13T16:11:54.044+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
-2025-08-13T16:11:54.046+09:30  INFO 1488 --- [Friend Availability App] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
-2025-08-13T16:11:54.049+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
-2025-08-13T16:11:54.049+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@436cceac]]
-2025-08-13T16:11:54.050+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
-2025-08-13T16:11:55.645+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-08-13T16:11:55.652+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2025-08-13T16:11:55.657+09:30  INFO 1488 --- [Friend Availability App] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-08-13T16:25:28.387+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2025-08-13T16:25:28.390+09:30  INFO 3668 --- [Friend Availability App] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2025-08-13T16:25:28.393+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2025-08-13T16:25:28.393+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6007434]]
+2025-08-13T16:25:28.393+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2025-08-13T16:25:29.917+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-08-13T16:25:29.923+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-08-13T16:25:29.927+09:30  INFO 3668 --- [Friend Availability App] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
