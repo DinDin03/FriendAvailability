@@ -43,14 +43,19 @@ FriendAvailability/
 
 3. **Start development servers**
 
-   **Option A: Use startup scripts**
+   **Option A: Use startup scripts (Recommended)**
    ```bash
-   # Windows
-   start-dev.bat
+   # Terminal 1 - Backend
+   ./start-backend.sh
 
-   # Linux/Mac/WSL
-   chmod +x start-dev-wsl.sh
-   ./start-dev-wsl.sh
+   # Terminal 2 - Frontend
+   ./start-frontend.sh
+   ```
+
+   **Option B: Windows batch script**
+   ```bash
+   # Windows only
+   start-dev.bat
    ```
 
    **Option B: Manual startup**

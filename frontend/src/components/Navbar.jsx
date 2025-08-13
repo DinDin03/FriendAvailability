@@ -2,6 +2,8 @@ import {cn} from '@/lib/utils'
 import Logo from '@/assets/logo.png'
 import { Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { authService } from '../services/authService';
 
 {/* Functions */}
 
@@ -45,6 +47,91 @@ export const Navbar = () => {
         };
     }, [isSignUpOpen]);
 
+    // Handle form input changes
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    // Validate form
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.fullName.trim()) {
+            newErrors.fullName = 'Full name is required';
+        }
+
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Email is invalid';
+        }
+
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'Password must be at least 6 characters';
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+
+        return newErrors;
+    };
+
+    // Handle form submission
+    const handleSignUpSubmit = async (e) => {
+        e.preventDefault();
+
+        const newErrors = validateForm();
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setIsSubmitting(true);
+        setErrors({});
+
+        try {
+            const response = await authService.register({
+                name: formData.fullName,
+                email: formData.email,
+                password: formData.password
+            });
+
+            console.log('Registration successful:', response);
+
+            // Close modal and reset form
+            setIsSignUpOpen(false);
+            setFormData({
+                fullName: '',
+                email: '',
+                password: '',
+                confirmPassword: '',
+            });
+
+            // Show success message (you can replace with a toast notification)
+            alert('Registration successful! Please check your email for verification.');
+
+        } catch (error) {
+            console.error('Registration failed:', error);
+            setErrors({ submit: error.message || 'Registration failed. Please try again.' });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <>
             <div 
@@ -79,9 +166,15 @@ export const Navbar = () => {
                     {/*Confirm password*/}
                     {/*Sign in with google*/}
 
-                    <form 
-                        className="space-y-4"
+                    {errors.submit && (
+                        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-4">
+                            {errors.submit}
+                        </div>
+                    )}
 
+                    <form
+                        className="space-y-4"
+                        onSubmit={handleSignUpSubmit}
                     >
                         <div>
                             <label className="text-left block text-sm font-medium text-gray-700 mb-1">
@@ -89,11 +182,18 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="text"
-                                id="signupName"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="fullName"
+                                value={formData.fullName}
+                                onChange={handleInputChange}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.fullName ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Enter your full name"
                                 required
                             />
+                            {errors.fullName && (
+                                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                            )}
                         </div>
 
                         <div>
@@ -102,11 +202,18 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="email"
-                                id="signupEmail"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.email ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Enter your email"
                                 required
                             />
+                            {errors.email && (
+                                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                            )}
                         </div>
                         
                         <div>
@@ -115,11 +222,18 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="password"
-                                id="signupPassword"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.password ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Create a strong password"
                                 required
                             />
+                            {errors.password && (
+                                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                            )}
                         </div>
 
                         <div>
@@ -128,18 +242,30 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="password"
-                                id="confirmPassword"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                name="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Confirm your password"
                                 required
                             />
+                            {errors.confirmPassword && (
+                                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                            )}
                         </div>
                         
-                        <button 
+                        <button
                             type="submit"
-                            className="w-full bg-blue-600 text-white mt-4 py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                            disabled={isSubmitting}
+                            className={`w-full mt-4 py-2 px-4 rounded-md transition-colors ${
+                                isSubmitting
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-blue-600 hover:bg-blue-700'
+                            } text-white`}
                         >
-                            Create Account
+                            {isSubmitting ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </form>
                 </div>
@@ -164,12 +290,12 @@ export const Navbar = () => {
 
                     {/* desktop nav */}
                     <div className="hidden md:flex space-x-18 items-center">
-                            <a
-                                href="login"
+                            <Link
+                                to="/login"
                                 className="font-semibold tracking-wide text-foreground hover:text-neutral-700 transition-colors duration-300"
                             >
                                 Log In
-                            </a>
+                            </Link>
                             <button
                                 onClick={() => setIsSignUpOpen((prev) => !prev)}
                                 className=" text-gray-50 button"
