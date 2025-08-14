@@ -4,6 +4,7 @@ import { Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 {/* Functions */}
+import { handleSignup } from '@/js/services/auth';
 
 const navItems = [
     {name: "Log In", href: "/login"},
@@ -23,6 +24,89 @@ export const Navbar = () => {
     });
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+        
+        if (errors[field]) {
+            setErrors(prev => ({
+                ...prev,
+                [field]: null
+            }));
+        }
+    };
+
+    const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        
+        // Clear previous errors
+        setErrors({});
+        
+        // Basic validation
+        const newErrors = {};
+        
+        if (!formData.fullName.trim()) {
+            newErrors.fullName = 'Full name is required';
+        }
+        
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+        }
+        
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters';
+        }
+        
+        if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+        
+        // If there are validation errors, don't submit
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+        
+        // Start submission
+        setIsSubmitting(true);
+        
+        try {
+            // Call the imported handleSignup function
+            const result = await handleSignup(
+                formData.fullName,
+                formData.email,
+                formData.password,
+                formData.confirmPassword
+            );
+            
+            // Success - close modal and show success message
+            console.log('Signup successful:', result);
+            setIsSignUpOpen(false);
+            
+            // Reset form
+            setFormData({
+                fullName: '',
+                email: '',
+                password: '',
+                confirmPassword: ''
+            });
+            
+            // You could show a success message here
+            alert('Account created successfully! Please check your email to verify your account.');
+            
+        } catch (error) {
+            // Handle error
+            console.error('Signup error:', error);
+            setErrors({ submit: error.message });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     useEffect(() => {
         const handleScroll = () => {
@@ -81,7 +165,7 @@ export const Navbar = () => {
 
                     <form 
                         className="space-y-4"
-
+                        onSubmit={handleFormSubmit}
                     >
                         <div>
                             <label className="text-left block text-sm font-medium text-gray-700 mb-1">
@@ -89,11 +173,17 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="text"
-                                id="signupName"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={formData.fullName}
+                                onChange={(e) => handleInputChange('fullName', e.target.value)}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.fullName ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Enter your full name"
-                                required
+                                disabled={isSubmitting}
                             />
+                            {errors.fullName && (
+                                <p className="text-red-500 text-sm mt-1">{errors.fullName}</p>
+                            )}
                         </div>
 
                         <div>
@@ -102,11 +192,17 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="email"
-                                id="signupEmail"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={formData.email}
+                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.email ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Enter your email"
-                                required
+                                disabled={isSubmitting}
                             />
+                            {errors.email && (
+                                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                            )}
                         </div>
                         
                         <div>
@@ -115,11 +211,17 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="password"
-                                id="signupPassword"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={formData.password}
+                                onChange={(e) => handleInputChange('password', e.target.value)}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.password ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Create a strong password"
-                                required
+                                disabled={isSubmitting}
                             />
+                            {errors.password && (
+                                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+                            )}
                         </div>
 
                         <div>
@@ -128,18 +230,43 @@ export const Navbar = () => {
                             </label>
                             <input
                                 type="password"
-                                id="confirmPassword"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={formData.confirmPassword}
+                                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                                }`}
                                 placeholder="Confirm your password"
-                                required
+                                disabled={isSubmitting}
                             />
+                            {errors.confirmPassword && (
+                                <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                            )}
                         </div>
+                        
+                        {/* Show general error message */}
+                        {errors.submit && (
+                            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                                <p className="text-red-600 text-sm">{errors.submit}</p>
+                            </div>
+                        )}
                         
                         <button 
                             type="submit"
-                            className="w-full bg-blue-600 text-white mt-4 py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                            disabled={isSubmitting}
+                            className={`w-full text-white mt-4 py-2 px-4 rounded-md transition-colors ${
+                                isSubmitting 
+                                    ? 'bg-gray-400 cursor-not-allowed' 
+                                    : 'bg-blue-600 hover:bg-blue-700'
+                            }`}
                         >
-                            Create Account
+                            {isSubmitting ? (
+                                <>
+                                    <span className="inline-block animate-spin mr-2">⏳</span>
+                                    Creating Account...
+                                </>
+                            ) : (
+                                'Create Account'
+                            )}
                         </button>
                     </form>
                 </div>
