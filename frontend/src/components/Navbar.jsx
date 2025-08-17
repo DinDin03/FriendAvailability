@@ -4,7 +4,7 @@ import { Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 {/* Functions */}
-import { handleSignup } from '@/js/services/auth';
+import { authService } from '@/services/authService.js';
 
 const navItems = [
     {name: "Log In", href: "/login"},
@@ -77,12 +77,11 @@ export const Navbar = () => {
         
         try {
             // Call the imported handleSignup function
-            const result = await handleSignup(
-                formData.fullName,
-                formData.email,
-                formData.password,
-                formData.confirmPassword
-            );
+            const result = await authService.register({
+                name: formData.fullName,
+                email: formData.email,
+                password: formData.password
+            });
             
             // Success - close modal and show success message
             console.log('Signup successful:', result);
