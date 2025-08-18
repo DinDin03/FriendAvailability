@@ -2,9 +2,7 @@ import {cn} from '@/lib/utils'
 import Logo from '@/assets/logo.png'
 import { Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
-
-{/* Functions */}
-import { authService } from '@/services/authService.js';
+import { useSignupForm } from '@/hooks/useSignupForm';
 
 const navItems = [
     {name: "Log In", href: "/login"},
@@ -16,97 +14,8 @@ export const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
 
-    const [formData, setFormData] = useState({
-        fullName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-    });
-    const [errors, setErrors] = useState({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-
-    const handleInputChange = (field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            [field]: value
-        }));
-        
-        if (errors[field]) {
-            setErrors(prev => ({
-                ...prev,
-                [field]: null
-            }));
-        }
-    };
-
-    const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Clear previous errors
-        setErrors({});
-        
-        // Basic validation
-        const newErrors = {};
-        
-        if (!formData.fullName.trim()) {
-            newErrors.fullName = 'Full name is required';
-        }
-        
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
-        }
-        
-        if (!formData.password) {
-            newErrors.password = 'Password is required';
-        } else if (formData.password.length < 8) {
-            newErrors.password = 'Password must be at least 8 characters';
-        }
-        
-        if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match';
-        }
-        
-        // If there are validation errors, don't submit
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
-        
-        // Start submission
-        setIsSubmitting(true);
-        
-        try {
-            // Call the imported handleSignup function
-            const result = await authService.register({
-                name: formData.fullName,
-                email: formData.email,
-                password: formData.password
-            });
-            
-            // Success - close modal and show success message
-            console.log('Signup successful:', result);
-            setIsSignUpOpen(false);
-            
-            // Reset form
-            setFormData({
-                fullName: '',
-                email: '',
-                password: '',
-                confirmPassword: ''
-            });
-            
-            // You could show a success message here
-            alert('Account created successfully! Please check your email to verify your account.');
-            
-        } catch (error) {
-            // Handle error
-            console.error('Signup error:', error);
-            setErrors({ submit: error.message });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
+    const { formData, errors, isSubmitting, handleInputChange, handleFormSubmit } = useSignupForm();
+    
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 10)
@@ -174,7 +83,7 @@ export const Navbar = () => {
                                 type="text"
                                 value={formData.fullName}
                                 onChange={(e) => handleInputChange('fullName', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
                                     errors.fullName ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Enter your full name"
@@ -193,7 +102,7 @@ export const Navbar = () => {
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => handleInputChange('email', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
                                     errors.email ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Enter your email"
@@ -212,7 +121,7 @@ export const Navbar = () => {
                                 type="password"
                                 value={formData.password}
                                 onChange={(e) => handleInputChange('password', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
                                     errors.password ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Create a strong password"
@@ -231,7 +140,7 @@ export const Navbar = () => {
                                 type="password"
                                 value={formData.confirmPassword}
                                 onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
                                     errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
                                 }`}
                                 placeholder="Confirm your password"
