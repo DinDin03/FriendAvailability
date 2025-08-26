@@ -31,9 +31,9 @@ build/
 
 
 # Database credentials
-**/application-local.properties
-**/application.properties
+# **/application-local.properties
+# **/application.properties
 
 # Local development environment files
-.env.local
+# .env.local
 
