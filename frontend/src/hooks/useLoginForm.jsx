@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"
 import { authService } from "@/services/authService.js";
 
-export const useeLoginForm = () => {
-
+export const useLoginForm = () => {
+    
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -40,15 +42,19 @@ export const useeLoginForm = () => {
 
         setIsSubmitting(true);
 
-
- 
         try {
-            const result = authService.login(formData.email, formData.password);
+            const result = await authService.login(formData.email, formData.password);
 
-            console.log("Login successful");
+            console.log("Login successful:", result);
             
-            setIsSubmitting(false);
+            setFormData({
+                email:'',
+                password:''
+            })
 
+            alert("Login successful");
+            navigate("/dashboard", {replace: true})
+                        
         } catch (error) {
             console.error("Login error:", error);
             setErrors({ submit: error.message });

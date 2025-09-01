@@ -2,7 +2,8 @@ import {cn} from '@/lib/utils'
 import Logo from '@/assets/logo.png'
 import { Menu, X, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { SignupForm } from '@/components/SignupForm';
+import { SignupForm } from '@/components/SignupForm.jsx';
+import { LoginForm } from '@/components/LoginForm.jsx'
 
 const navItems = [
     {name: "Log In", href: "/login"},
@@ -13,6 +14,7 @@ export const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
     
     useEffect(() => {
         const handleScroll = () => {
@@ -37,6 +39,8 @@ export const Navbar = () => {
 
     return (
         <>
+
+        {/* Sign up module */}
             <div 
                 className={cn(
                     "fixed inset-0 bg-gray-500/50 backdrop-blur-md z-[60] flex flex-col items-center justify-center",
@@ -48,6 +52,20 @@ export const Navbar = () => {
                 onClick={() => setIsSignUpOpen(false)}
             >
                 <SignupForm onClose={() => setIsSignUpOpen(false)}/>
+            </div>
+        
+        {/* Login module */}
+            <div 
+                className={cn(
+                    "fixed inset-0 bg-gray-500/50 backdrop-blur-md z-[60] flex flex-col items-center justify-center",
+                    "transition-all duration-300",
+                    isLoginOpen 
+                        ? "opacity-100 pointer-events-auto" 
+                        : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setIsLoginOpen(false)}
+            >
+                <LoginForm onClose={() => setIsLoginOpen(false)}/>
             </div>
 
             <nav
@@ -70,8 +88,9 @@ export const Navbar = () => {
                     {/* desktop nav */}
                     <div className="hidden md:flex space-x-18 items-center">
                             <a
-                                href="login"
-                                className="font-semibold tracking-wide text-foreground hover:text-neutral-700 transition-colors duration-300"
+                                onClick={() => setIsLoginOpen((prev) => !prev)}
+                                className="font-semibold tracking-wide text-foreground hover:text-neutral-700 
+                                            hover:cursor-pointer transition-colors duration-300"
                             >
                                 Log In
                             </a>
