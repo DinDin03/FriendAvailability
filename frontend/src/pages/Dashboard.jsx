@@ -2,6 +2,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, MessageCircle, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 export const Dashboard = () => {
     const { user, logout } = useAuth();
@@ -10,6 +11,7 @@ export const Dashboard = () => {
     const handleLogout = async () => {
         try {
             await logout();
+            toast.success("Logged out successfully!")
             navigate("/");
         } catch (error) {
             console.error('Logout failed:', error);

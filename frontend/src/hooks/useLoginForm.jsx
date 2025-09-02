@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import { authService } from "@/services/authService.js";
+import toast from "react-hot-toast";
 
 export const useLoginForm = () => {
     
@@ -43,17 +44,17 @@ export const useLoginForm = () => {
         setIsSubmitting(true);
 
         try {
-            const result = await authService.login(formData.email, formData.password);
+            const result = await toast.promise(
+                authService.login(formData.email, formData.password),
+                {
+                    loading: "Logging in...",
+                    success: "Welcome back!",
+                    error: "Login failed",
+                }
+            );
 
-            console.log("Login successful:", result);
-            
-            setFormData({
-                email:'',
-                password:''
-            })
-
-            alert("Login successful");
-            navigate("/dashboard", {replace: true})
+            console.log("Login success", result);
+            navigate("/dashboard", { replace: true });
                         
         } catch (error) {
             console.error("Login error:", error);

@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"
 import { authService } from "@/services/authService.js";
+import toast from "react-hot-toast";
 
 export const useSignupForm = () => {
 
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -48,13 +51,19 @@ export const useSignupForm = () => {
         // Start submission
         setIsSubmitting(true);
         try {
-            // Call the imported handleSignup function
-            const result = await authService.register({
+            const result = await toast.promise(
+                authService.register({
                 name: formData.fullName,
                 email: formData.email,
                 password: formData.password
-            });
-            
+            }),
+                {
+                    loading: "Signing up...",
+                    success: "Registration successful! Please check your email for verification.",
+                    error: "Sign up failed",
+                }
+            )
+
             // Success - close modal and show success message
             console.log('Signup successful:', result);
             
@@ -67,7 +76,6 @@ export const useSignupForm = () => {
             });
             
             // You could show a success message here
-            alert('Account created successfully! Please check your email to verify your account.');
             
             } catch (error) {
                 // Handle error
