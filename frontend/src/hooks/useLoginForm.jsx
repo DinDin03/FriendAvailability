@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
 import { authService } from "@/services/authService.js";
+import { userService } from "@/services/userService";
 import toast from "react-hot-toast";
 
 export const useLoginForm = () => {
@@ -50,6 +51,12 @@ export const useLoginForm = () => {
                     loading: "Logging in...",
                     success: "Welcome back!",
                     error: "Login failed",
+                },
+                {
+                    success: {
+                        duration: 5000,
+                        icon: '😄',
+                    }
                 }
             );
 

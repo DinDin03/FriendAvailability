@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"
 import { authService } from "@/services/authService.js";
 import toast from "react-hot-toast";
 
 export const useSignupForm = () => {
 
-    const navigate = useNavigate();
     const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -36,10 +34,12 @@ export const useSignupForm = () => {
         const newErrors = {};
 
         if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+        else if (formData.fullName.length < 2 || formData.fullName.length > 50)
+            newErrors.fullName = 'Name must be between 2 and 50 characters';
         if (!formData.email.trim()) newErrors.email = 'Email is required';
         if (!formData.password) newErrors.password = 'Password is required';
-        else if (formData.password.length < 8)
-            newErrors.password = 'Password must be at least 8 characters';
+        else if (formData.password.length < 8 || formData.password.length > 100)
+            newErrors.password = 'Password must be between 8 and 100 characters';
         if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
 
         // If there are validation errors, don't submit
@@ -61,6 +61,12 @@ export const useSignupForm = () => {
                     loading: "Signing up...",
                     success: "Registration successful! Please check your email for verification.",
                     error: "Sign up failed",
+                },
+                {
+                    success: {
+                        icon: '🔥',
+                        duration: 5000
+                    }
                 }
             )
 
