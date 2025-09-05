@@ -32,22 +32,3 @@ build/
 ### VS Code ###
 .vscode/
 
-
-*.local.properties
-application-local.properties
-application-*.properties
-*.env
-.env.*
-
-# Database credentials
-**/application-local.properties
-**/application-prod.properties
-
-# Existing content...
-
-# Local development environment files
-.env.local
-.env.development
-
-# Front end dev file
-/frontend/.env.local
