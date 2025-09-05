@@ -32,77 +32,57 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-                System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
+        System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
 
-                http
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .csrf(AbstractHttpConfigurer::disable)
-                                .authorizeHttpRequests(authz -> authz
-                                                // Static resources and public pages
-                                                .requestMatchers(
-                                                                "/",
-                                                                "/index.html",
-                                                                "/style.css",
-                                                                "/app.js",
-                                                                "/default-ui.css",
-                                                                "/favicon.ico",
-                                                                "/css/**",
-                                                                "/js/**",
-                                                                "/websocket-test.html",
-                                                                "/ws/**",
-                                                                "/api/chat/**",
-                                                                "/chat-test.html",
-                                                                "/circle-test.html",
-                                                                "/api/circles/**", 
-                                                                "/api/friends/**",
-                                                                "/api/users/**")
-                                                .permitAll()
+        http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authz -> authz
+                // API endpoints that don't require authentication
+                .requestMatchers("/api/auth/**").permitAll()
+                
+                // OAuth2 endpoints
+                .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                
+                // WebSocket endpoints 
+                .requestMatchers("/ws/**", "/api/chat/**").permitAll()
+                
+                // Friends and users endpoints
+                .requestMatchers("/api/friends/**", "/api/users/**").permitAll()
+                .requestMatchers("/api/circles/**").permitAll()
+                
+                // Email verification endpoints
+                .requestMatchers("/api/email/**").permitAll()
+                
+                // Health check and actuator endpoints
+                .requestMatchers("/actuator/**").permitAll()
+                
+                // All other API endpoints require authentication
+                .requestMatchers("/api/**").authenticated()
+                
+                // Everything else requires authentication
+                .anyRequest().authenticated())
+                
+                // Remove formLogin entirely 
+                // .formLogin() is not needed for API-only backend
+                
+                .oauth2Login(oauth2 -> oauth2
+                .successHandler(new SimpleUrlAuthenticationSuccessHandler("http://localhost:5173/dashboard"))
+                .failureUrl("http://localhost:5173/login?error=oauth_failed")
+                .userInfoEndpoint(userInfo -> userInfo
+                        .oidcUserService(customOAuth2UserService)))
+                        
+                .logout(logout -> logout
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("http://localhost:5173/") // Redirect to React home page
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID"))
+                
+                .addFilterBefore(sessionAuthenticationFilter(),
+                UsernamePasswordAuthenticationFilter.class);
 
-                                                .requestMatchers(
-                                                                "/email/**", // All email directory files
-                                                                "/check-email.html", // Redirect after registration
-                                                                "/email/check-email.html",
-                                                                "/email/email-verified.html",
-                                                                "/email/email-verification-failed.html")
-                                                .permitAll()
-
-                                                .requestMatchers(
-                                                                "/pages/auth/reset-password.html",
-                                                                "/pages/auth/**")
-                                                .permitAll()
-
-                                                // Authentication endpoints
-                                                .requestMatchers("/api/auth/**").permitAll()
-
-                                                // OAuth2 endpoints
-                                                .requestMatchers("/oauth2/**", "/login/**").permitAll()
-
-                                                // Dashboard requires authentication
-                                                .requestMatchers("/dashboard.html").authenticated()
-
-                                                // All other API endpoints require authentication
-                                                .requestMatchers("/api/**").authenticated()
-
-                                                .anyRequest().authenticated())
-                                .formLogin(form -> form
-                                        .loginPage("/index.html")
-                                        .defaultSuccessUrl("http://localhost:5173/dashboard", true)
-                                        .permitAll())
-                                .oauth2Login(oauth2 -> oauth2
-                                .successHandler(new SimpleUrlAuthenticationSuccessHandler("http://localhost:5173/dashboard"))
-                                .failureUrl("http://localhost:5173/login?error=oauth_failed") 
-                                .userInfoEndpoint(userInfo -> userInfo
-                                        .oidcUserService(customOAuth2UserService)))
-                                .logout(logout -> logout
-                                                .logoutUrl("/logout")
-                                                .logoutSuccessUrl("/index.html")
-                                                .invalidateHttpSession(true)
-                                                .clearAuthentication(true)
-                                                .deleteCookies("JSESSIONID"))
-                                .addFilterBefore(sessionAuthenticationFilter(),
-                                                UsernamePasswordAuthenticationFilter.class);
-
-                return http.build();
+        return http.build();
         }
 
         @Bean
