@@ -49,3 +49,5 @@ application-*.properties
 .env.local
 .env.development
 
+# Front end dev file
+/frontend/.env.local

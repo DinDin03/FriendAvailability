@@ -1,5 +1,6 @@
 import { X } from "lucide-react"
 import { useLoginForm } from '@/hooks/useLoginForm.jsx'
+import { GoogleLogin } from "@react-oauth/google";
 
 export const LoginForm = ({ onClose }) => {
     const { formData, errors, isSubmitting, handleInputChange, handleFormSubmit } = useLoginForm();
@@ -90,6 +91,16 @@ export const LoginForm = ({ onClose }) => {
                     )}
                 </button>
             </form>
+            <div className="mt-4 flex items-center justify-center">
+                <GoogleLogin
+                    onSuccess={(credentialResponse) => {
+                        console.log(credentialResponse)
+                        navigate("/dashboard")
+                    }}
+                    onError={() => console.log("Login failed")}
+                />
+            </div>
+            
         </div>
     )
 }

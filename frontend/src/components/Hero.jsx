@@ -2,6 +2,8 @@ import {cn} from '@/lib/utils'
 import { useState, useEffect } from 'react';
 import { SignupForm } from '@/components/SignupForm.jsx';
 import { authService } from '@/services/authService';
+import { useGoogleLogin } from "@react-oauth/google";
+import { useNavigate } from 'react-router-dom';
 
 import avatar1 from "@/assets/3D-avatars/1.png"
 import avatar2 from "@/assets/3D-avatars/9.png"
@@ -11,10 +13,20 @@ import avatar5 from "@/assets/3D-avatars/26.png"
 import herobackground from "@/assets/herobackground.png"
 
 export const Hero = () => {
+    const navigate = useNavigate();
 
     const handleGoogleLogin = () => {
         window.location.href = authService.getGoogleLoginUrl();
     }
+
+    const googleLogin = useGoogleLogin({    
+        onSuccess: (credentialResponse) => {
+            console.log(credentialResponse);
+            // send token to backend
+            navigate("/dashboard");
+        },
+        onError: () => console.log("Login Failed"),
+    });
 
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
     const avatars = [
@@ -94,7 +106,7 @@ export const Hero = () => {
                 <div className='flex lg:flex-row flex-col items-center justify-center gap-4 mt-10'>
                     <button 
                         className='border-2 border-primary button'
-                        onClick={handleGoogleLogin}
+                        onClick={() => googleLogin()}
                     >
                         Login with Google
                     </button>
