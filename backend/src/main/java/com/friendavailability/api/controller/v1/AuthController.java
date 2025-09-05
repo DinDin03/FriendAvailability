@@ -176,7 +176,7 @@ public class AuthController {
                         " (ID: " + newUser.getId() + ") - Verification email sent");
 
                 AuthResponse response = AuthResponse.success(
-                        "Account created successfully! Please check your email and click the verification link to activate your account."
+                        "Account created successfully!! Please check your email and click the verification link to activate your account."
                 );
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
