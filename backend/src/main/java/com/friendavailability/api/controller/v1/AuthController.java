@@ -28,7 +28,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = {"http://localhost:8080", "http://127.0.0.1:8080", "https://friendavailability-production.up.railway.app", "https://www.linkups.com.au", "http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173"})
+@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:5173", "http://localhost:5174","http://127.0.0.1:8080", "https://friendavailability-production.up.railway.app", "https://www.linkups.com.au"})
 public class AuthController {
 
     @Autowired
@@ -176,7 +176,7 @@ public class AuthController {
                         " (ID: " + newUser.getId() + ") - Verification email sent");
 
                 AuthResponse response = AuthResponse.success(
-                        "Account created successfully! Please check your email and click the verification link to activate your account."
+                        "Account created successfully!! Please check your email and click the verification link to activate your account."
                 );
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
