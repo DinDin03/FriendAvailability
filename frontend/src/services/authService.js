@@ -69,23 +69,28 @@ class AuthService {
   // Get current user from backend
   async getCurrentUser() {
     try {
+      console.log('📡 Getting current user from backend...');
       const response = await api.get(API_ENDPOINTS.AUTH.CURRENT_USER);
-      
-      if (response.success) {
-        this.currentUser = response.user;
+
+      console.log('📦 Backend response:', response);
+
+      // Your backend returns the user object directly, not wrapped in a success object
+      if (response) {
+        this.currentUser = response;
         this.isAuthenticated = true;
-        
+
         // Update localStorage
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('user', JSON.stringify(response));
         localStorage.setItem('isAuthenticated', 'true');
-        
-        return response.user;
+
+        console.log('✅ Current user loaded:', response);
+        return response;
       }
-      
-      throw new Error('Failed to get current user');
+
+      throw new Error('No user data received');
     } catch (error) {
-      console.error('Get current user error:', error);
-      this.logout(); // Clear invalid session
+      console.error('❌ Get current user error:', error);
+      await this.logout(); // Clear invalid session
       throw error;
     }
   }

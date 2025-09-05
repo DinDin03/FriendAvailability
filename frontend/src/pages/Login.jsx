@@ -70,9 +70,32 @@ export const Login = () => {
         }
     };
 
+// Replace your handleGoogleLogin function in Login.jsx with this:
+
     const handleGoogleLogin = () => {
-        // Redirect to Google OAuth endpoint
-        window.location.href = authService.getGoogleLoginUrl();
+        try {
+            console.log('🚀 Starting Google OAuth login...');
+
+            // Get the OAuth URL from authService
+            const oauthUrl = authService.getGoogleLoginUrl();
+            console.log('🔗 OAuth URL:', oauthUrl);
+
+            // Validate the URL looks correct
+            if (!oauthUrl || !oauthUrl.includes('oauth2/authorization/google')) {
+                console.error('❌ Invalid OAuth URL:', oauthUrl);
+                alert('OAuth configuration error. Please check the console.');
+                return;
+            }
+
+            console.log('✅ Redirecting to Google OAuth...');
+
+            // Redirect to Google OAuth endpoint
+            window.location.href = oauthUrl;
+
+        } catch (error) {
+            console.error('❌ Google login error:', error);
+            alert('Failed to initiate Google login. Please try again.');
+        }
     };
 
     return (
