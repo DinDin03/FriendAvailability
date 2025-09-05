@@ -26,9 +26,9 @@ public class ValidationException extends BusinessException{
     }
 
     public static ValidationException invalidDateRange(LocalDateTime start, LocalDateTime end){
-        return new ValidationException("Start time must be before end time")
+        return (ValidationException) new ValidationException("Start time must be before end time")
         .withDetail("startTime", start.toString())
-        .withDetail("endTime", end.toString())
+        .withDetail("endTime", end.toString());
     }
 
     public static ValidationException invalidPassword(String reason) {

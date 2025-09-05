@@ -19,12 +19,12 @@ public class InsufficientPermissionException extends BusinessException {
     }
 
     public static InsufficientPermissionException notCircleOwner(Long circleId) {
-        return new InsufficientPermissionException("Only the circle owner can perform this action")
+        return (InsufficientPermissionException) new InsufficientPermissionException("Only the circle owner can perform this action")
             .withDetail("circleId", circleId);
     }
 
     public static InsufficientPermissionException notFriends(Long userId1, Long userId2) {
-        return new InsufficientPermissionException("Users must be friends to perform this action")
+        return (InsufficientPermissionException) new InsufficientPermissionException("Users must be friends to perform this action")
             .withDetail("userId1", userId1)
             .withDetail("userId2", userId2);
     }

@@ -29,39 +29,39 @@ export const Login = () => {
 
     const validateForm = () => {
         const newErrors = {};
-        
+
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Email is invalid';
         }
-        
+
         if (!formData.password) {
             newErrors.password = 'Password is required';
         }
-        
+
         return newErrors;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const newErrors = validateForm();
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
-        
+
         setIsSubmitting(true);
         setErrors({});
-        
+
         try {
             const response = await authService.login(formData.email, formData.password);
             console.log('Login successful:', response);
-            
+
             // Redirect to dashboard or home page
             navigate('/dashboard');
-            
+
         } catch (error) {
             console.error('Login failed:', error);
             setErrors({ submit: error.message || 'Login failed. Please check your credentials.' });
@@ -70,9 +70,32 @@ export const Login = () => {
         }
     };
 
+// Replace your handleGoogleLogin function in Login.jsx with this:
+
     const handleGoogleLogin = () => {
-        // Redirect to Google OAuth endpoint
-        window.location.href = authService.getGoogleLoginUrl();
+        try {
+            console.log('🚀 Starting Google OAuth login...');
+
+            // Get the OAuth URL from authService
+            const oauthUrl = authService.getGoogleLoginUrl();
+            console.log('🔗 OAuth URL:', oauthUrl);
+
+            // Validate the URL looks correct
+            if (!oauthUrl || !oauthUrl.includes('oauth2/authorization/google')) {
+                console.error('❌ Invalid OAuth URL:', oauthUrl);
+                alert('OAuth configuration error. Please check the console.');
+                return;
+            }
+
+            console.log('✅ Redirecting to Google OAuth...');
+
+            // Redirect to Google OAuth endpoint
+            window.location.href = oauthUrl;
+
+        } catch (error) {
+            console.error('❌ Google login error:', error);
+            alert('Failed to initiate Google login. Please try again.');
+        }
     };
 
     return (

@@ -13,19 +13,19 @@ class AuthService {
         email,
         password
       });
-      
+
       if (response.success) {
         this.currentUser = response.user;
         this.isAuthenticated = true;
-        
+
         // Store user data in localStorage for persistence
         localStorage.setItem('user', JSON.stringify(response.user));
         localStorage.setItem('isAuthenticated', 'true');
-        
+
         console.log('Login successful:', response.user);
         return response;
       }
-      
+
       throw new Error(response.message || 'Login failed');
     } catch (error) {
       console.error('Login error:', error);
@@ -37,12 +37,12 @@ class AuthService {
   async register(userData) {
     try {
       const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, userData);
-      
+
       if (response.success) {
         console.log('Registration successful:', response);
         return response;
       }
-      
+
       throw new Error(response.message || 'Registration failed');
     } catch (error) {
       console.error('Registration error:', error);
@@ -69,23 +69,28 @@ class AuthService {
   // Get current user from backend
   async getCurrentUser() {
     try {
+      console.log('📡 Getting current user from backend...');
       const response = await api.get(API_ENDPOINTS.AUTH.CURRENT_USER);
-      
-      if (response.success) {
-        this.currentUser = response.user;
+
+      console.log('📦 Backend response:', response);
+
+      // Your backend returns the user object directly, not wrapped in a success object
+      if (response) {
+        this.currentUser = response;
         this.isAuthenticated = true;
-        
+
         // Update localStorage
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('user', JSON.stringify(response));
         localStorage.setItem('isAuthenticated', 'true');
-        
-        return response.user;
+
+        console.log('✅ Current user loaded:', response);
+        return response;
       }
-      
-      throw new Error('Failed to get current user');
+
+      throw new Error('No user data received');
     } catch (error) {
-      console.error('Get current user error:', error);
-      this.logout(); // Clear invalid session
+      console.error('❌ Get current user error:', error);
+      await this.logout(); // Clear invalid session
       throw error;
     }
   }
@@ -145,7 +150,7 @@ class AuthService {
   initializeAuth() {
     const storedUser = localStorage.getItem('user');
     const storedAuth = localStorage.getItem('isAuthenticated');
-    
+
     if (storedUser && storedAuth === 'true') {
       try {
         this.currentUser = JSON.parse(storedUser);
@@ -170,7 +175,7 @@ class AuthService {
 
   // Google OAuth login URL
   getGoogleLoginUrl() {
-    return `${window.location.origin}${API_ENDPOINTS.AUTH.OAUTH_GOOGLE}`;
+    return `http://localhost:8080${API_ENDPOINTS.AUTH.OAUTH_GOOGLE}`;
   }
 }
 

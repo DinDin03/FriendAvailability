@@ -7,12 +7,12 @@ const handleResponse = async (response) => {
     const error = await response.text();
     throw new Error(`HTTP ${response.status}: ${error}`);
   }
-  
+
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return await response.json();
   }
-  
+
   return await response.text();
 };
 
@@ -24,12 +24,13 @@ class ApiService {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
+
     const config = {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+      credentials: 'include',
       ...options,
     };
 
