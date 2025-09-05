@@ -170,7 +170,7 @@ class AuthService {
 
   // Google OAuth login URL
   getGoogleLoginUrl() {
-    return `${window.location.origin}${API_ENDPOINTS.AUTH.OAUTH_GOOGLE}`;
+    return `http://localhost:8080${API_ENDPOINTS.AUTH.OAUTH_GOOGLE}`;
   }
 }
 
