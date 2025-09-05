@@ -85,15 +85,14 @@ public class SecurityConfig {
 
                                                 .anyRequest().authenticated())
                                 .formLogin(form -> form
-                                                .loginPage("/index.html")
-                                                .defaultSuccessUrl("/dashboard.html", true)
-                                                .permitAll())
+                                        .loginPage("/index.html")
+                                        .defaultSuccessUrl("http://localhost:5173/dashboard", true)
+                                        .permitAll())
                                 .oauth2Login(oauth2 -> oauth2
-                                                .successHandler(new SimpleUrlAuthenticationSuccessHandler(
-                                                                "/pages/dashboard.html"))
-                                                .failureUrl("/index.html?error=login_failed")
-                                                .userInfoEndpoint(userInfo -> userInfo
-                                                                .oidcUserService(customOAuth2UserService)))
+                                .successHandler(new SimpleUrlAuthenticationSuccessHandler("http://localhost:5173/dashboard"))
+                                .failureUrl("http://localhost:5173/login?error=oauth_failed") 
+                                .userInfoEndpoint(userInfo -> userInfo
+                                        .oidcUserService(customOAuth2UserService)))
                                 .logout(logout -> logout
                                                 .logoutUrl("/logout")
                                                 .logoutSuccessUrl("/index.html")
