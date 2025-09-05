@@ -35,73 +35,52 @@ public class SecurityConfig {
                 System.out.println("Configuring SecurityFilterChain with custom OAuth2 service");
 
                 http
-                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                                .csrf(AbstractHttpConfigurer::disable)
-                                .authorizeHttpRequests(authz -> authz
-                                                // Static resources and public pages
-                                                .requestMatchers(
-                                                                "/",
-                                                                "/index.html",
-                                                                "/style.css",
-                                                                "/app.js",
-                                                                "/default-ui.css",
-                                                                "/favicon.ico",
-                                                                "/css/**",
-                                                                "/js/**",
-                                                                "/websocket-test.html",
-                                                                "/ws/**",
-                                                                "/api/chat/**",
-                                                                "/chat-test.html",
-                                                                "/circle-test.html",
-                                                                "/api/circles/**", 
-                                                                "/api/friends/**",
-                                                                "/api/users/**")
-                                                .permitAll()
+                        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                        .csrf(AbstractHttpConfigurer::disable)
+                        .authorizeHttpRequests(authz -> authz
+                                // API endpoints that don't require authentication
+                                .requestMatchers("/api/auth/**").permitAll()
 
-                                                .requestMatchers(
-                                                                "/email/**", // All email directory files
-                                                                "/check-email.html", // Redirect after registration
-                                                                "/email/check-email.html",
-                                                                "/email/email-verified.html",
-                                                                "/email/email-verification-failed.html")
-                                                .permitAll()
+                                // OAuth2 endpoints
+                                .requestMatchers("/oauth2/**", "/login/**").permitAll()
 
-                                                .requestMatchers(
-                                                                "/pages/auth/reset-password.html",
-                                                                "/pages/auth/**")
-                                                .permitAll()
+                                // WebSocket endpoints
+                                .requestMatchers("/ws/**", "/api/chat/**").permitAll()
 
-                                                // Authentication endpoints
-                                                .requestMatchers("/api/auth/**").permitAll()
+                                // Friends and users endpoints
+                                .requestMatchers("/api/friends/**", "/api/users/**").permitAll()
+                                .requestMatchers("/api/circles/**").permitAll()
 
-                                                // OAuth2 endpoints
-                                                .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                                // Email verification endpoints
+                                .requestMatchers("/api/email/**").permitAll()
 
-                                                // Dashboard requires authentication
-                                                .requestMatchers("/dashboard.html").authenticated()
+                                // Health check and actuator endpoints
+                                .requestMatchers("/actuator/**").permitAll()
 
-                                                // All other API endpoints require authentication
-                                                .requestMatchers("/api/**").authenticated()
+                                // All other API endpoints require authentication
+                                .requestMatchers("/api/**").authenticated()
 
-                                                .anyRequest().authenticated())
-                                .formLogin(form -> form
-                                                .loginPage("/index.html")
-                                                .defaultSuccessUrl("/dashboard.html", true)
-                                                .permitAll())
-                                .oauth2Login(oauth2 -> oauth2
-                                                .successHandler(new SimpleUrlAuthenticationSuccessHandler(
-                                                                "/pages/dashboard.html"))
-                                                .failureUrl("/index.html?error=login_failed")
-                                                .userInfoEndpoint(userInfo -> userInfo
-                                                                .oidcUserService(customOAuth2UserService)))
-                                .logout(logout -> logout
-                                                .logoutUrl("/logout")
-                                                .logoutSuccessUrl("/index.html")
-                                                .invalidateHttpSession(true)
-                                                .clearAuthentication(true)
-                                                .deleteCookies("JSESSIONID"))
-                                .addFilterBefore(sessionAuthenticationFilter(),
-                                                UsernamePasswordAuthenticationFilter.class);
+                                // Everything else requires authentication
+                                .anyRequest().authenticated())
+
+                        // Remove formLogin entirely
+                        // .formLogin() is not needed for API-only backend
+
+                        .oauth2Login(oauth2 -> oauth2
+                                .successHandler(new SimpleUrlAuthenticationSuccessHandler("http://localhost:5173/dashboard"))
+                                .failureUrl("http://localhost:5173/login?error=oauth_failed")
+                                .userInfoEndpoint(userInfo -> userInfo
+                                        .oidcUserService(customOAuth2UserService)))
+
+                        .logout(logout -> logout
+                                .logoutUrl("/logout")
+                                .logoutSuccessUrl("http://localhost:5173/") // Redirect to React home page
+                                .invalidateHttpSession(true)
+                                .clearAuthentication(true)
+                                .deleteCookies("JSESSIONID"))
+
+                        .addFilterBefore(sessionAuthenticationFilter(),
+                                UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
         }
@@ -110,12 +89,13 @@ public class SecurityConfig {
         public CorsConfigurationSource corsConfigurationSource() {
                 CorsConfiguration configuration = new CorsConfiguration();
                 configuration.setAllowedOrigins(List.of(
-                                "http://localhost:8080",
-                                "http://127.0.0.1:8080",
-                                "http://localhost:5173",  // Vite dev server
-                                "http://127.0.0.1:5173",  // Vite dev server alternative
-                                "https://friendavailability-production.up.railway.app",
-                                "https://www.linkups.com.au"
+                        "http://localhost:8080",
+                        "http://127.0.0.1:8080",
+                        "http://localhost:5173",  // Vite dev server
+                        "http://localhost:5174",  // Vite dev server
+                        "http://127.0.0.1:5173",  // Vite dev server alternative
+                        "https://friendavailability-production.up.railway.app",
+                        "https://www.linkups.com.au"
 
                 ));
 
