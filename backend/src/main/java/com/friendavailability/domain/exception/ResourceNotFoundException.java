@@ -30,4 +30,8 @@ public class ResourceNotFoundException extends BusinessException{
     public ResourceNotFoundException(String message, Throwable cause) {
         super(message, "RESOURCE_NOT_FOUND", HttpStatus.NOT_FOUND, cause);
     }
+
+    public static ResourceNotFoundException userEmailNotFound(String email){
+        return new ResourceNotFoundException("Email", "Email not found");
+    }
 }

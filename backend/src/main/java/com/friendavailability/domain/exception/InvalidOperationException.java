@@ -25,4 +25,5 @@ public class InvalidOperationException extends BusinessException {
             .withDetail("userId", userId)
             .withDetail("circleId", circleId);
     }
+    public static InvalidOperationException googleUserUsingPassword(Long userId)
 }
