@@ -98,5 +98,14 @@ public class ValidationException extends BusinessException {
     public static ValidationException invalidPassword(String reason) {
         return new ValidationException("password", "Invalid password: " + reason);
     }
+    
+    public static ValidationException invalidUserId(Long userId) {
+        return (ValidationException) new ValidationException("userId", "Invalid user ID provided")
+                .withDetail("providedValue", userId);
+    }
+
+    public static ValidationException noUserDataToUpdate() {
+        return new ValidationException("request", "No valid user data provided for update");
+    }
 
 }
