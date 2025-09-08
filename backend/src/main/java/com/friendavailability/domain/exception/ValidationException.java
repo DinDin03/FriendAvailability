@@ -3,6 +3,7 @@ package com.friendavailability.domain.exception;
 import org.springframework.http.HttpStatus;
 import java.time.LocalDateTime;
 
+
 public class ValidationException extends BusinessException {
 
     public ValidationException(String message) {
@@ -56,6 +57,34 @@ public class ValidationException extends BusinessException {
                 .withDetail("actualLength", actualLength);
     }
 
+
+    public static ValidationException loginWithUnverifiedEmail(String email) {
+        return (ValidationException) new ValidationException("email",
+                "Please verify your email before logging in. Check your inbox for the verification link.")
+                .withDetail("email", email)
+                .withDetail("suggestion", "Check your spam folder if you don't see the verification email");
+    }
+    public static ValidationException loginWithDisabledAccount(String email) {
+        return (ValidationException) new ValidationException("account",
+                "Your account has been disabled. Please contact support for assistance.")
+                .withDetail("email", email)
+                .withDetail("suggestion", "Contact support to reactivate your account");
+    }
+
+
+    public static ValidationException incorrectCredentials() {
+        return new ValidationException("credentials",
+                "Invalid email or password. Please check your credentials and try again.");
+    }
+
+    public static ValidationException passwordTooWeak() {
+        return (ValidationException) new ValidationException("password",
+                "Password is too weak. Please choose a stronger password.")
+                .withDetail("requirements", "Include uppercase, lowercase, numbers, and special characters")
+                .withDetail("suggestion", "Try a passphrase with mixed characters");
+    }
+
+
     public static ValidationException invalidFieldValue(String fieldName, String reason) {
         return new ValidationException(fieldName, reason);
     }
@@ -69,4 +98,5 @@ public class ValidationException extends BusinessException {
     public static ValidationException invalidPassword(String reason) {
         return new ValidationException("password", "Invalid password: " + reason);
     }
+
 }
