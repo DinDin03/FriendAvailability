@@ -12,92 +12,53 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    const [user, setUser] = useState(authService.getUser());
+    const [isAuthenticated, setIsAuthenticated] = useState(authService.isUserAuthenticated());
     const [isLoading, setIsLoading] = useState(true);
 
-    // Initialize auth state on app load
     useEffect(() => {
-        initializeAuth();
-    }, []);
-
-    const initializeAuth = async () => {
+        const initializeAuth = async () => {
         try {
-            // Check if user is stored in localStorage
-            const storedUser = localStorage.getItem('user');
-            const storedAuth = localStorage.getItem('isAuthenticated');
-            
-            if (storedUser && storedAuth === 'true') {
-                const userData = JSON.parse(storedUser);
-                setUser(userData);
+            // Ask authService to restore state from localStorage
+            authService.initializeAuth();
+
+            if (authService.isUserAuthenticated()) {
+            try {
+                const currentUser = await authService.getCurrentUser();
+                setUser(currentUser);
                 setIsAuthenticated(true);
-                
-                // Optionally verify with backend
-                try {
-                    const currentUser = await authService.getCurrentUser();
-                    setUser(currentUser);
-                } catch (error) {
-                    console.log('Token expired or invalid, logging out');
-                    logout();
-                }
+            } catch (error) {
+                console.log('Token invalid, logging out');
+                await logout();
             }
-        } catch (error) {
-            console.error('Auth initialization error:', error);
-            logout();
+            }
         } finally {
             setIsLoading(false);
         }
-    };
+        };
+
+        initializeAuth();
+    }, []);
 
     const login = async (email, password) => {
-        try {
-            const response = await authService.login(email, password);
-            
-            if (response.success) {
-                setUser(response.user);
-                setIsAuthenticated(true);
-                return { success: true, user: response.user };
-            } else {
-                throw new Error(response.message || 'Login failed');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            throw error;
-        }
+        const response = await authService.login(email, password);
+        setUser(authService.getUser());
+        setIsAuthenticated(authService.isUserAuthenticated());
+        return response;
     };
 
-    const register = async (userData) => {
-        try {
-            const response = await authService.register(userData);
-            
-            if (response.success) {
-                // Don't auto-login after registration, let user verify email first
-                return { success: true, message: response.message };
-            } else {
-                throw new Error(response.message || 'Registration failed');
-            }
-        } catch (error) {
-            console.error('Registration error:', error);
-            throw error;
-        }
-    };
+    const register = (userData) => authService.register(userData);
 
     const logout = async () => {
-        try {
-            await authService.logout();
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            setUser(null);
-            setIsAuthenticated(false);
-            localStorage.removeItem('user');
-            localStorage.removeItem('isAuthenticated');
-        }
+        await authService.logout();
+        setUser(null);
+        setIsAuthenticated(false);
     };
 
     const updateUser = (updatedUser) => {
         setUser(updatedUser);
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+        localStorage.setItem('user', JSON.stringify(updatedUser)); // still needed for persistence
     };
 
     const value = {
@@ -107,13 +68,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        updateUser,
-        initializeAuth
+        updateUser
     };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
-};
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    };

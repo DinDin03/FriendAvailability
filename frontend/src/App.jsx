@@ -1,21 +1,25 @@
+import { AuthProvider } from "@/contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home } from "./pages/Home";
-import { Login } from "./pages/Login";
-import Dashboard from "./pages/Dashboard"; // Add this import
+import { Dashboard } from './pages/Dashboard';
+import { Toaster } from 'react-hot-toast';
 import './App.css'
 
 function App() {
-    return (
-        <div>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/dashboard" element={<Dashboard />} /> {/* Add this route */}
-                </Routes>
-            </BrowserRouter>
-        </div>
-    );
+  return (
+    <div>
+      <AuthProvider>
+        <Toaster position="bottom-right"/>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />}></Route>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+
+    </div>
+  );
 }
 
 export default App
