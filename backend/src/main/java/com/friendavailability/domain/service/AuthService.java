@@ -17,6 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -28,11 +31,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final GoogleJwtVerificationService googleJwtVerificationService;
 
-    public AuthService(UserRepository userRepository, UserService userService, PasswordEncoder passwordEncoder){
+    public AuthService(UserRepository userRepository, UserService userService, PasswordEncoder passwordEncoder,
+                       GoogleJwtVerificationService googleJwtVerificationService){
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.googleJwtVerificationService = googleJwtVerificationService;
     }
 
    public User authenticateAndLogin(AuthRequest loginRequest, HttpServletRequest httpRequest){
@@ -253,4 +259,38 @@ public class AuthService {
         return password != null && password.length() >= 8;
     }
 
+    public User authenticateWithGoogleJwt(String credential, HttpServletRequest request) {
+        GoogleJwtVerificationService.GoogleUserInfo userInfo = googleJwtVerificationService.verifyToken(credential);
+
+        User user = processGoogleUser(userInfo.getGoogleId(), userInfo.getEmail(), userInfo.getName());
+
+        createUserSession(request, user);
+
+        return user;
+    }
+
+    private User processGoogleUser(String googleId, String email, String name) {
+        Optional<User> userByGoogleId = userService.findUserByGoogleId(googleId);
+        if (userByGoogleId.isPresent()) {
+            return userByGoogleId.get();
+        }
+
+        Optional<User> userByEmail = userService.findUserByEmail(email);
+        if (userByEmail.isPresent()) {
+            User user = userByEmail.get();
+            if (user.getGoogleId() == null) {
+                return userService.linkGoogleAccount(user.getId(), googleId).orElse(user);
+            }
+            return user;
+        }
+
+        return userService.createUserWithGoogle(name, email, googleId);
+    }
+
+    private void createUserSession(HttpServletRequest request, User user) {
+        HttpSession session = request.getSession(true);
+        session.setAttribute("authenticated", true);
+        session.setAttribute("user_id", user.getId());
+        session.setAttribute("user_email", user.getEmail());
+    }
 }

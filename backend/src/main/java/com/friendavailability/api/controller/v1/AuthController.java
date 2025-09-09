@@ -4,10 +4,7 @@ import com.friendavailability.api.dto.request.auth.AuthRequest;
 import com.friendavailability.api.dto.response.auth.AuthResponse;
 import com.friendavailability.api.dto.response.auth.UserDto;
 import com.friendavailability.domain.entity.User;
-import com.friendavailability.domain.service.EmailService;
-import com.friendavailability.domain.service.EmailVerificationService;
-import com.friendavailability.domain.service.UserService;
-import com.friendavailability.domain.service.AuthService;
+import com.friendavailability.domain.service.*;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,15 +33,30 @@ public class AuthController {
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
     private final EmailService emailService;
+    private final GoogleJwtVerificationService googleJwtVerificationService;
+
 
     public AuthController(UserService userService,
                           AuthService authService,
                           EmailVerificationService emailVerificationService,
-                          EmailService emailService) {
+                          EmailService emailService,
+                          GoogleJwtVerificationService googleJwtVerificationService) {
         this.userService = userService;
         this.authService = authService;
         this.emailVerificationService = emailVerificationService;
         this.emailService = emailService;
+        this.googleJwtVerificationService = googleJwtVerificationService;
+    }
+    @PostMapping("/google-signin")
+    public ResponseEntity<UserDto> googleSignin(@RequestBody Map<String,String> request, HttpServletRequest httpRequest){
+        log.info("Processing Google JWT signin request");
+
+        String credential = request.get("credential");
+        User authenticatedUser = authService.authenticateWithGoogleJwt(credential, httpRequest);
+        UserDto userDto = UserDto.fromUser(authenticatedUser);
+
+        log.info("Google JWT signin successful for user: {}", authenticatedUser.getId());
+        return ResponseEntity.ok(userDto);
     }
 
     @PostMapping("/login")

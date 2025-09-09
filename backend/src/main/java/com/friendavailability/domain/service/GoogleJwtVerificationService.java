@@ -1,10 +1,12 @@
 package com.friendavailability.domain.service;
 
+import com.friendavailability.domain.exception.GoogleAuthenticationException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 
 @Service
+@Slf4j
 public class GoogleJwtVerificationService {
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
@@ -24,20 +27,29 @@ public class GoogleJwtVerificationService {
         this.verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
                 GsonFactory.getDefaultInstance())
+                .setAudience(Collections.singletonList(googleClientId))
                 .build();
     }
 
-    public GoogleUserInfo verifyToken(String tokenString) throws GeneralSecurityException, IOException {
-        System.out.println("Verifying Google JWT token");
+    public GoogleUserInfo verifyToken(String tokenString) {
+        if (tokenString == null || tokenString.trim().isEmpty()) {
+            throw GoogleAuthenticationException.missingCredential();
+        }
 
-        GoogleIdToken idToken = verifier.verify(tokenString);
+        log.info("Verifying Google JWT token");
 
-        if (idToken != null) {
+        try {
+            GoogleIdToken idToken = verifier.verify(tokenString);
+
+            if (idToken == null) {
+                throw GoogleAuthenticationException.invalidToken();
+            }
+
             GoogleIdToken.Payload payload = idToken.getPayload();
 
-            // Verify the client id
+            // Verify audience (client ID)
             if (!payload.getAudience().equals(googleClientId)) {
-                throw new IllegalArgumentException("Invalid token audience");
+                throw GoogleAuthenticationException.invalidAudience(googleClientId, payload.getAudience().toString());
             }
 
             String googleId = payload.getSubject();
@@ -45,18 +57,18 @@ public class GoogleJwtVerificationService {
             String name = (String) payload.get("name");
             Boolean emailVerified = payload.getEmailVerified();
 
-            System.out.println("JWT verification successful for user: " + email);
+            log.info("JWT verification successful for user: {}", email);
 
             return new GoogleUserInfo(googleId, email, name, emailVerified);
 
-        } else {
-            throw new IllegalArgumentException("Invalid token");
+        } catch (GeneralSecurityException | IOException e) {
+            throw GoogleAuthenticationException.tokenVerificationFailed(e.getMessage());
         }
     }
 
     @Getter
     public static class GoogleUserInfo {
-        // Getters
+
         private final String googleId;
         private final String email;
         private final String name;
