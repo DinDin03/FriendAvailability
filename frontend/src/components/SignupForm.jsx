@@ -161,7 +161,7 @@ export const SignupForm = ({ onClose }) => {
 
                 <GoogleLogin
                     onSuccess={(credentialResponse) => {
-                        console.log(credentialResponse)
+                        console.log(credentialResponse.clientId)
                         // send token to backend
                         navigate("/dashboard")
                     }}
