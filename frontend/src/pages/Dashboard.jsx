@@ -26,7 +26,7 @@ export const Dashboard = () => {
                     l
                 </div>
                 <div className='w-2/4 bg-blue-400'>
-                    r
+                    right
                     <div className='h-1/4 bg-purple-400'>
 
                     </div>
