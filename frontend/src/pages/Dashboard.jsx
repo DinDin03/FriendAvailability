@@ -21,7 +21,7 @@ export const Dashboard = () => {
     return (
         <>
             <div className='h-screen flex'>
-                {/* LEFT */}
+                {/* LEF */}
                 <div className='w-1/4 bg-red-500'>
                     l
                 </div>
