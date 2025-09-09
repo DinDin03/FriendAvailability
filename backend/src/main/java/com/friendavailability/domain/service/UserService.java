@@ -2,7 +2,7 @@ package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +13,15 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
-
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public UserService(UserRepository userRepository){
+        this.userRepository = userRepository;
+    }
 
     public User createUser(String name, String email) {
         System.out.println("Creating user: name=" + name + ", email=" + email);

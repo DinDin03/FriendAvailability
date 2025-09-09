@@ -5,6 +5,7 @@ import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.repository.EmailVerificationTokenRepository;
 import com.friendavailability.domain.repository.UserRepository;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,17 +15,46 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@Slf4j
 public class EmailVerificationService {
 
     private final EmailVerificationTokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     public EmailVerificationService(
             EmailVerificationTokenRepository tokenRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            EmailService emailService) {
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
+        this.emailService = emailService;
     }
+
+    public boolean setupAndSendVerification(User user) {
+        log.info("Setting up email verification for user: {}", user.getEmail());
+
+        try {
+            // Create verification token
+            String verificationToken = createVerificationToken(user);
+
+            // Send verification email
+            boolean emailSent = emailService.sendVerificationEmail(user, verificationToken);
+
+            if (emailSent) {
+                log.info("Verification email sent successfully to: {}", user.getEmail());
+            } else {
+                log.warn("Failed to send verification email to: {}", user.getEmail());
+            }
+
+            return emailSent;
+
+        } catch (Exception e) {
+            log.error("Error setting up verification for user {}: {}", user.getEmail(), e.getMessage(), e);
+            return false;
+        }
+    }
+
 
     public String createVerificationToken(User user) {
         if (user == null) {
@@ -49,7 +79,7 @@ public class EmailVerificationService {
                 tokenRepository.findFirstByUserAndUsedFalseAndExpiresAtAfterOrderByCreatedAtDesc(user, now);
 
         if (existingToken.isPresent()) {
-            System.out.println("User " + user.getEmail() + " already has valid verification token");
+            log.debug("User {} already has valid verification token", user.getEmail());
             return existingToken.get().getToken();
         }
 
@@ -57,7 +87,7 @@ public class EmailVerificationService {
 
         while (tokenRepository.findByToken(tokenValue).isPresent()) {
             tokenValue = UUID.randomUUID().toString();
-            System.out.println("Token collision detected, generating new token");
+            log.debug("Token collision detected, generating new token");
         }
 
         EmailVerificationToken token = EmailVerificationToken.builder()
@@ -70,8 +100,7 @@ public class EmailVerificationService {
 
         EmailVerificationToken savedToken = tokenRepository.save(token);
 
-        System.out.println("Created verification token for user: " + user.getEmail() +
-                " (Token ID: " + savedToken.getId() + ")");
+        log.info("Created verification token for user: {} (Token ID: {})", user.getEmail(), savedToken.getId());
 
         return tokenValue;
     }
@@ -84,7 +113,7 @@ public class EmailVerificationService {
         Optional<EmailVerificationToken> tokenOpt = tokenRepository.findByToken(tokenValue.trim());
 
         if (tokenOpt.isEmpty()) {
-            System.out.println("Verification attempted with non-existent token: " + tokenValue);
+            log.warn("Verification attempted with non-existent token: {}", tokenValue);
             return VerificationResult.failure("Verification token not found. The link may be invalid or expired.");
         }
 
@@ -92,17 +121,17 @@ public class EmailVerificationService {
         User user = token.getUser();
 
         if (user.getEmailVerified()) {
-            System.out.println("Verification attempted for already verified user: " + user.getEmail());
+            log.debug("Verification attempted for already verified user: {}", user.getEmail());
             return VerificationResult.success("Email is already verified", user);
         }
 
         if (token.isUsed()) {
-            System.out.println("Verification attempted with already used token for user: " + user.getEmail());
+            log.warn("Verification attempted with already used token for user: {}", user.getEmail());
             return VerificationResult.failure("This verification link has already been used. Please request a new verification email if needed.");
         }
 
         if (token.isExpired()) {
-            System.out.println("Verification attempted with expired token for user: " + user.getEmail());
+            log.warn("Verification attempted with expired token for user: {}", user.getEmail());
             return VerificationResult.failure("This verification link has expired. Please request a new verification email.");
         }
 
@@ -114,13 +143,12 @@ public class EmailVerificationService {
             token.markAsUsed();
             tokenRepository.save(token);
 
-            System.out.println("Email verification successful for user: " + user.getEmail() +
-                    " (User ID: " + user.getId() + ")");
+            log.info("Email verification successful for user: {} (User ID: {})", user.getEmail(), user.getId());
 
             return VerificationResult.success("Email verified successfully! You can now log in to your account.", user);
 
         } catch (Exception e) {
-            System.err.println("Error during email verification for user: " + user.getEmail() + " - " + e.getMessage());
+            log.error("Error during email verification for user: {} - {}", user.getEmail(), e.getMessage(), e);
             return VerificationResult.failure("An error occurred during verification. Please try again or contact support.");
         }
     }
@@ -162,7 +190,7 @@ public class EmailVerificationService {
         int deletedCount = tokenRepository.deleteExpiredTokens(now);
 
         if (deletedCount > 0) {
-            System.out.println("Cleaned up " + deletedCount + " expired verification tokens");
+            log.info("Cleaned up {} expired verification tokens", deletedCount);
         }
 
         return deletedCount;
@@ -179,10 +207,11 @@ public class EmailVerificationService {
 
         String tokenValue = createVerificationToken(user);
 
-        System.out.println("Resending verification email for user: " + user.getEmail());
+        log.info("Resending verification email for user: {}", user.getEmail());
 
         return tokenValue;
     }
+
 
     @Getter
     public static class VerificationResult {
@@ -214,13 +243,13 @@ public class EmailVerificationService {
                                      LocalDateTime tokenExpiresAt, String message) {
 
         @Override
-            public String toString() {
-                return "VerificationStatus{" +
-                        "isVerified=" + isVerified +
-                        ", hasPendingToken=" + hasPendingToken +
-                        ", tokenExpiresAt=" + tokenExpiresAt +
-                        ", message='" + message + '\'' +
-                        '}';
-            }
+        public String toString() {
+            return "VerificationStatus{" +
+                    "isVerified=" + isVerified +
+                    ", hasPendingToken=" + hasPendingToken +
+                    ", tokenExpiresAt=" + tokenExpiresAt +
+                    ", message='" + message + '\'' +
+                    '}';
         }
+    }
 }

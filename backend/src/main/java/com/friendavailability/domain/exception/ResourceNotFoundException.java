@@ -39,11 +39,6 @@ public class ResourceNotFoundException extends BusinessException {
                 .withDetail("suggestion", "Please check your email address or register for a new account");
     }
 
-    public static ResourceNotFoundException userNotFound(Long userId) {
-        return new ResourceNotFoundException("User", userId);
-    }
-
-
     public static ResourceNotFoundException noAuthenticatedUser() {
         return (ResourceNotFoundException) new ResourceNotFoundException(
                 "No authenticated user found. Please log in to continue.")
@@ -54,5 +49,10 @@ public class ResourceNotFoundException extends BusinessException {
         return (ResourceNotFoundException) new ResourceNotFoundException("User", googleId)
                 .withDetail("authProvider", "Google")
                 .withDetail("suggestion", "This Google account is not linked to any user account");
+    }
+
+    public static ResourceNotFoundException userNotFound(Long userId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException("User", userId)
+                .withDetail("suggestion", "Please verify the user ID and try again");
     }
 }
