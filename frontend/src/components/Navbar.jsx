@@ -1,0 +1,142 @@
+import {cn} from '@/lib/utils'
+import Logo from '@/assets/logo.png'
+import { Menu, X, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { SignupForm } from '@/components/SignupForm.jsx';
+import { LoginForm } from '@/components/LoginForm.jsx'
+
+const navItems = [
+    {name: "Log In", href: "/login"},
+    {name: "Sign Up", href: "/signup"},
+];
+
+export const Navbar = () => {
+    const [isScrolled, setIsScrolled] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+    const [isLoginOpen, setIsLoginOpen] = useState(false);
+    
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 10)
+        }
+
+        window.addEventListener("scroll", handleScroll)
+        return () => window.removeEventListener("scroll", handleScroll)
+    }, []);
+
+    useEffect(() => {
+        if (isSignUpOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isSignUpOpen]);
+
+    return (
+        <>
+
+        {/* Sign up module */}
+            <div 
+                className={cn(
+                    "fixed inset-0 bg-gray-500/50 backdrop-blur-md z-[60] flex flex-col items-center justify-center",
+                    "transition-all duration-300",
+                    isSignUpOpen 
+                        ? "opacity-100 pointer-events-auto" 
+                        : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setIsSignUpOpen(false)}
+            >
+                <SignupForm onClose={() => setIsSignUpOpen(false)}/>
+            </div>
+        
+        {/* Login module */}
+            <div 
+                className={cn(
+                    "fixed inset-0 bg-gray-500/50 backdrop-blur-md z-[60] flex flex-col items-center justify-center",
+                    "transition-all duration-300",
+                    isLoginOpen 
+                        ? "opacity-100 pointer-events-auto" 
+                        : "opacity-0 pointer-events-none"
+                )}
+                onClick={() => setIsLoginOpen(false)}
+            >
+                <LoginForm onClose={() => setIsLoginOpen(false)}/>
+            </div>
+
+            <nav
+                className={cn(
+                    "bg-white fixed w-full z-50 transition-all duration-300", 
+                    isScrolled ? "py-3 bg-background/80 backdrop-blur-md shadow-xs" : "py-4.5"
+                )}
+            >
+                <div className="container flex items-center justify-between">
+                    <a
+                        className="flex items-center"
+                        href="#hero"
+                    >
+                        <span className="relative flex items-center z-10">
+                            <img src={Logo} alt="Logo" className="lg:size-18 size-10" />
+                            <span className="lg:text-3xl text-xl font-bold text-primary transition-colors">Link Up</span>
+                        </span>
+                    </a>
+
+                    {/* desktop nav */}
+                    <div className="hidden md:flex space-x-18 items-center">
+                            <a
+                                onClick={() => setIsLoginOpen((prev) => !prev)}
+                                className="font-semibold tracking-wide text-foreground hover:text-neutral-700 
+                                            hover:cursor-pointer transition-colors duration-300"
+                            >
+                                Log In
+                            </a>
+                            <button
+                                onClick={() => setIsSignUpOpen((prev) => !prev)}
+                                className=" text-gray-50 button"
+                            >
+                                Sign Up
+                            </button>
+                            <Search size={24}/>
+                    </div>
+                
+                    {/* mobile nav */}
+                    <button 
+                        onClick={() => setIsMenuOpen((prev) => !prev)} 
+                        className="md:hidden p-2 text-foreground z-50"
+                        aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
+                    >
+                        {isMenuOpen ? <X size={24} className="text-primary"/> : <Menu size={24} className="text-primary"/>}
+                    </button>
+
+                    <div 
+                        className={cn(
+                            "fixed inset-0 bg-background/95 backdrop-blur-md z-40 flex flex-col items-center justify-center",
+                            "transition-all duration-300 md:hidden",
+                            isMenuOpen 
+                                ? "opacity-100 pointer-events-auto" 
+                                : "opacity-0 pointer-events-none"
+                        )}
+                    >
+                        <div className="flex flex-col space-y-8 text-xl">
+                            {navItems.map((item, key) => (
+                                <a 
+                                    key={key} 
+                                    href={item.href} 
+                                    className="text-foreground text-2xl hover:text-primary transition-colors duration-300"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    {item.name}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+
+                </div>
+            </nav>
+        </>
+    )
+}

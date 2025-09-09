@@ -29,23 +29,11 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
-### VS Code ###
-.vscode/
-
-
-*.local.properties
-application-local.properties
-application-*.properties
-*.env
-.env.*
 
 # Database credentials
-**/application-local.properties
-**/application-prod.properties
-
-# Existing content...
+# **/application-local.properties
+# **/application.properties
 
 # Local development environment files
-.env.local
-.env.development
+# .env.local
 
