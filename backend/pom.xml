@@ -57,15 +57,11 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Development Tools - Temporarily disabled to fix multiple initialization -->
-		<!--
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-devtools</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
+			<groupId>com.google.api-client</groupId>
+			<artifactId>google-api-client</artifactId>
+			<version>2.0.0</version>
 		</dependency>
-		-->
 
 		<!-- Testing Dependencies -->
 		<dependency>
