@@ -7,7 +7,6 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if .env.local exists, create if not
 if [ ! -f ".env.local" ]; then
     echo ".env.local file not found. Creating a basic one..."
     cat > .env.local << EOF
