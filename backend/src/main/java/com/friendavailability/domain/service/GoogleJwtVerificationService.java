@@ -18,12 +18,13 @@ import java.util.Collections;
 @Slf4j
 public class GoogleJwtVerificationService {
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    private String googleClientId;
-
     private final GoogleIdTokenVerifier verifier;
+    private final String googleClientId;
 
-    public GoogleJwtVerificationService() {
+    public GoogleJwtVerificationService(
+        @Value("${spring.security.oauth2.client.registration.google.client-id}") String googleClientId
+    ) {
+        this.googleClientId = googleClientId;
         this.verifier = new GoogleIdTokenVerifier.Builder(
                 new NetHttpTransport(),
                 GsonFactory.getDefaultInstance())

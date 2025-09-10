@@ -3,6 +3,7 @@ import { useSignupForm } from '@/hooks/useSignupForm'
 import { authService } from "@/services/authService";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from 'jwt-decode'
 import toast from "react-hot-toast";
 
 export const SignupForm = ({ onClose }) => {
@@ -14,6 +15,7 @@ export const SignupForm = ({ onClose }) => {
     }
 
     const handleGoogleSuccess = async (credentialResponse) => {
+        console.log(jwtDecode(credentialResponse.credential))
         const response = await fetch('/api/auth/google-signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
