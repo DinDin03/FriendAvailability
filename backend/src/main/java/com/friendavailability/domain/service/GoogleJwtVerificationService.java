@@ -22,7 +22,7 @@ public class GoogleJwtVerificationService {
     private final String googleClientId;
 
     public GoogleJwtVerificationService(
-        @Value("${spring.security.oauth2.client.registration.google.client-id}") String googleClientId
+            @Value("${spring.security.oauth2.client.registration.google.client-id}") String googleClientId
     ) {
         this.googleClientId = googleClientId;
         this.verifier = new GoogleIdTokenVerifier.Builder(
