@@ -10,10 +10,6 @@ export const SignupForm = ({ onClose }) => {
     const navigate = useNavigate();
     const { formData, errors, isSubmitting, handleInputChange, handleFormSubmit } = useSignupForm();
 
-    const handleGoogleLogin = () => {
-        window.location.href = authService.getGoogleLoginUrl();
-    }
-
     const handleGoogleSuccess = async (credentialResponse) => {
         console.log(jwtDecode(credentialResponse.credential))
         const response = await fetch('/api/auth/google-signin', {
