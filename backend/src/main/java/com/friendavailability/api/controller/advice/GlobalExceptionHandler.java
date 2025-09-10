@@ -17,7 +17,6 @@ import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
