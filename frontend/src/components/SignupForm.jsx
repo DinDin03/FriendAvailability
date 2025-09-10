@@ -3,6 +3,7 @@ import { useSignupForm } from '@/hooks/useSignupForm'
 import { authService } from "@/services/authService";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export const SignupForm = ({ onClose }) => {
     const navigate = useNavigate();
@@ -10,6 +11,30 @@ export const SignupForm = ({ onClose }) => {
 
     const handleGoogleLogin = () => {
         window.location.href = authService.getGoogleLoginUrl();
+    }
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        const response = await fetch('/api/auth/google-signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                credential: credentialResponse.credential
+            })
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+            console.log(userData)
+            navigate('/dashboard')
+        } else {
+            toast.error("Google sign-in failed. Please try again.")
+        }
+    }
+
+    const handleGoogleError = (error) => {
+        console.error("Google login failed:", error);
+        toast.error("Google sign-in failed. Please try again.")
     }
 
     return (
@@ -160,11 +185,8 @@ export const SignupForm = ({ onClose }) => {
                 </button> */}
 
                 <GoogleLogin
-                    onSuccess={(credentialResponse) => {
-                        console.log(credentialResponse)
-                        navigate("/dashboard")
-                    }}
-                    onError={() => console.log("Login failed")}
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
                 />
                 
             </div>
