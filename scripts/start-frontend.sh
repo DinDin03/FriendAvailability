@@ -8,3 +8,5 @@ echo ""
 cd ..
 cd frontend
 npm run dev
+# shellcheck disable=SC2103
+

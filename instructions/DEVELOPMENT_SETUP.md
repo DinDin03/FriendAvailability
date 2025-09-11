@@ -137,21 +137,21 @@ The backend allows requests from:
 ### Common Issues
 
 1. **CORS Errors**
-   - Ensure backend CORS includes `http://localhost:5173`
-   - Check that both servers are running
+    - Ensure backend CORS includes `http://localhost:5173`
+    - Check that both servers are running
 
 2. **Proxy Not Working**
-   - Verify Vite config has correct proxy settings
-   - Check browser network tab for request URLs
+    - Verify Vite config has correct proxy settings
+    - Check browser network tab for request URLs
 
 3. **Backend Connection Failed**
-   - Ensure Spring Boot is running on port 8080
-   - Check database connection
-   - Verify application.properties configuration
+    - Ensure Spring Boot is running on port 8080
+    - Check database connection
+    - Verify application.properties configuration
 
 4. **Frontend Build Issues**
-   - Run `npm install` in frontend directory
-   - Clear node_modules and reinstall if needed
+    - Run `npm install` in frontend directory
+    - Clear node_modules and reinstall if needed
 
 ### Debug Tips
 

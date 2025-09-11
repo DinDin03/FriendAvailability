@@ -18,7 +18,7 @@ public class UserController{
 
     public UserController(UserService userService) {
         this.userService = userService;
-        System.out.println("UserController created and connected to UserService");
+        System.out.println("UserController created and connected to UserService!");
     }
 
     @GetMapping

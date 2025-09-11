@@ -8,3 +8,4 @@ echo ""
 cd ..
 cd backend
 ./mvnw spring-boot:run
+# shellcheck disable=SC2103

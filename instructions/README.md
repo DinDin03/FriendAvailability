@@ -65,9 +65,9 @@ FriendAvailability/
    ```
 
 4. **Access the application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:8080/api
-   - H2 Database Console: http://localhost:8080/h2-console
+    - Frontend: http://localhost:5173
+    - Backend API: http://localhost:8080/api
+    - H2 Database Console: http://localhost:8080/h2-console
 
 ## Technology Stack
 
