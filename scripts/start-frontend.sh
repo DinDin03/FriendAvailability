@@ -6,7 +6,8 @@ echo "Press Ctrl+C to stop"
 echo ""
 
 # shellcheck disable=SC2164
+cd ..
 cd frontend
 npm run dev
 # shellcheck disable=SC2103
-cd ..
+
