@@ -1,34 +1,30 @@
 import { X } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext";
 import { useSignupForm } from '@/hooks/useSignupForm'
 import { authService } from "@/services/authService";
 import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from 'jwt-decode'
 import toast from "react-hot-toast";
 
 export const SignupForm = ({ onClose }) => {
+
+    const { updateUser } = useAuth();
     const navigate = useNavigate();
     const { formData, errors, isSubmitting, handleInputChange, handleFormSubmit } = useSignupForm();
 
     const handleGoogleSuccess = async (credentialResponse) => {
-        console.log(jwtDecode(credentialResponse.credential))
-        const response = await fetch('/api/auth/google-signin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-                credential: credentialResponse.credential
-            })
-        });
-
-        if (response.ok) {
-            const userData = await response.json();
-            console.log(userData)
-            navigate('/dashboard')
-        } else {
-            toast.error("Google sign-in failed. Please try again.")
+        try {
+            const userData = await authService.googleLogin(credentialResponse);
+            if (userData) {
+                updateUser(userData)
+                const userFirstName = userData.name.split(' ')[0];
+                toast.success(`Welcome back, ${userFirstName || "User"}!`);
+                navigate("/dashboard");
+            }
+        } catch (error) {
+            toast.error(error.message || "Google sign-in failed.")
         }
-    }
+    } 
 
     const handleGoogleError = (error) => {
         console.error("Google login failed:", error);
