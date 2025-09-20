@@ -113,30 +113,28 @@ public class UserService {
         return userOpt.get();
     }
 
-    public Optional<User> findUserByEmail(String email){
-        System.out.println("Finding user with Email: " + email);
-        Optional<User> user = userRepository.findByEmail(email);
+    public User findUserByEmail(String email){
+        log.debug("Finding user with email: {}", email);
 
-        if(user.isPresent()){
-            System.out.println("Found user " + user.get());
+        if(email == null || email.trim().isEmpty()){
+            log.warn("Invalid email provided");
+            throw ValidationException.requiredEmail();
         }
-        else{
-            System.out.println("User not found with email: " + email);
+
+        String normalisedEmail = email.trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findUserByEmail(normalisedEmail);
+
+        if(userOpt.isEmpty()){
+            log.warn("User not found with email: {}", normalisedEmail);
+            throw ResourceNotFoundException.userEmailNotFound(normalisedEmail);
         }
-        return user;
+
+        log.debug("Found user: {} ({})", userOpt.get().getName(), userOpt.get().getEmail());
+        return userOpt.get();
     }
 
     public Optional<User> findUserByGoogleId(String googleId) {
-        System.out.println("Finding user by Google ID: " + googleId);
-        Optional<User> user = userRepository.findByGoogleId(googleId);
-
-        if (user.isPresent()) {
-            System.out.println("Found user: " + user.get());
-        } else {
-            System.out.println("User not found with Google ID: " + googleId);
-        }
-
-        return user;
+        log.debug("")
     }
 
     public Optional<User> updateUser(Long id, String name, String email){
