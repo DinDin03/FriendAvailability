@@ -108,4 +108,11 @@ public class ValidationException extends BusinessException {
         return new ValidationException("request", "No valid user data provided for update");
     }
 
+    public static ValidationException userNameTooLong(int maxLength, int actualLength) {
+        return (ValidationException) new ValidationException("name", 
+            String.format("User name cannot exceed %d characters", maxLength))
+            .withDetail("maxLength", maxLength)
+            .withDetail("actualLength", actualLength);
+    }
+
 }

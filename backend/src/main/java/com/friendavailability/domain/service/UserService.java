@@ -95,17 +95,22 @@ public class UserService {
         return users;
     }
 
-    public Optional<User> findUserById(Long id){
-        System.out.println("Finding user with ID: " + id);
-        Optional<User> user = userRepository.findById(id);
+    public User findUserById(Long id){
+        log.debug("Finding user with ID: {}", id);
 
-        if(user.isPresent()){
-            System.out.println("Found user: " + user.get());
+        if(id == null || id <= 0){
+            log.warn("Invalid user ID provided: {}", id);
+            throw ValidationException.invalidUserId(id);
         }
-        else{
-            System.out.println("User not found with id: " + id);
+        Optional<User> userOpt = userRepository.findById(id);
+
+        if(userOpt.isEmpty()){
+            log.warn("User not found with ID: {}", id);
+            throw ResourceNotFoundException.userNotFound(id);
         }
-        return user;
+
+        log.debug("Found user: {} ({})", userOpt.get().getName(), userOpt.get().getEmail());
+        return userOpt.get();
     }
 
     public Optional<User> findUserByEmail(String email){
