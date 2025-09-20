@@ -134,37 +134,79 @@ public class UserService {
     }
 
     public Optional<User> findUserByGoogleId(String googleId) {
-        log.debug("")
+        log.debug("Finding user with google id: {}", googleId);
+
+        if(googleId == null || googleId.trim().isEmpty()){
+            log.warn("Empty google ID provided");
+            throw ValidationException.invalidFieldValue("googleId", "Google ID cannot be empty");
+        }
+
+        Optional<User> userOpt = userRepository.findUserByGoogleId(googleId);
+        
+        if(userOpt.isEmpty()){
+            log.warn("User not found with google ID: {}", googleId);
+            throw ResourceNotFoundException.userGoogleIdNotFound(googleId);
+        }
+        log.debug("Found OAuth user: {} with email {}", userOpt.get().getName(), userOpt.get().getEmail());
+        return userOpt.get();
     }
 
     public Optional<User> updateUser(Long id, String name, String email){
-        System.out.println("Updating user: id = " + id + " name = " + name + " email = " + email);
-        Optional<User> userOpt = userRepository.findById(id);
+        log.info("Updating user with ID: {}", id);
 
-        if(userOpt.isEmpty()){
-            System.out.println("User not found with id: " + id);
-            return Optional.empty();
+        User user = findUserById(id);
+
+        if((name == null || name.trim().isEmpty()) && (email == null || email.trim().isEmpty())){
+            log.warn("No valid data to update");
+            throw ValidationException.noUserDataToUpdate();
         }
 
-        User user = userOpt.get();
+        boolean hasChanges = false;
 
-        if(email != null && !user.getEmail().equals(email)){
-            if(userRepository.existsByEmail(email)){
-                throw new RuntimeException("User with email already exists");
+        if(email != null && !email.trim().isEmpty()){
+            String normalisedEmail = email.trim().toLowerCase(); 
+            if(!user.getEmail().equals(normalisedEmail)){
+                if(userRepository.existsByEmail(normalisedEmail)){
+                    log.warn("Attempt to update email to an existing email {}", normalisedEmail);
+                    throw DuplicateResourceException.duplicateUserEmail(normalisedEmail);
+                }
+                if(!isValidEmail(normalisedEmail)){
+                    throw ValidationException.invalidEmail(normalisedEmail);
+                }
+                user.setEmail(normalisedEmail);
+                hasChanges = true;
+                log.debug("Email updated for user with id: {} ({})", id, normalisedEmail);
             }
-            user.setEmail(email);
         }
 
-        if(name != null && !name.trim().isEmpty()){
-            user.setName(name);
+        if(name != null && name.trim().isEmpty()){
+            String trimmedname = name.trim();
+            if(!user.getName.equals(trimmedname)){
+                if(trimmedname.length() < 2){
+                    throw ValidationException.nameTooShort(2);
+                }
+                if(trimmedName.length() > 50){
+                    throw ValidationException.nameTooLong(50, trimmedName.length());
+                }
+
+                user.setName(trimmedName);
+                hasChanges = true;
+                log.debug("Name changed to {} for user with id ", trimmedName, id);
+            }
         }
 
+        if(!hasChanges){
+            log.debug("No changes detected for user {}", user.getEmail());
+            return user;
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
         User updatedUser = userRepository.save(user);
-        System.out.println("User updated: " + updatedUser);
-        return Optional.of(updatedUser);
+        log.info("User updated successfully: {} ({})", updatedUser.getName(), updatedUser.getEmail());
+        return updatedUser;
     }
 
-    public Optional<User> linkGoogleAccount(Long userId, String googleId){
+    publlic Optional<User> linkGoogleAccount(Long userId, String googleId){
         System.out.println("Linking googleId " + googleId + " for user with id " + userId);
 
         if(userRepository.existsByGoogleId(googleId)){
