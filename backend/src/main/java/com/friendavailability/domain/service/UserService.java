@@ -133,7 +133,7 @@ public class UserService {
         return userOpt.get();
     }
 
-    public Optional<User> findUserByGoogleId(String googleId) {
+    public User findUserByGoogleId(String googleId) {
         log.debug("Finding user with google id: {}", googleId);
 
         if(googleId == null || googleId.trim().isEmpty()){
@@ -151,7 +151,7 @@ public class UserService {
         return userOpt.get();
     }
 
-    public Optional<User> updateUser(Long id, String name, String email){
+    public User updateUser(Long id, String name, String email){
         log.info("Updating user with ID: {}", id);
 
         User user = findUserById(id);
@@ -206,38 +206,36 @@ public class UserService {
         return updatedUser;
     }
 
-    publlic Optional<User> linkGoogleAccount(Long userId, String googleId){
-        System.out.println("Linking googleId " + googleId + " for user with id " + userId);
-
-        if(userRepository.existsByGoogleId(googleId)){
-            throw new RuntimeException("Google account is already linked to another user");
+    public User linkGoogleAccount(Long userId, String googleId) {
+        log.info("Linking Google account {} to user: {}", googleId, userId);
+        
+        if (googleId == null || googleId.trim().isEmpty()) {
+            throw ValidationException.invalidFieldValue("googleId", "Google ID cannot be empty");
         }
-
-        Optional<User> userOpt = userRepository.findById(userId);
-        if(userOpt.isPresent()){
-            User user = userOpt.get();
-            user.setGoogleId(googleId);
-            user.setEmailVerified(true);
-
-            User updatedUser = userRepository.save(user);
-            System.out.println("Linked google account " + updatedUser);
-            return Optional.of(updatedUser);
+        
+        if (userRepository.existsByGoogleId(googleId)) {
+            log.warn("Google account {} is already linked to another user", googleId);
+            throw DuplicateResourceException.duplicateGoogleId(googleId);
         }
-        return Optional.empty();
+        
+        User user = findUserById(userId);
+        
+        user.setGoogleId(googleId);
+        user.setEmailVerified(true); 
+        user.setUpdatedAt(LocalDateTime.now());
+        
+        User updatedUser = userRepository.save(user);
+        
+        log.info("Google account linked successfully for user: {} ({})", 
+                updatedUser.getName(), updatedUser.getEmail());
+        return updatedUser;
     }
 
-    public boolean deleteUserById(Long id){
-        System.out.println("Deleting user with id: " + id);
-        Optional<User> user = userRepository.findById(id);
-
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            System.out.println("Deleted user with id: " + id);
-            return true;
-        } else {
-            System.out.println("User not found with id: " + id);
-            return false;
-        }
+    public void deleteUserById(Long id){
+        log.info("Deleting user with ID: {}", id)
+        User user = findUserById(id);
+        userRepository.deleteUserById(id);
+        log.info("Deleted user with ID: {}", id);
     }
 
     public boolean validatePassword(User user, String password){
