@@ -33,7 +33,7 @@ public class UserService {
         System.out.println("Creating user: name=" + name + ", email=" + email);
 
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("User with email " + email + " already exists");
+            throw DuplicateResourceException.duplicateEmail(email);
         }
 
         User newUser = User.builder()
@@ -52,10 +52,10 @@ public class UserService {
         System.out.println("Creating user with password: name = " + name + " email = " + email);
 
         if(userRepository.existsByEmail(email)){
-            throw new RuntimeException("User with email " + email + " already exists");
+            throw DuplicateResourceException.duplicateEmail(email);
         }
         if(password == null || password.trim().length() < 8){
-            throw new RuntimeException("Password must be at least 8 characters");
+            throw ValidationException.passwordTooWeak();
         }
         String hashedPassword = passwordEncoder.encode(password);
 
@@ -76,10 +76,10 @@ public class UserService {
         System.out.println("Creating user with Google OAuth: name=" + name + ", email=" + email + ", googleId=" + googleId);
 
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("User with email " + email + " already exists");
+            throw DuplicateResourceException.duplicateEmail(email);
         }
         if (userRepository.existsByGoogleId(googleId)) {
-            throw new RuntimeException("Google ID " + googleId + " is already linked to another user");
+            throw DuplicateResourceException.duplicateGoogleId(googleId);
         }
         User newUser = User.builder()
                 .name(name)
@@ -261,18 +261,6 @@ public class UserService {
          return matches;
     }
 
-    public boolean verifyUserEmail(Long id){
-        Optional<User> userOpt = userRepository.findById(id);
-        if(userOpt.isPresent()){
-            User user = userOpt.get();
-            user.setEmailVerified(true);
-            userRepository.save(user);
-            System.out.println("Verified email for user " + user.getEmail());
-            return true;
-        }
-        return false;
-    }
-
     public List<User> getActiveUsers(){
         System.out.println("Getting active users");
         List<User> activeUsers = userRepository.findByIsActiveTrue();
@@ -284,14 +272,6 @@ public class UserService {
         System.out.println("Searching users by name: " + searchTerm);
         List<User> users = userRepository.findByNameContainingIgnoreCase(searchTerm);
         System.out.println("Found " + users.size() + " users matching name: " + searchTerm);
-        return users;
-    }
-
-    public List<User> getRecentUsers(int days){
-        LocalDateTime cutOffDate = LocalDateTime.now().minusDays(days);
-        System.out.println("Getting users registered after " + cutOffDate);
-        List<User> users = userRepository.findRecentlyActiveUsers(cutOffDate);
-        System.out.println("Found " + users.size() + " recent users");
         return users;
     }
 
@@ -308,9 +288,4 @@ public class UserService {
         return available;
     }
 
-    public boolean isGoogleIdAvailable(String googleId){
-        boolean available = !userRepository.existsByGoogleId(googleId);
-        System.out.println(googleId + (available ? " available" : " not available"));
-        return available;
-    }
 }

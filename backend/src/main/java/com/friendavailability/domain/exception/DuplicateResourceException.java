@@ -18,10 +18,6 @@ public class DuplicateResourceException extends BusinessException{
         return new DuplicateResourceException("User", "email", email);
     }
 
-    public static DuplicateResourceException duplicateCircleName(String circleName){
-        return new DuplicateResourceException("Circle", "name", circleName);
-    }
-
     public static DuplicateResourceException duplicateUserEmail(String email) {
         return (DuplicateResourceException) new DuplicateResourceException("User", "email", email)
                 .withDetail("suggestion", "Please use a different email address");

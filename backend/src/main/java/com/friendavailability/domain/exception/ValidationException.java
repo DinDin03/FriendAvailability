@@ -89,12 +89,6 @@ public class ValidationException extends BusinessException {
         return new ValidationException(fieldName, reason);
     }
 
-    public static ValidationException invalidDateRange(LocalDateTime start, LocalDateTime end) {
-        return (ValidationException) new ValidationException("Start time must be before end time")
-                .withDetail("startTime", start.toString())
-                .withDetail("endTime", end.toString());
-    }
-
     public static ValidationException invalidPassword(String reason) {
         return new ValidationException("password", "Invalid password: " + reason);
     }
@@ -108,11 +102,5 @@ public class ValidationException extends BusinessException {
         return new ValidationException("request", "No valid user data provided for update");
     }
 
-    public static ValidationException userNameTooLong(int maxLength, int actualLength) {
-        return (ValidationException) new ValidationException("name", 
-            String.format("User name cannot exceed %d characters", maxLength))
-            .withDetail("maxLength", maxLength)
-            .withDetail("actualLength", actualLength);
-    }
 
 }
