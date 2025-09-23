@@ -60,4 +60,9 @@ public class ResourceNotFoundException extends BusinessException {
                 .withDetail("suggestion", "Try sending the friend request again");
     }
 
+    public static ResourceNotFoundException availabilityNotFound(Long availabilityId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException("Availability", availabilityId)
+                .withDetail("suggestion", "Please verify the availability ID and try again");
+    }
+
 }

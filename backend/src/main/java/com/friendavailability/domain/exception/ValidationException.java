@@ -102,5 +102,29 @@ public class ValidationException extends BusinessException {
         return new ValidationException("request", "No valid user data provided for update");
     }
 
+    public static ValidationException invalidTimeRange() {
+        return (ValidationException) new ValidationException("time",
+                "Start time must be before end time")
+                .withDetail("suggestion", "Please ensure start time is earlier than end time");
+    }
+
+    public static ValidationException eventInPast() {
+        return (ValidationException) new ValidationException("startTime",
+                "Cannot create events in the past")
+                .withDetail("suggestion", "Please choose a future date and time");
+    }
+
+    public static ValidationException invalidAllDayEvent() {
+        return (ValidationException) new ValidationException("allDay",
+                "All day events must be full days")
+                .withDetail("suggestion", "All day events should span complete days");
+    }
+
+    public static ValidationException negativeReminder() {
+        return (ValidationException) new ValidationException("reminderMinutes",
+                "Reminder cannot be negative")
+                .withDetail("suggestion", "Please provide a positive number of minutes for reminders");
+    }
+
 
 }
