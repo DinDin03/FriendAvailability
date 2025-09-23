@@ -1,6 +1,4 @@
 package com.friendavailability.domain.exception;
-
-import org.apache.catalina.valves.rewrite.ResolverImpl;
 import org.springframework.http.HttpStatus;
 
 public class ResourceNotFoundException extends BusinessException {
