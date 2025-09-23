@@ -65,4 +65,12 @@ public class ResourceNotFoundException extends BusinessException {
                 .withDetail("suggestion", "Please verify the availability ID and try again");
     }
 
+    public static ResourceNotFoundException circleNotFound(Long circleId) {
+        return new ResourceNotFoundException("Circle", circleId);
+    }
+
+    public static ResourceNotFoundException circleMemberNotFound(Long userId, Long circleId) {
+        return new ResourceNotFoundException("CircleMember", userId + " in circle " + circleId);
+    }
+
 }
