@@ -1,11 +1,13 @@
 package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.exception.*;
 import com.friendavailability.domain.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.regex.Pattern;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +20,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private static final String EMAIL_REGEX =
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
+
 
     public UserService(UserRepository userRepository){
         this.userRepository = userRepository;
@@ -122,7 +128,7 @@ public class UserService {
         }
 
         String normalisedEmail = email.trim().toLowerCase();
-        Optional<User> userOpt = userRepository.findUserByEmail(normalisedEmail);
+        Optional<User> userOpt = userRepository.findByEmail(normalisedEmail);
 
         if(userOpt.isEmpty()){
             log.warn("User not found with email: {}", normalisedEmail);
@@ -141,7 +147,7 @@ public class UserService {
             throw ValidationException.invalidFieldValue("googleId", "Google ID cannot be empty");
         }
 
-        Optional<User> userOpt = userRepository.findUserByGoogleId(googleId);
+        Optional<User> userOpt = userRepository.findByGoogleId(googleId);
         
         if(userOpt.isEmpty()){
             log.warn("User not found with google ID: {}", googleId);
@@ -180,9 +186,9 @@ public class UserService {
         }
 
         if(name != null && name.trim().isEmpty()){
-            String trimmedname = name.trim();
-            if(!user.getName.equals(trimmedname)){
-                if(trimmedname.length() < 2){
+            String trimmedName = name.trim();
+            if(!user.getName().equals(trimmedName)){
+                if(trimmedName.length() < 2){
                     throw ValidationException.nameTooShort(2);
                 }
                 if(trimmedName.length() > 50){
@@ -204,6 +210,13 @@ public class UserService {
         User updatedUser = userRepository.save(user);
         log.info("User updated successfully: {} ({})", updatedUser.getName(), updatedUser.getEmail());
         return updatedUser;
+    }
+
+    public boolean isValidEmail(String email) {
+        if (email == null) {
+            return false;
+        }
+        return EMAIL_PATTERN.matcher(email).matches();
     }
 
     public User linkGoogleAccount(Long userId, String googleId) {
@@ -232,9 +245,9 @@ public class UserService {
     }
 
     public void deleteUserById(Long id){
-        log.info("Deleting user with ID: {}", id)
+        log.info("Deleting user with ID: {}", id);
         User user = findUserById(id);
-        userRepository.deleteUserById(id);
+        userRepository.deleteById(id);
         log.info("Deleted user with ID: {}", id);
     }
 

@@ -27,6 +27,11 @@ public class DuplicateResourceException extends BusinessException{
                 .withDetail("suggestion", "Please use a different email address");
     }
 
+    public static DuplicateResourceException duplicateGoogleId(String googleId){
+        return (DuplicateResourceException) new DuplicateResourceException("User", "googleId", googleId)
+                .withDetail("suggestion", "Please use a different email address");
+    }
+
 
 
 }
