@@ -10,8 +10,9 @@ public class InvalidOperationException extends BusinessException {
     }
 
 
-    public static InvalidOperationException cannotAddSelfAsFriend() {
-        return new InvalidOperationException("You cannot add yourself as a friend");
+    public static InvalidOperationException cannotAddSelfAsFriend(Long userId) {
+        return (InvalidOperationException) new InvalidOperationException("You cannot add yourself as a friend")
+                .withDetail("userId", userId);
     }
 
     public static InvalidOperationException circleAtCapacity(Long circleId, int maxMembers) {

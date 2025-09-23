@@ -1,5 +1,6 @@
 package com.friendavailability.domain.exception;
 
+import org.apache.catalina.valves.rewrite.ResolverImpl;
 import org.springframework.http.HttpStatus;
 
 public class ResourceNotFoundException extends BusinessException {
@@ -55,4 +56,5 @@ public class ResourceNotFoundException extends BusinessException {
         return (ResourceNotFoundException) new ResourceNotFoundException("User", userId)
                 .withDetail("suggestion", "Please verify the user ID and try again");
     }
+
 }

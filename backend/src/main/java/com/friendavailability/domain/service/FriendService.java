@@ -2,6 +2,8 @@ package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.Friend;
 import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.exception.InvalidOperationException;
+import com.friendavailability.domain.exception.ResourceNotFoundException;
 import com.friendavailability.domain.repository.FriendRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,23 +24,23 @@ public class FriendService {
     public FriendService(UserService userService, FriendRepository friendRepository) {
         this.userService = userService;
         this.friendRepository = friendRepository;
-        System.out.println("Friend service created");
+        log.info("Friend service created");
     }
 
     public Friend sendFriendRequest(Long fromUserId, Long toUserId) {
-        System.out.println("Sending friend request from user " + fromUserId + " to user " + toUserId);
+        log.debug("Sending friend request from user {} to user {}", fromUserId, toUserId);
 
-        if (userService.findUserById(fromUserId).isEmpty()) {
-            throw new RuntimeException("Sender user not found with id " + fromUserId);
-        }
-        if (userService.findUserById(toUserId).isEmpty()) {
-            throw new RuntimeException("Recipient user not found with id " + toUserId);
-        }
+        User fromUser = userService.findUserById(fromUserId);
+        User toUser = userService.findUserById(toUserId);
+
         if (fromUserId.equals(toUserId)) {
-            throw new RuntimeException("Cannot send friend request to yourself");
+            log.warn("User {} attempted to send a friend requets to themselves", fromUserId);
+            throw InvalidOperationException.cannotAddSelfAsFriend(fromUserId);
         }
+
         if (friendRepository.existsFriendshipBetweenUsers(fromUserId, toUserId)) {
-            throw new RuntimeException("Friendship between users already exists");
+            log.warn("Friendship between users {} and {} already exists", fromUserId, toUserId);
+            throw InvalidOperationException.friendShipAlreadyExists(fromUserId, toUserId);
         }
         Friend newFriendship = Friend.builder()
                 .userId(fromUserId)
@@ -47,7 +49,7 @@ public class FriendService {
                 .build();
 
         Friend savedFriendship = friendRepository.save(newFriendship);
-        System.out.println("Friend request created: " + savedFriendship);
+        log.info("Friend request created from user {} to user {}", fromUserId, toUserId);
         return savedFriendship;
     }
 
