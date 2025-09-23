@@ -51,4 +51,15 @@ public class InsufficientPermissionException extends BusinessException {
         return new InsufficientPermissionException("You must be a member of the circle to view its details");
     }
 
+    public static InsufficientPermissionException onlyOwnerCanTransferOwnership() {
+        return new InsufficientPermissionException("You must be the owner of the circle to perform a change of ownership");
+    }
+
+    public static InsufficientPermissionException onlyAdminCanRemoveMembers(){
+        return new InsufficientPermissionException("You must be an admin to remove members");
+    }
+
+    public static InsufficientPermissionException onlyOwnerCanUpdateRoles(){
+        return new InsufficientPermissionException("You must be the owner to update user roles");
+    }
 }

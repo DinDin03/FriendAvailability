@@ -81,6 +81,20 @@ public class InvalidOperationException extends BusinessException {
         return new InvalidOperationException("User is already a member of the circle");
     }
 
+    public static InvalidOperationException cannotRemoveLastOwner(){
+        return new InvalidOperationException("Can not remove last owner from the circle, transfer ownership or delete the circle");
+    }
+
+    public static InvalidOperationException cannotDirectlyAssignOwner(){
+        return new InvalidOperationException("Cannot directly assign owner role, must transfer ownership");
+    }
+
+    public static InvalidOperationException cannotDemoteLastOwner(){
+        return new InvalidOperationException("Cannot demote last owner of the circle");
+    }
+
+
+
 
 
 
