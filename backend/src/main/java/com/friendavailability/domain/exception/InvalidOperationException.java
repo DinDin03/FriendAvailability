@@ -93,6 +93,50 @@ public class InvalidOperationException extends BusinessException {
         return new InvalidOperationException("Cannot demote last owner of the circle");
     }
 
+    public static InvalidOperationException cannotCreatePrivateRoomWithSelf() {
+        return (InvalidOperationException) new InvalidOperationException(
+                "Cannot create a private chat room with yourself")
+                .withDetail("suggestion", "Please select a different user to chat with");
+    }
+
+    public static InvalidOperationException cannotAddSelfToGroup() {
+        return (InvalidOperationException) new InvalidOperationException(
+                "You are already a member of this group")
+                .withDetail("suggestion", "You don't need to add yourself to the group");
+    }
+
+    public static InvalidOperationException cannotRemoveSelfFromGroup() {
+        return (InvalidOperationException) new InvalidOperationException(
+                "Use the leave group function to exit this chat")
+                .withDetail("suggestion", "Use the 'Leave Group' option instead");
+    }
+
+    public static InvalidOperationException cannotPromoteSelfInGroup() {
+        return (InvalidOperationException) new InvalidOperationException(
+                "You cannot promote yourself in a group chat")
+                .withDetail("suggestion", "Ask another admin to promote you if needed");
+    }
+
+    public static InvalidOperationException groupChatTooFewParticipants() {
+        return (InvalidOperationException) new InvalidOperationException(
+                "Group chats require at least 2 participants")
+                .withDetail("minimumParticipants", 2)
+                .withDetail("suggestion", "Add at least one other person to create a group chat");
+    }
+
+    public static InvalidOperationException duplicateParticipantInGroup(Long userId) {
+        return (InvalidOperationException) new InvalidOperationException(
+                "User is already a participant in this group chat")
+                .withDetail("userId", userId)
+                .withDetail("suggestion", "This user is already in the group");
+    }
+
+    public static InvalidOperationException cannotSendEmptyMessage() {
+        return (InvalidOperationException) new InvalidOperationException(
+                "Cannot send an empty message")
+                .withDetail("suggestion", "Please enter some text before sending");
+    }
+
 
 
 

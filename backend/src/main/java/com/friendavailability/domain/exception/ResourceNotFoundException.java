@@ -98,4 +98,37 @@ public class ResourceNotFoundException extends BusinessException {
                 .withDetail("suggestion", "Please check your email address or register for a new account");
     }
 
+    public static ResourceNotFoundException chatRoomNotFound(Long roomId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException("Chat room", roomId)
+                .withDetail("suggestion", "The chat room may have been deleted or you may not have access");
+    }
+
+    public static ResourceNotFoundException chatParticipantNotFound(Long userId, Long roomId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "User is not a participant in this chat room")
+                .withDetail("userId", userId)
+                .withDetail("roomId", roomId)
+                .withDetail("suggestion", "Make sure the user is added to the chat room first");
+    }
+
+    public static ResourceNotFoundException messageNotFound(Long messageId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException("Message", messageId)
+                .withDetail("suggestion", "The message may have been deleted");
+    }
+
+    public static ResourceNotFoundException noMessagesFound(Long roomId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "No messages found in this chat room")
+                .withDetail("roomId", roomId)
+                .withDetail("suggestion", "Start a conversation by sending the first message");
+    }
+
+    public static ResourceNotFoundException privateRoomNotFound(Long userId1, Long userId2) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "Private chat room not found between these users")
+                .withDetail("user1Id", userId1)
+                .withDetail("user2Id", userId2)
+                .withDetail("suggestion", "A private chat will be created when you send the first message");
+    }
+
 }

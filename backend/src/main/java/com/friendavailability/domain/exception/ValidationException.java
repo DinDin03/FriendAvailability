@@ -177,6 +177,44 @@ public class ValidationException extends BusinessException {
                 .withDetail("suggestion", "Please wait before requesting another password reset");
     }
 
+    public static ValidationException messageContentRequired() {
+        return new ValidationException("content", "Message content cannot be empty");
+    }
+
+    public static ValidationException messageContentTooLong(int maxLength) {
+        return (ValidationException) new ValidationException("content",
+                String.format("Message content cannot exceed %d characters", maxLength))
+                .withDetail("maxLength", maxLength)
+                .withDetail("suggestion", "Please shorten your message");
+    }
+
+    public static ValidationException chatRoomNameRequired() {
+        return new ValidationException("name", "Chat room name is required");
+    }
+
+    public static ValidationException chatRoomNameTooShort(int minLength) {
+        return (ValidationException) new ValidationException("name",
+                String.format("Chat room name must be at least %d characters long", minLength))
+                .withDetail("minLength", minLength);
+    }
+
+    public static ValidationException chatRoomNameTooLong(int maxLength) {
+        return (ValidationException) new ValidationException("name",
+                String.format("Chat room name cannot exceed %d characters", maxLength))
+                .withDetail("maxLength", maxLength);
+    }
+
+    public static ValidationException invalidChatRoomId(Long roomId) {
+        return (ValidationException) new ValidationException("roomId", "Invalid chat room ID provided")
+                .withDetail("providedValue", roomId)
+                .withDetail("suggestion", "Please verify the chat room ID");
+    }
+
+    public static ValidationException invalidMessageSearchTerm() {
+        return (ValidationException) new ValidationException("searchTerm", "Search term must be at least 2 characters")
+                .withDetail("suggestion", "Please enter a longer search term");
+    }
+
 
 
 }

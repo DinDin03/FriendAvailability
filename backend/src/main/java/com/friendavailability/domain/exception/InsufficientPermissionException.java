@@ -62,4 +62,43 @@ public class InsufficientPermissionException extends BusinessException {
     public static InsufficientPermissionException onlyOwnerCanUpdateRoles(){
         return new InsufficientPermissionException("You must be the owner to update user roles");
     }
+
+    public static InsufficientPermissionException cannotAccessChatRoom(Long roomId) {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "You don't have permission to access this chat room")
+                .withDetail("roomId", roomId)
+                .withDetail("suggestion", "Make sure you are a participant in this chat room");
+    }
+
+    public static InsufficientPermissionException cannotSendMessageToRoom(Long roomId) {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "You don't have permission to send messages in this chat room")
+                .withDetail("roomId", roomId)
+                .withDetail("suggestion", "Contact a group admin to get permission");
+    }
+
+    public static InsufficientPermissionException cannotAddUsersToGroup() {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "Only group admins can add users to this group chat")
+                .withDetail("suggestion", "Ask a group admin to add this user");
+    }
+
+    public static InsufficientPermissionException cannotRemoveUsersFromGroup() {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "Only group admins can remove users from this group chat")
+                .withDetail("suggestion", "Ask a group admin to remove this user");
+    }
+
+    public static InsufficientPermissionException cannotPromoteUser() {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "Only group owners can promote users to admin")
+                .withDetail("suggestion", "Ask the group owner to promote this user");
+    }
+
+    public static InsufficientPermissionException cannotViewChatParticipants(Long roomId) {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "You don't have permission to view participants in this chat room")
+                .withDetail("roomId", roomId)
+                .withDetail("suggestion", "Make sure you are a participant in this chat room");
+    }
 }
