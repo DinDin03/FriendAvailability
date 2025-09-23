@@ -35,4 +35,20 @@ public class InsufficientPermissionException extends BusinessException {
                 .withDetail("suggestion", "Only the person who received the request can respond to it");
     }
 
+    public static InsufficientPermissionException onlyOwnerCanDelete() {
+        return new InsufficientPermissionException("Only the circle owner can delete the circle");
+    }
+
+    public static InsufficientPermissionException onlyAdminCanUpdate() {
+        return new InsufficientPermissionException("Only circle owners and admins can update circle details");
+    }
+
+    public static InsufficientPermissionException onlyAdminCanAddMembers() {
+        return new InsufficientPermissionException("Only the owner and admins can add users");
+    }
+
+    public static InsufficientPermissionException mustBeMemberToView() {
+        return new InsufficientPermissionException("You must be a member of the circle to view its details");
+    }
+
 }

@@ -126,5 +126,22 @@ public class ValidationException extends BusinessException {
                 .withDetail("suggestion", "Please provide a positive number of minutes for reminders");
     }
 
+    public static ValidationException circleNameRequired() {
+        return new ValidationException("name", "Circle name cannot be empty");
+    }
+
+    public static ValidationException circleNameTooShort(int minLength) {
+        return new ValidationException("name", "Circle name must be at least " + minLength + " characters long");
+    }
+
+    public static ValidationException circleNameTooLong(int maxLength) {
+        return new ValidationException("name", "Circle name cannot exceed " + maxLength + " characters");
+    }
+
+    public static ValidationException circleDescriptionTooLong(int maxLength) {
+        return new ValidationException("description", "Circle description cannot exceed " + maxLength + " characters");
+    }
+
+
 
 }
