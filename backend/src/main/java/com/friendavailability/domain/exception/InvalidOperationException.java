@@ -69,6 +69,18 @@ public class InvalidOperationException extends BusinessException {
                 .withDetail("suggestion", "Users are already friends or have a pending request");
     }
 
+    public static InvalidOperationException circleAtMaxCapacity() {
+        return new InvalidOperationException("Circle has reached its maximum member limit");
+    }
+
+    public static InvalidOperationException mustBeFriendsFirst() {
+        return new InvalidOperationException("Users must be friends first");
+    }
+
+    public static InvalidOperationException userAlreadyMember() {
+        return new InvalidOperationException("User is already a member of the circle");
+    }
+
 
 
 
