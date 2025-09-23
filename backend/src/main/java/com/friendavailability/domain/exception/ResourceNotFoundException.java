@@ -33,7 +33,6 @@ public class ResourceNotFoundException extends BusinessException {
         super(message, "RESOURCE_NOT_FOUND", HttpStatus.NOT_FOUND, cause);
     }
 
-
     public static ResourceNotFoundException userEmailNotFound(String email) {
         return (ResourceNotFoundException) new ResourceNotFoundException("User", email)
                 .withDetail("message", "No account found with this email address")
@@ -55,6 +54,12 @@ public class ResourceNotFoundException extends BusinessException {
     public static ResourceNotFoundException userNotFound(Long userId) {
         return (ResourceNotFoundException) new ResourceNotFoundException("User", userId)
                 .withDetail("suggestion", "Please verify the user ID and try again");
+    }
+
+    public static ResourceNotFoundException friendRequestNotFound(Long friendshipId){
+        return (ResourceNotFoundException) new ResourceNotFoundException("Friendship not found")
+                .withDetail("friendshipId", friendshipId)
+                .withDetail("suggestion", "Try sending the friend request again");
     }
 
 }
