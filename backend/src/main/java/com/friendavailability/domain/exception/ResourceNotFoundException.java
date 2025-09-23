@@ -73,4 +73,29 @@ public class ResourceNotFoundException extends BusinessException {
         return new ResourceNotFoundException("CircleMember", userId + " in circle " + circleId);
     }
 
+    public static ResourceNotFoundException passwordResetTokenNotFound(String token) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "Password reset token not found or invalid")
+                .withDetail("suggestion", "The password reset link may be invalid or expired. Please request a new password reset.");
+    }
+
+    public static ResourceNotFoundException passwordResetTokenExpired(String token) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "Password reset token has expired")
+                .withDetail("suggestion", "Password reset links expire after 30 minutes. Please request a new password reset.");
+    }
+
+    public static ResourceNotFoundException passwordResetTokenUsed(String token) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "Password reset token has already been used")
+                .withDetail("suggestion", "Each password reset link can only be used once. Please request a new password reset if needed.");
+    }
+
+    public static ResourceNotFoundException passwordResetUserNotFound(String email) {
+        return (ResourceNotFoundException) new ResourceNotFoundException(
+                "No account found for password reset")
+                .withDetail("email", email)
+                .withDetail("suggestion", "Please check your email address or register for a new account");
+    }
+
 }

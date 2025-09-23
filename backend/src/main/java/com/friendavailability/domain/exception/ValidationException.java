@@ -142,6 +142,41 @@ public class ValidationException extends BusinessException {
         return new ValidationException("description", "Circle description cannot exceed " + maxLength + " characters");
     }
 
+    public static ValidationException passwordResetRequiredPassword() {
+        return new ValidationException("password", "New password is required");
+    }
+
+    public static ValidationException passwordResetTooShort(int minLength) {
+        return (ValidationException) new ValidationException("password",
+                String.format("Password must be at least %d characters long", minLength))
+                .withDetail("minLength", minLength)
+                .withDetail("suggestion", "Please choose a longer password");
+    }
+
+    public static ValidationException passwordResetInvalidToken() {
+        return (ValidationException) new ValidationException("token",
+                "Password reset token is required")
+                .withDetail("suggestion", "Please use the link from your password reset email");
+    }
+
+    public static ValidationException passwordResetEmailRequired() {
+        return new ValidationException("email", "Email address is required for password reset");
+    }
+
+    public static ValidationException passwordResetEmailUnverified(String email) {
+        return (ValidationException) new ValidationException("email",
+                "Password reset is only available for verified email addresses")
+                .withDetail("email", email)
+                .withDetail("suggestion", "Please verify your email first, then request password reset");
+    }
+
+    public static ValidationException passwordResetRateLimited(int remainingMinutes) {
+        return (ValidationException) new ValidationException("rate_limit",
+                "Too many password reset attempts. Please try again later.")
+                .withDetail("waitTimeMinutes", remainingMinutes)
+                .withDetail("suggestion", "Please wait before requesting another password reset");
+    }
+
 
 
 }
