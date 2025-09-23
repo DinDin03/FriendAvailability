@@ -28,7 +28,10 @@ public class DuplicateResourceException extends BusinessException{
                 .withDetail("suggestion", "Please use a different email address");
     }
 
-    public static DuplicateResourceException
+    public static DuplicateResourceException duplicateFriendship(Long userId1, Long userId2){
+        return (DuplicateResourceException) new DuplicateResourceException("Friendship", "users", userId1 + " and " + userId2)
+                .withDetail("suggestion", "Users are already friends");
+    }
 
 
 
