@@ -3,6 +3,7 @@ package com.friendavailability.domain.service;
 import com.friendavailability.domain.entity.Friend;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.repository.FriendRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,12 +13,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@Slf4j
 public class FriendService {
 
     private final UserService userService;
     private final FriendRepository friendRepository;
 
-    @Autowired
     public FriendService(UserService userService, FriendRepository friendRepository) {
         this.userService = userService;
         this.friendRepository = friendRepository;

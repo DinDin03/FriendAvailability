@@ -1,5 +1,6 @@
 package com.friendavailability.domain.exception;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.http.HttpStatus;
 
 public class InvalidOperationException extends BusinessException {
@@ -51,4 +52,15 @@ public class InvalidOperationException extends BusinessException {
                 .withDetail("currentLevel", currentLevel)
                 .withDetail("suggestion", "Upgrade your account to access this feature");
     }
+
+    public static InvalidOperationException friendRequestNotPending(String currentStatus){
+        return (InvalidOperationException) new InvalidOperationException(
+                "Friend request is not pending")
+                .withDetail("currentStatus", currentStatus)
+                .withDetail("suggestion", "Only pending requests can be accepted or deleted");
+    }
+
+
+
+
 }
