@@ -5,251 +5,173 @@ import com.friendavailability.api.dto.request.availability.UpdateAvailabilityReq
 import com.friendavailability.domain.entity.Availability;
 import com.friendavailability.domain.service.AvailabilityService;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/availability")
+@Slf4j
 public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
 
     public AvailabilityController(AvailabilityService availabilityService) {
         this.availabilityService = availabilityService;
-        System.out.println("AvailabilityController created and connected to AvailabilityService");
+        log.info("AvailabilityController initialized successfully");
     }
 
     @PostMapping
     public ResponseEntity<Availability> createAvailability(@Valid @RequestBody CreateAvailabilityRequest request) {
-        System.out.println("Creating availability: " + request);
+        log.info("Creating availability for user {}", request.getUserId());
 
-        try {
-            Availability availability = availabilityService.createAvailability(
-                    request.getUserId(),
-                    request.getStartTime(),
-                    request.getEndTime(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getLocation(),
-                    request.getIsBusy(),
-                    request.getIsAllDay(),
-                    request.getReminderMinutes()
-            );
+        Availability availability = availabilityService.createAvailability(
+                request.getUserId(),
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getTitle(),
+                request.getDescription(),
+                request.getLocation(),
+                request.getIsBusy(),
+                request.getIsAllDay(),
+                request.getReminderMinutes()
+        );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(availability);
-
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error creating availability: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.err.println("Error creating availability: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Availability created successfully: {}", availability.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(availability);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Availability> updateAvailability(@PathVariable Long id,
                                                            @Valid @RequestBody UpdateAvailabilityRequest request) {
-        System.out.println("Updating availability: " + request);
+        log.info("Updating availability {}", id);
 
-        try {
-            Optional<Availability> result = availabilityService.updateAvailability(
-                    id,
-                    request.getStartTime(),
-                    request.getEndTime(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getLocation(),
-                    request.getIsBusy(),
-                    request.getIsAllDay(),
-                    request.getReminderMinutes()
-            );
+        Availability updatedAvailability = availabilityService.updateAvailability(
+                id,
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getTitle(),
+                request.getDescription(),
+                request.getLocation(),
+                request.getIsBusy(),
+                request.getIsAllDay(),
+                request.getReminderMinutes()
+        );
 
-            return result.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error updating availability: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.err.println("Error updating availability: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Availability {} updated successfully", id);
+        return ResponseEntity.ok(updatedAvailability);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAvailability(@PathVariable Long id) {
-        System.out.println("Deleting availability");
+    public ResponseEntity<Map<String, String>> deleteAvailability(@PathVariable Long id) {
+        log.info("Deleting availability {}", id);
 
-        try {
-            boolean deleted = availabilityService.deleteAvailability(id);
+        availabilityService.deleteAvailability(id);
 
-            if (deleted) {
-                return ResponseEntity.ok("Availability with id " + id + " deleted successfully");
-            } else {
-                return ResponseEntity.notFound().build();
-            }
+        Map<String, String> response = Map.of("message", "Availability deleted successfully");
 
-        } catch (Exception e) {
-            System.err.println("Error deleting availability with id " + id + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Availability {} deleted successfully", id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/single/{id}")
     public ResponseEntity<Availability> getAvailabilityById(@PathVariable Long id) {
-        System.out.println("Getting availability by ID");
+        log.info("Getting availability by ID: {}", id);
 
-        try {
-            Optional<Availability> availability = availabilityService.getAvailabilityById(id);
+        Availability availability = availabilityService.getAvailabilityById(id);
 
-            if (availability.isPresent()) {
-                return ResponseEntity.ok(availability.get());
-            } else {
-                return ResponseEntity.notFound().build();
-            }
-
-        } catch (Exception e) {
-            System.err.println("Error getting availability by id " + id + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved availability: {}", id);
+        return ResponseEntity.ok(availability);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<Availability>> getUserAvailability(@PathVariable Long userId,
                                                                   @RequestParam LocalDateTime start,
                                                                   @RequestParam LocalDateTime end) {
-        System.out.println("Getting stored availability from " + start + " to " + end);
+        log.info("Getting availability for user {} from {} to {}", userId, start, end);
 
-        try {
-            List<Availability> availability = availabilityService.getCalendarView(userId, start, end);
-            return ResponseEntity.ok(availability);
+        List<Availability> availability = availabilityService.getCalendarView(userId, start, end);
 
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting availability: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Error getting availability for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved {} availability records for user {}", availability.size(), userId);
+        return ResponseEntity.ok(availability);
     }
 
     @GetMapping("/{userId}/complete")
     public ResponseEntity<List<Availability>> getCompleteCalendarView(@PathVariable Long userId,
                                                                       @RequestParam LocalDateTime start,
                                                                       @RequestParam LocalDateTime end) {
-        System.out.println("Getting COMPLETE calendar view (with free time) from " + start + " to " + end);
+        log.info("Getting complete calendar view for user {} from {} to {}", userId, start, end);
 
-        try {
-            List<Availability> completeView = availabilityService.getCompleteCalendarView(userId, start, end);
-            System.out.println("Returning " + completeView.size() + " total slots (stored events + implied free time)");
-            return ResponseEntity.ok(completeView);
+        List<Availability> completeView = availabilityService.getCompleteCalendarView(userId, start, end);
 
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting complete calendar view: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Error getting complete calendar view for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved complete calendar view with {} total slots for user {}", completeView.size(), userId);
+        return ResponseEntity.ok(completeView);
     }
 
     @GetMapping("/{userId}/month")
     public ResponseEntity<List<Availability>> getMonthView(@PathVariable Long userId,
                                                            @RequestParam int year,
                                                            @RequestParam int month) {
-        System.out.println("Getting month view for " + year + "/" + month);
+        log.info("Getting month view for user {} - {}/{}", userId, year, month);
 
-        try {
-            List<Availability> monthView = availabilityService.getMonthView(userId, year, month);
-            return ResponseEntity.ok(monthView);
+        List<Availability> monthView = availabilityService.getMonthView(userId, year, month);
 
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting month view: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.err.println("Error getting month view for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved month view with {} records for user {}", monthView.size(), userId);
+        return ResponseEntity.ok(monthView);
     }
 
     @GetMapping("/{userId}/today")
     public ResponseEntity<List<Availability>> getTodayView(@PathVariable Long userId) {
-        System.out.println("Getting today's availability");
+        log.info("Getting today's availability for user {}", userId);
 
-        try {
-            List<Availability> todayView = availabilityService.getTodayView(userId);
-            return ResponseEntity.ok(todayView);
+        List<Availability> todayView = availabilityService.getTodayView(userId);
 
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting today view: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Error getting today view for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved today's view with {} records for user {}", todayView.size(), userId);
+        return ResponseEntity.ok(todayView);
     }
 
     @GetMapping("/{userId}/all")
     public ResponseEntity<List<Availability>> getAllUserAvailability(@PathVariable Long userId) {
-        System.out.println("Getting all availability for user");
+        log.info("Getting all availability for user {}", userId);
 
-        try {
-            List<Availability> allAvailability = availabilityService.getAllUserAvailability(userId);
-            return ResponseEntity.ok(allAvailability);
+        List<Availability> allAvailability = availabilityService.getAllUserAvailability(userId);
 
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting all availability: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Error getting all availability for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved {} total availability records for user {}", allAvailability.size(), userId);
+        return ResponseEntity.ok(allAvailability);
     }
 
     @GetMapping("/{userId}/upcoming")
     public ResponseEntity<List<Availability>> getUpcomingEvents(@PathVariable Long userId) {
-        System.out.println("Getting upcoming events");
+        log.info("Getting upcoming events for user {}", userId);
 
-        try {
-            List<Availability> upcoming = availabilityService.getUpcomingEvents(userId);
-            return ResponseEntity.ok(upcoming);
+        List<Availability> upcoming = availabilityService.getUpcomingEvents(userId);
 
-        } catch (Exception e) {
-            System.err.println("Error getting upcoming events for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved {} upcoming events for user {}", upcoming.size(), userId);
+        return ResponseEntity.ok(upcoming);
     }
 
     @GetMapping("/{userId}/current")
     public ResponseEntity<List<Availability>> getCurrentEvents(@PathVariable Long userId) {
-        System.out.println("Getting current events");
+        log.info("Getting current events for user {}", userId);
 
-        try {
-            List<Availability> current = availabilityService.getCurrentEvents(userId);
-            return ResponseEntity.ok(current);
+        List<Availability> current = availabilityService.getCurrentEvents(userId);
 
-        } catch (Exception e) {
-            System.err.println("Error getting current events for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved {} current events for user {}", current.size(), userId);
+        return ResponseEntity.ok(current);
     }
 
     @GetMapping("/{userId}/stats")
     public ResponseEntity<Map<String, Long>> getAvailabilityStatistics(@PathVariable Long userId) {
-        System.out.println("Getting availability statistics");
+        log.info("Getting availability statistics for user {}", userId);
 
-        try {
-            Map<String, Long> stats = availabilityService.getAvailabilityStatistics(userId);
-            return ResponseEntity.ok(stats);
+        Map<String, Long> stats = availabilityService.getAvailabilityStatistics(userId);
 
-        } catch (Exception e) {
-            System.err.println("Error getting availability statistics for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Retrieved availability statistics for user {}: {}", userId, stats);
+        return ResponseEntity.ok(stats);
     }
 }
