@@ -4,117 +4,128 @@ import com.friendavailability.api.dto.request.user.CreateUserRequest;
 import com.friendavailability.api.dto.request.user.UpdateUserRequest;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
-public class UserController{
-    private final UserService userService;
+@Slf4j
+public class UserController {
 
+    private final UserService userService;
     public UserController(UserService userService) {
         this.userService = userService;
-        System.out.println("UserController created and connected to UserService!");
+        log.info("UserController initialized successfully");
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(){
-        System.out.println("Getting all users");
-        try{
-            List<User> users = userService.findAllUsers();
-            return ResponseEntity.ok(users);
-        }catch(Exception err){
-            System.err.println("Error getting all users: " + err.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<List<User>> getAllUsers() {
+        log.info("Getting all users");
+
+        List<User> users = userService.findAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id){
-        System.out.println("Getting user with id: " + id);
-        try{
-            Optional<User> user = userService.findUserById(id);
-            return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-        }catch(Exception err){
-            System.err.println("Error getting user by id " + id + ": " + err.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        log.info("Getting user with ID: {}", id);
+
+        User user = userService.findUserById(id);  // Throws ResourceNotFoundException if not found
+        return ResponseEntity.ok(user);
     }
 
     @GetMapping("/by-email")
-    public ResponseEntity<User> getUserByEmail(@RequestParam String email){
-        System.out.println("Getting user with email " + email);
-        try{
-            Optional<User> user = userService.findUserByEmail(email);
-            return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-        }catch(Exception e){
-            System.out.println("Error getting user by email: " + email + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<User> getUserByEmail(@RequestParam String email) {
+        log.info("Getting user with email: {}", email);
+
+        User user = userService.findUserByEmail(email);  // Throws ResourceNotFoundException if not found
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping
     public ResponseEntity<User> createUser(@Valid @RequestBody CreateUserRequest request) {
-        System.out.println("POST /api/users - Creating user: " + request);
+        log.info("Creating user: {}", request.getEmail());
 
-        try {
-            User user;
-            if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
-                user = userService.createUserWithPassword(
-                        request.getName(),
-                        request.getEmail(),
-                        request.getPassword()
-                );
-            } else {
-                user = userService.createUser(request.getName(), request.getEmail());
-            }
-            return ResponseEntity.status(HttpStatus.CREATED).body(user);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error creating user: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.err.println("Error creating user: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        User user;
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            user = userService.createUserWithPassword(
+                    request.getName(),
+                    request.getEmail(),
+                    request.getPassword()
+            );
+        } else {
+            user = userService.createUser(request.getName(), request.getEmail());
         }
+
+        log.info("User created successfully: {} (ID: {})", user.getEmail(), user.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(user);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @Valid @RequestBody UpdateUserRequest request){
-        System.out.println("Updating user with Id " + id + ": " + request);
-        try{
-            Optional<User> updatedUser = userService.updateUser(id, request.getName(), request.getEmail());
-            return updatedUser.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-        }catch(RuntimeException e){
-            System.err.println("Error updating user: " + e.getMessage());
-            if(e.getMessage().contains("already exists")){
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            }else{
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-            }
-        }catch(Exception e){
-            System.err.println("Unexpected error updating user: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<User> updateUser(@PathVariable Long id,
+                                           @Valid @RequestBody UpdateUserRequest request) {
+        log.info("Updating user with ID: {}", id);
+
+        User updatedUser = userService.updateUser(id, request.getName(), request.getEmail());
+
+        log.info("User updated successfully: {} (ID: {})", updatedUser.getEmail(), updatedUser.getId());
+        return ResponseEntity.ok(updatedUser);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id){
-        System.out.println("Deleting user with id: " + id);
-        try{
-            boolean deleted = userService.deleteUserById(id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        log.info("Deleting user with ID: {}", id);
 
-            if(deleted){
-                return ResponseEntity.ok("User with id " + id + " deleted");
-            }else{
-                return ResponseEntity.notFound().build();
-            }
-        }catch(Exception e){
-            System.err.println("Error deleting user with id " + id + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        userService.deleteUserById(id);  // Throws ResourceNotFoundException if not found
+
+        log.info("User deleted successfully: {}", id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/link-google")
+    public ResponseEntity<User> linkGoogleAccount(@PathVariable Long id,
+                                                  @RequestParam String googleId) {
+        log.info("Linking Google account to user: {}", id);
+
+        User updatedUser = userService.linkGoogleAccount(id, googleId);
+
+        log.info("Google account linked successfully for user: {}", id);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+    @GetMapping("/active")
+    public ResponseEntity<List<User>> getActiveUsers() {
+        log.info("Getting active users");
+
+        List<User> activeUsers = userService.getActiveUsers();
+        return ResponseEntity.ok(activeUsers);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<User>> searchUsersByName(@RequestParam String name) {
+        log.info("Searching users by name: {}", name);
+
+        List<User> users = userService.searchUsersByName(name);
+        return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<Object[]> getUserStatistics() {
+        log.info("Getting user statistics");
+
+        Object[] stats = userService.getUserStatistics();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/email-available")
+    public ResponseEntity<Boolean> isEmailAvailable(@RequestParam String email) {
+        log.debug("Checking email availability: {}", email);
+
+        boolean available = userService.isEmailAvailable(email);
+        return ResponseEntity.ok(available);
     }
 }

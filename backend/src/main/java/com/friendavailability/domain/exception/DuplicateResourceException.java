@@ -18,13 +18,23 @@ public class DuplicateResourceException extends BusinessException{
         return new DuplicateResourceException("User", "email", email);
     }
 
-    public static DuplicateResourceException duplicateCircleName(String circleName){
-        return new DuplicateResourceException("Circle", "name", circleName);
-    }
-
     public static DuplicateResourceException duplicateUserEmail(String email) {
         return (DuplicateResourceException) new DuplicateResourceException("User", "email", email)
                 .withDetail("suggestion", "Please use a different email address");
+    }
+
+    public static DuplicateResourceException duplicateGoogleId(String googleId){
+        return (DuplicateResourceException) new DuplicateResourceException("User", "googleId", googleId)
+                .withDetail("suggestion", "Please use a different email address");
+    }
+
+    public static DuplicateResourceException duplicateFriendship(Long userId1, Long userId2){
+        return (DuplicateResourceException) new DuplicateResourceException("Friendship", "users", userId1 + " and " + userId2)
+                .withDetail("suggestion", "Users are already friends");
+    }
+
+    public static DuplicateResourceException duplicateCircleName(String circleName) {
+        return new DuplicateResourceException("Circle", "name", circleName);
     }
 
 

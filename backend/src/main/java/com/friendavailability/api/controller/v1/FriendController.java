@@ -3,6 +3,7 @@ package com.friendavailability.api.controller.v1;
 import com.friendavailability.domain.entity.Friend;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.service.FriendService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,182 +13,112 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/friends")
+@Slf4j
 public class FriendController {
+
     private final FriendService friendService;
 
     public FriendController(FriendService friendService) {
         this.friendService = friendService;
-        System.out.println("FriendController created and connected to FriendService");
+        log.info("FriendController initialized successfully");
     }
 
     @PostMapping("/request")
     public ResponseEntity<Friend> sendFriendRequest(@RequestParam Long fromUserId, @RequestParam Long toUserId) {
-        System.out.println("Sending friend request from " + fromUserId + " to " + toUserId);
+        log.info("Sending friend request from {} to {}", fromUserId, toUserId);
 
-        try {
-            Friend friendship = friendService.sendFriendRequest(fromUserId, toUserId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(friendship);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error sending friend request: " + e.getMessage());
+        Friend friendship = friendService.sendFriendRequest(fromUserId, toUserId);
 
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            } else if (e.getMessage().contains("yourself") || e.getMessage().contains("already exists")) {
-                return ResponseEntity.badRequest().build();
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
-        } catch (Exception e) {
-            System.err.println("Unexpected error sending friend request: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Friend request created successfully: {} -> {}", fromUserId, toUserId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(friendship);
     }
 
     @GetMapping("/{userId}")
     public ResponseEntity<List<User>> getUserFriends(@PathVariable Long userId) {
-        System.out.println("GET /api/friends/" + userId + " - Getting friends for user " + userId);
+        log.info("Getting friends for user {}", userId);
 
-        try {
-            List<User> friends = friendService.getFriends(userId);
-            return ResponseEntity.ok(friends);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting friends: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Unexpected error getting friends for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        List<User> friends = friendService.getFriends(userId);
+
+        log.info("Retrieved {} friends for user {}", friends.size(), userId);
+        return ResponseEntity.ok(friends);
     }
 
     @GetMapping("/{userId}/pending")
     public ResponseEntity<List<Friend>> getPendingRequests(@PathVariable Long userId) {
-        System.out.println("Getting pending requests for user " + userId);
+        log.info("Getting pending requests for user {}", userId);
 
-        try {
-            List<Friend> pendingRequests = friendService.getPendingRequests(userId);
-            return ResponseEntity.ok(pendingRequests);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting pending requests: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Unexpected error getting pending requests for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        List<Friend> pendingRequests = friendService.getPendingRequests(userId);
+
+        log.info("Retrieved {} pending requests for user {}", pendingRequests.size(), userId);
+        return ResponseEntity.ok(pendingRequests);
     }
 
     @PutMapping("/{friendshipId}/accept")
     public ResponseEntity<Friend> acceptFriendRequest(@PathVariable Long friendshipId, @RequestParam Long userId) {
-        System.out.println("Accepting friend request " + friendshipId + " by user " + userId);
+        log.info("Accepting friend request {} by user {}", friendshipId, userId);
 
-        try {
-            Friend updatedFriendship = friendService.acceptFriendRequest(friendshipId, userId);
-            return ResponseEntity.ok(updatedFriendship);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error accepting friend request: " + e.getMessage());
+        Friend updatedFriendship = friendService.acceptFriendRequest(friendshipId, userId);
 
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            } else if (e.getMessage().contains("Only the recipient") || e.getMessage().contains("not pending")) {
-                return ResponseEntity.badRequest().build();
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
-        } catch (Exception e) {
-            System.err.println("Unexpected error accepting friend request: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Friend request {} accepted successfully", friendshipId);
+        return ResponseEntity.ok(updatedFriendship);
     }
 
     @PutMapping("/{friendshipId}/reject")
     public ResponseEntity<Friend> rejectFriendRequest(@PathVariable Long friendshipId, @RequestParam Long userId) {
-        System.out.println("Rejecting friend request " + friendshipId + " by user " + userId);
+        log.info("Rejecting friend request {} by user {}", friendshipId, userId);
 
-        try {
-            Friend updatedFriendship = friendService.rejectFriendRequest(friendshipId, userId);
-            return ResponseEntity.ok(updatedFriendship);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error rejecting friend request: " + e.getMessage());
+        Friend updatedFriendship = friendService.rejectFriendRequest(friendshipId, userId);
 
-            if (e.getMessage().contains("not found")) {
-                return ResponseEntity.notFound().build();
-            } else if (e.getMessage().contains("Only the recipient")) {
-                return ResponseEntity.badRequest().build();
-            } else {
-                return ResponseEntity.badRequest().build();
-            }
-        } catch (Exception e) {
-            System.err.println("Unexpected error rejecting friend request: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        log.info("Friend request {} rejected successfully", friendshipId);
+        return ResponseEntity.ok(updatedFriendship);
     }
 
     @DeleteMapping("/remove")
-    public ResponseEntity<String> removeFriendship(@RequestParam Long userId1, @RequestParam Long userId2) {
-        System.out.println("Removing friendship between " + userId1 + " and " + userId2);
+    public ResponseEntity<Map<String, Object>> removeFriendship(@RequestParam Long userId1, @RequestParam Long userId2) {
+        log.info("Removing friendship between {} and {}", userId1, userId2);
 
-        try {
-            boolean removed = friendService.removeFriendship(userId1, userId2);
+        boolean removed = friendService.removeFriendship(userId1, userId2);
 
-            if (removed) {
-                String successMessage = "Friendship removed successfully between users " + userId1 + " and " + userId2;
-                return ResponseEntity.ok(successMessage);
-            } else {
-                String notFoundMessage = "No friendship found between users " + userId1 + " and " + userId2;
-                return ResponseEntity.notFound().build();
-            }
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error removing friendship: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.err.println("Unexpected error removing friendship between " + userId1 + " and " + userId2 + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Map<String, Object> response = Map.of(
+                "success", removed,
+                "message", removed ? "Friendship removed successfully" : "No friendship found to remove"
+        );
+
+        log.info("Friendship removal between {} and {}: {}", userId1, userId2, removed ? "successful" : "not found");
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{userId}/all")
-    public ResponseEntity<String> removeAllFriendshipsForUser(@PathVariable Long userId) {
-        System.out.println("Removing all friendships for user " + userId);
+    public ResponseEntity<Map<String, String>> removeAllFriendshipsForUser(@PathVariable Long userId) {
+        log.info("Removing all friendships for user {}", userId);
 
-        try {
-            friendService.removeAllFriendshipsForUser(userId);
-            String successMessage = "All friendships for user " + userId + " have been removed";
-            return ResponseEntity.ok(successMessage);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error removing all friendships: " + e.getMessage());
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            System.err.println("Unexpected error removing all friendships for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        friendService.removeAllFriendshipsForUser(userId);
+
+        Map<String, String> response = Map.of("message", "All friendships removed successfully");
+
+        log.info("All friendships removed for user {}", userId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/check")
     public ResponseEntity<Map<String, Boolean>> checkFriendship(@RequestParam Long userId1, @RequestParam Long userId2) {
-        System.out.println("Checking friendship between " + userId1 + " and " + userId2);
+        log.debug("Checking friendship between {} and {}", userId1, userId2);
 
-        try {
-            boolean areFriends = friendService.areFriends(userId1, userId2);
-            Map<String, Boolean> response = Map.of("areFriends", areFriends);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            System.err.println("Error checking friendship between " + userId1 + " and " + userId2 + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        boolean areFriends = friendService.areFriends(userId1, userId2);
+
+        Map<String, Boolean> response = Map.of("areFriends", areFriends);
+
+        log.debug("Friendship check between {} and {}: {}", userId1, userId2, areFriends);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{userId}/stats")
     public ResponseEntity<Map<String, Long>> getFriendshipStatistics(@PathVariable Long userId) {
-        System.out.println("Getting friendship statistics for user " + userId);
+        log.info("Getting friendship statistics for user {}", userId);
 
-        try {
-            Map<String, Long> stats = friendService.getFriendshipStatistics(userId);
-            return ResponseEntity.ok(stats);
-        } catch (RuntimeException e) {
-            System.err.println("Business logic error getting friendship statistics: " + e.getMessage());
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("Unexpected error getting friendship statistics for user " + userId + ": " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        Map<String, Long> stats = friendService.getFriendshipStatistics(userId);
+
+        log.info("Retrieved friendship statistics for user {}: {}", userId, stats);
+        return ResponseEntity.ok(stats);
     }
 }

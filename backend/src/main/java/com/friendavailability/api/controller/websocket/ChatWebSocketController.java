@@ -190,7 +190,7 @@ public class ChatWebSocketController {
     }
 
     private String getSenderName(Long userId) {
-        return userService.findUserById(userId).get().getName();
+        return userService.findUserById(userId).getName();
     }
 
     private void sendErrorToUser(Long userId, String errorCode, String errorMessage) {

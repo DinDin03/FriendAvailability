@@ -1,4 +1,4 @@
-package com.friendavailability.dto.circle;
+package com.friendavailability.api.dto.response.circle;
 
 import lombok.Data;
 import lombok.Builder;

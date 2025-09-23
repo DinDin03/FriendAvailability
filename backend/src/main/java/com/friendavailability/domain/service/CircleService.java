@@ -3,73 +3,76 @@ package com.friendavailability.domain.service;
 import com.friendavailability.domain.entity.Circle;
 import com.friendavailability.domain.entity.CircleMember;
 import com.friendavailability.domain.entity.enums.CircleRole;
-import com.friendavailability.domain.entity.Friend;
 import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.exception.*;
 import com.friendavailability.domain.repository.CircleRepository;
 import com.friendavailability.domain.repository.CircleMemberRepository;
-import com.friendavailability.domain.repository.UserRepository;
 import com.friendavailability.domain.repository.FriendRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class CircleService {
+
     private final CircleRepository circleRepository;
     private final CircleMemberRepository circleMemberRepository;
-    private final UserRepository userRepository;
     private final FriendRepository friendRepository;
+    private final UserService userService;
 
     public CircleService(CircleMemberRepository circleMemberRepository, CircleRepository circleRepository,
-            UserRepository userRepository, FriendRepository friendRepository) {
+                         FriendRepository friendRepository, UserService userService) {
         this.circleMemberRepository = circleMemberRepository;
         this.circleRepository = circleRepository;
-        this.userRepository = userRepository;
         this.friendRepository = friendRepository;
+        this.userService = userService;
+        log.info("CircleService created");
     }
 
     public Circle createCircle(Long creatorId, String name, String description, Integer maxMembers) {
-        validateUserExists(creatorId);
+        log.debug("Creating circle '{}' for user {}", name, creatorId);
+
+        User creator = userService.findUserById(creatorId);
         validateCircleName(name);
 
         if (description != null && description.length() >= 500) {
-            throw new RuntimeException("Description can not exceed 500 characters");
+            log.warn("Circle description too long: {} characters", description.length());
+            throw ValidationException.circleDescriptionTooLong(500);
         }
 
         if (circleRepository.existsActiveCircleWithNameForUser(creatorId, name)) {
-            throw new RuntimeException("You already have a circle with this name");
+            log.warn("Duplicate circle name '{}' for user {}", name, creatorId);
+            throw DuplicateResourceException.duplicateCircleName(name);
         }
 
-        try {
-            Circle circle = Circle.builder()
-                    .name(name.trim())
-                    .description(description != null ? description.trim() : null)
-                    .createdBy(creatorId)
-                    .maxMembers(maxMembers)
-                    .build();
+        Circle circle = Circle.builder()
+                .name(name.trim())
+                .description(description != null ? description.trim() : null)
+                .createdBy(creatorId)
+                .maxMembers(maxMembers)
+                .build();
 
-            Circle savedCircle = circleRepository.save(circle);
+        Circle savedCircle = circleRepository.save(circle);
+        addMemberToCircleInternal(savedCircle.getId(), creatorId, CircleRole.OWNER, creatorId);
 
-            addMemberToCircleInternal(savedCircle.getId(), creatorId, CircleRole.OWNER, creatorId);
-
-            return savedCircle;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to create circle " + e.getMessage());
-        }
+        log.info("Circle '{}' created successfully with ID {}", name, savedCircle.getId());
+        return savedCircle;
     }
 
     public Circle updateCircle(Long circleId, String newName, String description, Long requestingUserId) {
-        validateUserExists(requestingUserId);
+        log.debug("Updating circle {} by user {}", circleId, requestingUserId);
 
-        Circle circle = getCircleById(circleId);
+        User requestingUser = userService.findUserById(requestingUserId);
+        Circle circle = findCircleById(circleId);
 
         if (!circleMemberRepository.isUserAdminOrOwnerOfCircle(requestingUserId, circleId)) {
-            throw new RuntimeException("Only circle owners and admins can update circle details");
+            log.warn("User {} attempted to update circle {} without permission", requestingUserId, circleId);
+            throw InsufficientPermissionException.onlyAdminCanUpdate();
         }
 
         if (newName != null) {
@@ -78,205 +81,254 @@ public class CircleService {
             Optional<Circle> existingCircle = circleRepository.findByNameAndCreatedByAndIsActiveTrue(newName.trim(),
                     circle.getCreatedBy());
             if (existingCircle.isPresent() && !existingCircle.get().getId().equals(circleId)) {
-                throw new RuntimeException("you already have a circlr with this name");
+                log.warn("Circle name '{}' already exists for user {}", newName, circle.getCreatedBy());
+                throw DuplicateResourceException.duplicateCircleName(newName);
             }
 
             circle.setName(newName.trim());
         }
+
         if (description != null) {
             if (description.length() > 500) {
-                throw new RuntimeException("Circle description can not exceed 500 characters");
+                log.warn("Circle description too long: {} characters", description.length());
+                throw ValidationException.circleDescriptionTooLong(500);
             }
             circle.setDescription(description.trim());
         }
 
-        return circleRepository.save(circle);
+        Circle updatedCircle = circleRepository.save(circle);
+        log.info("Circle {} updated successfully", circleId);
+        return updatedCircle;
     }
 
-    public boolean deleteCircle(Long circleId, Long requestingUserId) {
-        validateUserExists(requestingUserId);
+    public void deleteCircle(Long circleId, Long requestingUserId) {
+        log.debug("Deleting circle {} by user {}", circleId, requestingUserId);
 
-        Circle circle = getCircleById(circleId);
+        User requestingUser = userService.findUserById(requestingUserId);
+        Circle circle = findCircleById(circleId);
 
         if (!circleMemberRepository.isUserOwnerOfCircle(requestingUserId, circleId)) {
-            throw new RuntimeException("Only the circle owner can delete the circle");
+            log.warn("User {} attempted to delete circle {} without permission", requestingUserId, circleId);
+            throw InsufficientPermissionException.onlyOwnerCanDelete();
         }
 
-        try {
-            circleMemberRepository.deactivateAllMembershipsForCircle(circleId);
-            circleRepository.softDeleteCircle(circleId);
+        circleMemberRepository.deactivateAllMembershipsForCircle(circleId);
+        circleRepository.softDeleteCircle(circleId);
 
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete circle " + e.getMessage());
-        }
+        log.info("Circle {} deleted successfully", circleId);
     }
 
     public CircleMember addMemberToCircle(Long circleId, Long userId, Long requestingUserId) {
-        validateUserExists(requestingUserId);
-        validateUserExists(userId);
+        log.debug("Adding user {} to circle {} by user {}", userId, circleId, requestingUserId);
 
-        Circle circle = getCircleById(circleId);
+        User requestingUser = userService.findUserById(requestingUserId);
+        User userToAdd = userService.findUserById(userId);
+        Circle circle = findCircleById(circleId);
 
         if (circleMemberRepository.isUserActiveMemberOfCircle(userId, circleId)) {
-            throw new RuntimeException("User is already a member of the circle");
+            log.warn("User {} is already a member of circle {}", userId, circleId);
+            throw InvalidOperationException.userAlreadyMember();
         }
 
         if (!circleMemberRepository.isUserAdminOrOwnerOfCircle(requestingUserId, circleId)) {
-            throw new RuntimeException("Only the owner and admins can add users");
+            log.warn("User {} attempted to add member to circle {} without permission", requestingUserId, circleId);
+            throw InsufficientPermissionException.onlyAdminCanAddMembers();
         }
 
         if (!userId.equals(requestingUserId)) {
             if (!friendRepository.existsFriendshipBetweenUsers(userId, requestingUserId)) {
-                throw new RuntimeException("Users must be friends first");
+                log.warn("Users {} and {} are not friends, cannot add to circle", userId, requestingUserId);
+                throw InvalidOperationException.mustBeFriendsFirst();
             }
         }
 
         if (circle.hasMaxMembers()) {
             long currentMemberCount = circleMemberRepository.countActiveMembersInCircle(circleId);
             if (currentMemberCount >= circle.getMaxMembers()) {
-                throw new RuntimeException("Circle has reached its maximum member limit");
+                log.warn("Circle {} has reached maximum capacity: {}", circleId, circle.getMaxMembers());
+                throw InvalidOperationException.circleAtMaxCapacity();
             }
         }
 
-        return addMemberToCircleInternal(circleId, userId, CircleRole.MEMBER, requestingUserId);
+        CircleMember newMember = addMemberToCircleInternal(circleId, userId, CircleRole.MEMBER, requestingUserId);
+        log.info("User {} added to circle {} successfully", userId, circleId);
+        return newMember;
     }
 
-    public boolean removeMemberFromCircle(Long circleId, Long userId, Long requestingUserId) {
-        validateUserExists(userId);
-        validateUserExists(requestingUserId);
+    public void removeMemberFromCircle(Long circleId, Long userId, Long requestingUserId) {
+        log.debug("Removing user {} from circle {} by user {}", userId, circleId, requestingUserId);
 
-        getCircleById(circleId);
+        User requestingUser = userService.findUserById(requestingUserId);
+        User userToRemove = userService.findUserById(userId);
+        Circle circle = findCircleById(circleId);
 
-        if (!circleMemberRepository.isUserActiveMemberOfCircle(userId, circleId)) {
-            throw new RuntimeException("User is not a member of the circle");
-        }
-
-        Optional<CircleMember> memberOpt = circleMemberRepository.findActiveMembershipRecord(userId, circleId);
-
-        if (memberOpt.isEmpty()) {
-            throw new RuntimeException("membership not found");
-        }
-
-        CircleMember member = memberOpt.get();
+        CircleMember member = findActiveMembershipRecord(userId, circleId);
 
         boolean isSelfRemoval = userId.equals(requestingUserId);
         boolean isAdminOrOwner = circleMemberRepository.isUserAdminOrOwnerOfCircle(requestingUserId, circleId);
 
         if (!isSelfRemoval && !isAdminOrOwner) {
-            throw new RuntimeException("Only admins, owner and yourself can remove");
+            log.warn("User {} attempted to remove user {} from circle {} without permission",
+                    requestingUserId, userId, circleId);
+            throw InsufficientPermissionException.onlyAdminCanRemoveMembers();
         }
 
         if (member.isOwner()) {
             long ownerCount = circleMemberRepository.countMembersByRole(circleId, CircleRole.OWNER);
             if (ownerCount <= 1) {
-                throw new RuntimeException("Either transfer the ownership or delete the circle");
+                log.warn("Cannot remove last owner from circle {}", circleId);
+                throw InvalidOperationException.cannotRemoveLastOwner();
             }
         }
 
-        try {
-            circleMemberRepository.deactivateMembership(userId, circleId);
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to remove member from circle: " + e.getMessage());
-        }
+        circleMemberRepository.deactivateMembership(userId, circleId);
+        log.info("User {} removed from circle {} successfully", userId, circleId);
     }
 
     public CircleMember updateMemberRole(Long circleId, Long memberId, CircleRole newRole, Long requestingUserId) {
-        validateUserExists(memberId);
-        validateUserExists(requestingUserId);
+        log.debug("Updating role of user {} in circle {} to {} by user {}", memberId, circleId, newRole, requestingUserId);
+
+        User requestingUser = userService.findUserById(requestingUserId);
+        User memberUser = userService.findUserById(memberId);
 
         if (newRole == null) {
-            throw new RuntimeException("New role can not be null");
+            throw ValidationException.invalidFieldValue("role", "New role cannot be null");
         }
 
         if (!circleMemberRepository.isUserOwnerOfCircle(requestingUserId, circleId)) {
-            throw new RuntimeException("Only the owner can update roles");
+            log.warn("User {} attempted to update role in circle {} without permission", requestingUserId, circleId);
+            throw InsufficientPermissionException.onlyOwnerCanUpdateRoles();
         }
 
         if (newRole == CircleRole.OWNER) {
-            throw new RuntimeException("Can not have multiple owners. Transfer ownership is required");
+            log.warn("Cannot directly assign owner role, must transfer ownership");
+            throw InvalidOperationException.cannotDirectlyAssignOwner();
         }
 
-        Optional<CircleMember> memberOpt = circleMemberRepository.findActiveMembershipRecord(memberId, circleId);
-        if (memberOpt.isEmpty()) {
-            throw new RuntimeException("User not found with id " + memberId);
-        }
-        CircleMember member = memberOpt.get();
+        CircleMember member = findActiveMembershipRecord(memberId, circleId);
 
         if (member.isOwner()) {
             long ownerCount = circleMemberRepository.countMembersByRole(circleId, CircleRole.OWNER);
             if (ownerCount <= 1) {
-                throw new RuntimeException("Cannot demote the last owner. Transfer ownership first.");
+                log.warn("Cannot demote last owner in circle {}", circleId);
+                throw InvalidOperationException.cannotDemoteLastOwner();
             }
         }
 
-        try {
-            circleMemberRepository.updateMemberRole(member.getId(), newRole);
-            return circleMemberRepository.findById(member.getId())
-                    .orElseThrow(() -> new RuntimeException("Failed to update member role"));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update member role: " + e.getMessage());
-        }
+        circleMemberRepository.updateMemberRole(member.getId(), newRole);
+        CircleMember updatedMember = circleMemberRepository.findById(member.getId())
+                .orElseThrow(() -> {
+                    log.error("Failed to find updated member {} after role update", member.getId());
+                    return ResourceNotFoundException.circleMemberNotFound(memberId, circleId);
+                });
+
+        log.info("Role of user {} in circle {} updated to {} successfully", memberId, circleId, newRole);
+        return updatedMember;
     }
 
-    public boolean transferOwnership(Long circleId, Long newOwnerId, Long currentOwnerId) {
-        validateUserExists(currentOwnerId);
-        validateUserExists(newOwnerId);
+    public void transferOwnership(Long circleId, Long newOwnerId, Long currentOwnerId) {
+        log.debug("Transferring ownership of circle {} from user {} to user {}", circleId, currentOwnerId, newOwnerId);
+
+        User currentOwner = userService.findUserById(currentOwnerId);
+        User newOwner = userService.findUserById(newOwnerId);
 
         if (!circleMemberRepository.isUserOwnerOfCircle(currentOwnerId, circleId)) {
-            throw new RuntimeException("Only the owner can transfer the ownership");
+            log.warn("User {} attempted to transfer ownership but is not the owner of circle {}", currentOwnerId, circleId);
+            throw InsufficientPermissionException.onlyOwnerCanTransferOwnership();
         }
 
-        Optional<CircleMember> memberOpt = circleMemberRepository.findActiveMembershipRecord(newOwnerId, circleId);
-        if (memberOpt.isEmpty()) {
-            throw new RuntimeException("The new owner must be a member of the circle first");
-        }
+        CircleMember newOwnerMember = findActiveMembershipRecord(newOwnerId, circleId);
+        CircleMember currentOwnerMember = findActiveMembershipRecord(currentOwnerId, circleId);
 
-        Optional<CircleMember> ownerOpt = circleMemberRepository.findActiveMembershipRecord(currentOwnerId, circleId);
-        if (ownerOpt.isEmpty()) {
-            throw new RuntimeException("current owner membership not found");
-        }
+        circleMemberRepository.updateMemberRole(newOwnerMember.getId(), CircleRole.OWNER);
+        circleMemberRepository.updateMemberRole(currentOwnerMember.getId(), CircleRole.ADMIN);
 
-        try {
-            CircleMember newOwner = memberOpt.get();
-            CircleMember currentOwner = ownerOpt.get();
-
-            circleMemberRepository.updateMemberRole(newOwner.getId(), CircleRole.OWNER);
-            circleMemberRepository.updateMemberRole(currentOwner.getId(), CircleRole.ADMIN);
-
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to transfer ownership: " + e.getMessage());
-        }
+        log.info("Ownership of circle {} transferred from user {} to user {} successfully",
+                circleId, currentOwnerId, newOwnerId);
     }
 
     public List<Circle> getCirclesForUser(Long userId) {
-        validateUserExists(userId);
-        return circleRepository.findCirclesForUser(userId);
+        log.debug("Getting circles for user {}", userId);
+
+        User user = userService.findUserById(userId);
+        List<Circle> circles = circleRepository.findCirclesForUser(userId);
+
+        log.debug("Found {} circles for user {}", circles.size(), userId);
+        return circles;
     }
 
     public List<Circle> getCirclesCreatedByUser(Long userId) {
-        validateUserExists(userId);
-        return circleRepository.findCirclesCreatedByUser(userId);
+        log.debug("Getting circles created by user {}", userId);
+
+        User user = userService.findUserById(userId);
+        List<Circle> circles = circleRepository.findCirclesCreatedByUser(userId);
+
+        log.debug("Found {} circles created by user {}", circles.size(), userId);
+        return circles;
     }
 
     public List<CircleMember> getCircleMembers(Long circleId, Long requestingUserId) {
-        validateUserExists(requestingUserId);
-        getCircleById(circleId); 
+        log.debug("Getting members of circle {} for user {}", circleId, requestingUserId);
+
+        User requestingUser = userService.findUserById(requestingUserId);
+        Circle circle = findCircleById(circleId);
 
         if (!circleMemberRepository.isUserActiveMemberOfCircle(requestingUserId, circleId)) {
-            throw new RuntimeException("You must be a member of the circle to view its members");
+            log.warn("User {} attempted to view members of circle {} without permission", requestingUserId, circleId);
+            throw InsufficientPermissionException.mustBeMemberToView();
         }
 
-        return circleMemberRepository.findActiveCircleMembers(circleId);
+        List<CircleMember> members = circleMemberRepository.findActiveCircleMembers(circleId);
+        log.debug("Found {} members in circle {}", members.size(), circleId);
+        return members;
     }
 
     public List<Circle> searchCircles(String searchTerm) {
+        log.debug("Searching circles with term: {}", searchTerm);
+
         if (searchTerm == null || searchTerm.trim().isEmpty()) {
             return List.of();
         }
-        return circleRepository.findActiveCirclesByNameContaining(searchTerm.trim());
+
+        List<Circle> circles = circleRepository.findActiveCirclesByNameContaining(searchTerm.trim());
+        log.debug("Found {} circles matching search term '{}'", circles.size(), searchTerm);
+        return circles;
+    }
+
+    public Circle getCircle(Long circleId) {
+        log.debug("Getting circle {}", circleId);
+        return findCircleById(circleId);
+    }
+
+    public boolean canUserAccessCircle(Long circleId, Long userId) {
+        log.debug("Checking if user {} can access circle {}", userId, circleId);
+
+        if (userId == null || circleId == null) {
+            return false;
+        }
+
+        try {
+            userService.findUserById(userId);
+            return circleMemberRepository.isUserActiveMemberOfCircle(userId, circleId);
+        } catch (ResourceNotFoundException e) {
+            log.debug("User {} not found, cannot access circle {}", userId, circleId);
+            return false;
+        }
+    }
+
+    public CircleMember getUserMembershipInCircle(Long circleId, Long userId) {
+        log.debug("Getting membership of user {} in circle {}", userId, circleId);
+
+        User user = userService.findUserById(userId);
+        return findActiveMembershipRecord(userId, circleId);
+    }
+
+    public long getMemberCountForCircle(Long circleId) {
+        log.debug("Getting member count for circle {}", circleId);
+
+        long count = circleMemberRepository.countActiveMembersInCircle(circleId);
+        log.debug("Circle {} has {} members", circleId, count);
+        return count;
     }
 
     private CircleMember addMemberToCircleInternal(Long circleId, Long userId, CircleRole role, Long invitedBy) {
@@ -288,8 +340,8 @@ public class CircleService {
             existingMembership.updateRole(role);
             return circleMemberRepository.save(existingMembership);
         } else {
-            User user = getUserById(userId);
-            Circle circle = getCircleById(circleId);
+            User user = userService.findUserById(userId);
+            Circle circle = findCircleById(circleId);
 
             CircleMember membership = CircleMember.builder()
                     .user(user)
@@ -304,63 +356,32 @@ public class CircleService {
         }
     }
 
-    private Circle getCircleById(Long circleId) {
+    private Circle findCircleById(Long circleId) {
         return circleRepository.findById(circleId)
                 .filter(Circle::isActiveCircle)
-                .orElseThrow(() -> new RuntimeException("Circle not found with ID: " + circleId));
+                .orElseThrow(() -> {
+                    log.warn("Circle not found with ID: {}", circleId);
+                    return ResourceNotFoundException.circleNotFound(circleId);
+                });
     }
 
-    private User getUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
-    }
-
-    private void validateUserExists(Long userId) {
-        if (userId == null) {
-            throw new RuntimeException("User ID cannot be null");
-        }
-        if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User not found with ID: " + userId);
-        }
+    private CircleMember findActiveMembershipRecord(Long userId, Long circleId) {
+        return circleMemberRepository.findActiveMembershipRecord(userId, circleId)
+                .orElseThrow(() -> {
+                    log.warn("Active membership not found for user {} in circle {}", userId, circleId);
+                    return ResourceNotFoundException.circleMemberNotFound(userId, circleId);
+                });
     }
 
     private void validateCircleName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new RuntimeException("Circle name cannot be empty");
+            throw ValidationException.circleNameRequired();
         }
         if (name.trim().length() < 2) {
-            throw new RuntimeException("Circle name must be at least 2 characters long");
+            throw ValidationException.circleNameTooShort(2);
         }
         if (name.trim().length() > 100) {
-            throw new RuntimeException("Circle name cannot exceed 100 characters");
+            throw ValidationException.circleNameTooLong(100);
         }
-    }
-
-    public Circle getCircle(Long circleId) {
-        return getCircleById(circleId);
-    }
-
-    public boolean canUserAccessCircle(Long circleId, Long userId) {
-        if (userId == null || circleId == null) {
-            return false;
-        }
-        
-        try {
-            validateUserExists(userId);
-            return circleMemberRepository.isUserActiveMemberOfCircle(userId, circleId);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public CircleMember getUserMembershipInCircle(Long circleId, Long userId) {
-        validateUserExists(userId);
-        
-        return circleMemberRepository.findActiveMembershipRecord(userId, circleId)
-                .orElseThrow(() -> new RuntimeException("You are not a member of this circle"));
-    }
-
-    public long getMemberCountForCircle(Long circleId){
-        return circleMemberRepository.countActiveMembersInCircle(circleId);
     }
 }

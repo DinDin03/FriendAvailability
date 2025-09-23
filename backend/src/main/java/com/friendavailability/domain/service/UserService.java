@@ -1,11 +1,13 @@
 package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.exception.*;
 import com.friendavailability.domain.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.regex.Pattern;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,6 +20,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private static final String EMAIL_REGEX =
+            "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(EMAIL_REGEX);
+
 
     public UserService(UserRepository userRepository){
         this.userRepository = userRepository;
@@ -27,7 +33,7 @@ public class UserService {
         System.out.println("Creating user: name=" + name + ", email=" + email);
 
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("User with email " + email + " already exists");
+            throw DuplicateResourceException.duplicateEmail(email);
         }
 
         User newUser = User.builder()
@@ -46,10 +52,10 @@ public class UserService {
         System.out.println("Creating user with password: name = " + name + " email = " + email);
 
         if(userRepository.existsByEmail(email)){
-            throw new RuntimeException("User with email " + email + " already exists");
+            throw DuplicateResourceException.duplicateEmail(email);
         }
         if(password == null || password.trim().length() < 8){
-            throw new RuntimeException("Password must be at least 8 characters");
+            throw ValidationException.passwordTooWeak();
         }
         String hashedPassword = passwordEncoder.encode(password);
 
@@ -70,10 +76,10 @@ public class UserService {
         System.out.println("Creating user with Google OAuth: name=" + name + ", email=" + email + ", googleId=" + googleId);
 
         if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("User with email " + email + " already exists");
+            throw DuplicateResourceException.duplicateEmail(email);
         }
         if (userRepository.existsByGoogleId(googleId)) {
-            throw new RuntimeException("Google ID " + googleId + " is already linked to another user");
+            throw DuplicateResourceException.duplicateGoogleId(googleId);
         }
         User newUser = User.builder()
                 .name(name)
@@ -95,104 +101,154 @@ public class UserService {
         return users;
     }
 
-    public Optional<User> findUserById(Long id){
-        System.out.println("Finding user with ID: " + id);
-        Optional<User> user = userRepository.findById(id);
+    public User findUserById(Long id){
+        log.debug("Finding user with ID: {}", id);
 
-        if(user.isPresent()){
-            System.out.println("Found user: " + user.get());
+        if(id == null || id <= 0){
+            log.warn("Invalid user ID provided: {}", id);
+            throw ValidationException.invalidUserId(id);
         }
-        else{
-            System.out.println("User not found with id: " + id);
-        }
-        return user;
-    }
-
-    public Optional<User> findUserByEmail(String email){
-        System.out.println("Finding user with Email: " + email);
-        Optional<User> user = userRepository.findByEmail(email);
-
-        if(user.isPresent()){
-            System.out.println("Found user " + user.get());
-        }
-        else{
-            System.out.println("User not found with email: " + email);
-        }
-        return user;
-    }
-
-    public Optional<User> findUserByGoogleId(String googleId) {
-        System.out.println("Finding user by Google ID: " + googleId);
-        Optional<User> user = userRepository.findByGoogleId(googleId);
-
-        if (user.isPresent()) {
-            System.out.println("Found user: " + user.get());
-        } else {
-            System.out.println("User not found with Google ID: " + googleId);
-        }
-
-        return user;
-    }
-
-    public Optional<User> updateUser(Long id, String name, String email){
-        System.out.println("Updating user: id = " + id + " name = " + name + " email = " + email);
         Optional<User> userOpt = userRepository.findById(id);
 
         if(userOpt.isEmpty()){
-            System.out.println("User not found with id: " + id);
-            return Optional.empty();
+            log.warn("User not found with ID: {}", id);
+            throw ResourceNotFoundException.userNotFound(id);
         }
 
-        User user = userOpt.get();
+        log.debug("Found user: {} ({})", userOpt.get().getName(), userOpt.get().getEmail());
+        return userOpt.get();
+    }
 
-        if(email != null && !user.getEmail().equals(email)){
-            if(userRepository.existsByEmail(email)){
-                throw new RuntimeException("User with email already exists");
+    public User findUserByEmail(String email){
+        log.debug("Finding user with email: {}", email);
+
+        if(email == null || email.trim().isEmpty()){
+            log.warn("Invalid email provided");
+            throw ValidationException.requiredEmail();
+        }
+
+        String normalisedEmail = email.trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findByEmail(normalisedEmail);
+
+        if(userOpt.isEmpty()){
+            log.warn("User not found with email: {}", normalisedEmail);
+            throw ResourceNotFoundException.userEmailNotFound(normalisedEmail);
+        }
+
+        log.debug("Found user: {} ({})", userOpt.get().getName(), userOpt.get().getEmail());
+        return userOpt.get();
+    }
+
+    public User findUserByGoogleId(String googleId) {
+        log.debug("Finding user with google id: {}", googleId);
+
+        if(googleId == null || googleId.trim().isEmpty()){
+            log.warn("Empty google ID provided");
+            throw ValidationException.invalidFieldValue("googleId", "Google ID cannot be empty");
+        }
+
+        Optional<User> userOpt = userRepository.findByGoogleId(googleId);
+        
+        if(userOpt.isEmpty()){
+            log.warn("User not found with google ID: {}", googleId);
+            throw ResourceNotFoundException.userGoogleIdNotFound(googleId);
+        }
+        log.debug("Found OAuth user: {} with email {}", userOpt.get().getName(), userOpt.get().getEmail());
+        return userOpt.get();
+    }
+
+    public User updateUser(Long id, String name, String email){
+        log.info("Updating user with ID: {}", id);
+
+        User user = findUserById(id);
+
+        if((name == null || name.trim().isEmpty()) && (email == null || email.trim().isEmpty())){
+            log.warn("No valid data to update");
+            throw ValidationException.noUserDataToUpdate();
+        }
+
+        boolean hasChanges = false;
+
+        if(email != null && !email.trim().isEmpty()){
+            String normalisedEmail = email.trim().toLowerCase(); 
+            if(!user.getEmail().equals(normalisedEmail)){
+                if(userRepository.existsByEmail(normalisedEmail)){
+                    log.warn("Attempt to update email to an existing email {}", normalisedEmail);
+                    throw DuplicateResourceException.duplicateUserEmail(normalisedEmail);
+                }
+                if(!isValidEmail(normalisedEmail)){
+                    throw ValidationException.invalidEmail(normalisedEmail);
+                }
+                user.setEmail(normalisedEmail);
+                hasChanges = true;
+                log.debug("Email updated for user with id: {} ({})", id, normalisedEmail);
             }
-            user.setEmail(email);
         }
 
-        if(name != null && !name.trim().isEmpty()){
-            user.setName(name);
+        if(name != null && name.trim().isEmpty()){
+            String trimmedName = name.trim();
+            if(!user.getName().equals(trimmedName)){
+                if(trimmedName.length() < 2){
+                    throw ValidationException.nameTooShort(2);
+                }
+                if(trimmedName.length() > 50){
+                    throw ValidationException.nameTooLong(50, trimmedName.length());
+                }
+
+                user.setName(trimmedName);
+                hasChanges = true;
+                log.debug("Name changed to {} for user with id ", trimmedName, id);
+            }
         }
 
+        if(!hasChanges){
+            log.debug("No changes detected for user {}", user.getEmail());
+            return user;
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
         User updatedUser = userRepository.save(user);
-        System.out.println("User updated: " + updatedUser);
-        return Optional.of(updatedUser);
+        log.info("User updated successfully: {} ({})", updatedUser.getName(), updatedUser.getEmail());
+        return updatedUser;
     }
 
-    public Optional<User> linkGoogleAccount(Long userId, String googleId){
-        System.out.println("Linking googleId " + googleId + " for user with id " + userId);
-
-        if(userRepository.existsByGoogleId(googleId)){
-            throw new RuntimeException("Google account is already linked to another user");
-        }
-
-        Optional<User> userOpt = userRepository.findById(userId);
-        if(userOpt.isPresent()){
-            User user = userOpt.get();
-            user.setGoogleId(googleId);
-            user.setEmailVerified(true);
-
-            User updatedUser = userRepository.save(user);
-            System.out.println("Linked google account " + updatedUser);
-            return Optional.of(updatedUser);
-        }
-        return Optional.empty();
-    }
-
-    public boolean deleteUserById(Long id){
-        System.out.println("Deleting user with id: " + id);
-        Optional<User> user = userRepository.findById(id);
-
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            System.out.println("Deleted user with id: " + id);
-            return true;
-        } else {
-            System.out.println("User not found with id: " + id);
+    public boolean isValidEmail(String email) {
+        if (email == null) {
             return false;
         }
+        return EMAIL_PATTERN.matcher(email).matches();
+    }
+
+    public User linkGoogleAccount(Long userId, String googleId) {
+        log.info("Linking Google account {} to user: {}", googleId, userId);
+        
+        if (googleId == null || googleId.trim().isEmpty()) {
+            throw ValidationException.invalidFieldValue("googleId", "Google ID cannot be empty");
+        }
+        
+        if (userRepository.existsByGoogleId(googleId)) {
+            log.warn("Google account {} is already linked to another user", googleId);
+            throw DuplicateResourceException.duplicateGoogleId(googleId);
+        }
+        
+        User user = findUserById(userId);
+        
+        user.setGoogleId(googleId);
+        user.setEmailVerified(true); 
+        user.setUpdatedAt(LocalDateTime.now());
+        
+        User updatedUser = userRepository.save(user);
+        
+        log.info("Google account linked successfully for user: {} ({})", 
+                updatedUser.getName(), updatedUser.getEmail());
+        return updatedUser;
+    }
+
+    public void deleteUserById(Long id){
+        log.info("Deleting user with ID: {}", id);
+        User user = findUserById(id);
+        userRepository.deleteById(id);
+        log.info("Deleted user with ID: {}", id);
     }
 
     public boolean validatePassword(User user, String password){
@@ -203,18 +259,6 @@ public class UserService {
          boolean matches = passwordEncoder.matches(password, user.getPasswordHash());
          System.out.println("Password verification for " + user.getEmail() + (matches ? "SUCCESS" : "FAILED"));
          return matches;
-    }
-
-    public boolean verifyUserEmail(Long id){
-        Optional<User> userOpt = userRepository.findById(id);
-        if(userOpt.isPresent()){
-            User user = userOpt.get();
-            user.setEmailVerified(true);
-            userRepository.save(user);
-            System.out.println("Verified email for user " + user.getEmail());
-            return true;
-        }
-        return false;
     }
 
     public List<User> getActiveUsers(){
@@ -231,14 +275,6 @@ public class UserService {
         return users;
     }
 
-    public List<User> getRecentUsers(int days){
-        LocalDateTime cutOffDate = LocalDateTime.now().minusDays(days);
-        System.out.println("Getting users registered after " + cutOffDate);
-        List<User> users = userRepository.findRecentlyActiveUsers(cutOffDate);
-        System.out.println("Found " + users.size() + " recent users");
-        return users;
-    }
-
     public Object[] getUserStatistics(){
         System.out.println("Getting user statistics");
         Object[] stats = userRepository.getUserStatistics();
@@ -252,9 +288,4 @@ public class UserService {
         return available;
     }
 
-    public boolean isGoogleIdAvailable(String googleId){
-        boolean available = !userRepository.existsByGoogleId(googleId);
-        System.out.println(googleId + (available ? " available" : " not available"));
-        return available;
-    }
 }

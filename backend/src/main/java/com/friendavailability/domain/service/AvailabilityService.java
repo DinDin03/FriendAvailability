@@ -3,8 +3,10 @@ package com.friendavailability.domain.service;
 import com.friendavailability.domain.entity.Availability;
 import com.friendavailability.domain.entity.enums.AvailabilitySource;
 import com.friendavailability.domain.entity.User;
+import com.friendavailability.domain.exception.ResourceNotFoundException;
+import com.friendavailability.domain.exception.ValidationException;
 import com.friendavailability.domain.repository.AvailabilityRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,25 +16,25 @@ import java.util.*;
 
 @Service
 @Transactional
+@Slf4j
 public class AvailabilityService {
+
     private final AvailabilityRepository availabilityRepository;
     private final UserService userService;
 
-    @Autowired
-    public AvailabilityService(AvailabilityRepository availabilityRepository, UserService userService){
+    public AvailabilityService(AvailabilityRepository availabilityRepository, UserService userService) {
         this.availabilityRepository = availabilityRepository;
         this.userService = userService;
-        System.out.println("AvailabilityService created");
+        log.info("AvailabilityService created");
     }
 
     public Availability createAvailability(Long userId, LocalDateTime startTime, LocalDateTime endTime,
                                            String title, String description, String location,
-                                           Boolean isBusy, Boolean isAllDay, Integer reminderMinutes){
+                                           Boolean isBusy, Boolean isAllDay, Integer reminderMinutes) {
 
-        System.out.println("Creating availability for user with id " + userId + ": " + description);
+        log.debug("Creating availability for user {} with title: {}", userId, title);
 
-        User user = userService.findUserById(userId).
-                orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+        User user = userService.findUserById(userId);
 
         Availability availability = Availability.builder()
                 .user(user)
@@ -50,28 +52,24 @@ public class AvailabilityService {
         validateAvailability(availability);
 
         List<Availability> conflicts = checkConflicts(userId, startTime, endTime);
-        if(!conflicts.isEmpty()){
-            System.out.println("Warning: Found " + conflicts.size() + " potential conflicts for new availability");
+        if (!conflicts.isEmpty()) {
+            log.warn("Found {} potential conflicts for new availability", conflicts.size());
             conflicts.forEach(c ->
-                    System.out.println("Conflict: " + c.getTitle() + " (" + c.getStartTime() + "-" + c.getEndTime() + ")"));
+                    log.debug("Conflict: {} ({} - {})", c.getTitle(), c.getStartTime(), c.getEndTime()));
         }
+
         Availability savedAvailability = availabilityRepository.save(availability);
-        System.out.println("Created availability: " + savedAvailability);
+        log.info("Created availability {} for user {}", savedAvailability.getId(), userId);
         return savedAvailability;
     }
 
-    public Optional<Availability> updateAvailability(Long id, LocalDateTime startTime, LocalDateTime endTime,
-                                                     String title, String description, String location,
-                                                     Boolean isBusy, Boolean isAllDay, Integer reminderMinutes){
+    public Availability updateAvailability(Long id, LocalDateTime startTime, LocalDateTime endTime,
+                                           String title, String description, String location,
+                                           Boolean isBusy, Boolean isAllDay, Integer reminderMinutes) {
 
-        System.out.println("Updating availability with id " + id);
-        Optional<Availability> availabilityOpt = availabilityRepository.findById(id);
-        if(availabilityOpt.isEmpty()){
-            System.out.println("Availability not found with id " + id);
-            return Optional.empty();
-        }
+        log.debug("Updating availability with id {}", id);
 
-        Availability availability = availabilityOpt.get();
+        Availability availability = findAvailabilityById(id);
 
         if (startTime != null) availability.setStartTime(startTime);
         if (endTime != null) availability.setEndTime(endTime);
@@ -92,48 +90,50 @@ public class AvailabilityService {
         );
 
         if (!conflicts.isEmpty()) {
-            System.out.println("Warning: Found " + conflicts.size() + " potential conflicts after update");
+            log.warn("Found {} potential conflicts after update", conflicts.size());
         }
 
         Availability updatedAvailability = availabilityRepository.save(availability);
-        System.out.println("Updated availability: " + updatedAvailability);
-        return Optional.of(updatedAvailability);
+        log.info("Updated availability {} for user {}", id, availability.getUser().getId());
+        return updatedAvailability;
     }
 
-    public boolean deleteAvailability(Long id){
-        System.out.println("Deleting availability with id " + id);
-        if(availabilityRepository.existsById(id)){
-            availabilityRepository.deleteById(id);
-            System.out.println("Deleted availability with id " + id);
-            return true;
-        }else{
-            System.out.println("Availability not found with id: " + id);
-            return false;
-        }
+    public void deleteAvailability(Long id) {
+        log.debug("Deleting availability with id {}", id);
+
+        Availability availability = findAvailabilityById(id);
+        availabilityRepository.deleteById(id);
+
+        log.info("Deleted availability {} for user {}", id, availability.getUser().getId());
     }
 
-    public Optional<Availability> getAvailabilityById(Long id) {
-        System.out.println("Getting availability with id: " + id);
-        return availabilityRepository.findById(id);
+    public Availability getAvailabilityById(Long id) {
+        log.debug("Getting availability with id {}", id);
+
+        return findAvailabilityById(id);
     }
 
     public List<Availability> getCalendarView(Long userId, LocalDateTime start, LocalDateTime end) {
-        System.out.println("Getting calendar view for user " + userId + " from " + start + " to " + end);
+        log.debug("Getting calendar view for user {} from {} to {}", userId, start, end);
+
+        userService.findUserById(userId);
 
         List<Availability> availability = availabilityRepository.findByUserIdAndDateRangeOverlap(userId, start, end);
-        System.out.println("Found " + availability.size() + " stored availability records");
+        log.debug("Found {} stored availability records for user {}", availability.size(), userId);
 
         return availability;
     }
 
     public List<Availability> getCompleteCalendarView(Long userId, LocalDateTime start, LocalDateTime end) {
-        System.out.println("Getting complete calendar view with implied free time for user " + userId);
+        log.debug("Getting complete calendar view with implied free time for user {}", userId);
+
+        userService.findUserById(userId);
 
         List<Availability> storedEvents = availabilityRepository.findByUserIdAndDateRangeOverlap(userId, start, end);
-        System.out.println("Found " + storedEvents.size() + " stored events");
+        log.debug("Found {} stored events for user {}", storedEvents.size(), userId);
 
         List<Availability> impliedFreeTime = calculateImpliedFreeTime(userId, start, end, storedEvents);
-        System.out.println("Calculated " + impliedFreeTime.size() + " implied free time slots");
+        log.debug("Calculated {} implied free time slots", impliedFreeTime.size());
 
         List<Availability> completeView = new ArrayList<>();
         completeView.addAll(storedEvents);
@@ -141,12 +141,12 @@ public class AvailabilityService {
 
         completeView.sort(Comparator.comparing(Availability::getStartTime));
 
-        System.out.println("Complete calendar view: " + completeView.size() + " total slots");
+        log.debug("Complete calendar view: {} total slots for user {}", completeView.size(), userId);
         return completeView;
     }
 
-    public List<Availability> getMonthView(Long userId, int year, int month){
-        System.out.println("Getting month view for user " + userId + " - " + year + "/" + month);
+    public List<Availability> getMonthView(Long userId, int year, int month) {
+        log.debug("Getting month view for user {} - {}/{}", userId, year, month);
 
         LocalDateTime monthStart = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime monthEnd = monthStart.plusMonths(1).minusSeconds(1);
@@ -154,7 +154,7 @@ public class AvailabilityService {
     }
 
     public List<Availability> getTodayView(Long userId) {
-        System.out.println("Getting today's availability for user " + userId);
+        log.debug("Getting today's availability for user {}", userId);
 
         LocalDate today = LocalDate.now();
         LocalDateTime dayStart = today.atStartOfDay();
@@ -164,42 +164,99 @@ public class AvailabilityService {
     }
 
     public List<Availability> getAllUserAvailability(Long userId) {
-        System.out.println("Getting all availability for user " + userId);
+        log.debug("Getting all availability for user {}", userId);
+
+        userService.findUserById(userId);
 
         List<Availability> availability = availabilityRepository.findByUserIdOrderByStartTime(userId);
-        System.out.println("Found " + availability.size() + " availability records for user " + userId);
+        log.debug("Found {} availability records for user {}", availability.size(), userId);
 
         return availability;
     }
 
-    private List<Availability> calculateImpliedFreeTime(Long userId, LocalDateTime start, LocalDateTime end, List<Availability> storedEvents) {
-        System.out.println("Calculating implied free time between " + storedEvents.size() + " events");
+    public List<Availability> getUpcomingEvents(Long userId) {
+        log.debug("Getting upcoming events for user {}", userId);
 
-        User user = userService.findUserById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+        userService.findUserById(userId);
 
+        LocalDateTime now = LocalDateTime.now();
+        List<Availability> upcoming = availabilityRepository.findByUserIdAndStartTimeAfterOrderByStartTime(userId, now);
+
+        log.debug("Found {} upcoming events for user {}", upcoming.size(), userId);
+        return upcoming;
+    }
+
+    public List<Availability> getCurrentEvents(Long userId) {
+        log.debug("Getting current events for user {}", userId);
+
+        userService.findUserById(userId);
+
+        LocalDateTime now = LocalDateTime.now();
+        List<Availability> current = availabilityRepository.findCurrentEvents(userId, now);
+
+        log.debug("Found {} current events for user {}", current.size(), userId);
+        return current;
+    }
+
+    public Map<String, Long> getAvailabilityStatistics(Long userId) {
+        log.debug("Getting availability statistics for user {}", userId);
+
+        userService.findUserById(userId);
+
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("totalEvents", availabilityRepository.countByUserId(userId));
+        stats.put("freeTimeSlots", availabilityRepository.countByUserIdAndIsBusyFalse(userId));
+        stats.put("busyTimeSlots", availabilityRepository.countByUserIdAndIsBusyTrue(userId));
+
+        log.debug("Availability statistics for user {}: {}", userId, stats);
+        return stats;
+    }
+
+    public boolean hasAvailabilityInRange(Long userId, LocalDateTime start, LocalDateTime end) {
+        log.debug("Checking availability range for user {} from {} to {}", userId, start, end);
+
+        userService.findUserById(userId);
+
+        return availabilityRepository.existsByUserIdAndStartTimeBetween(userId, start, end);
+    }
+
+    private Availability findAvailabilityById(Long id) {
+        return availabilityRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Availability not found with id {}", id);
+                    return ResourceNotFoundException.availabilityNotFound(id);
+                });
+    }
+
+    private List<Availability> calculateImpliedFreeTime(Long userId, LocalDateTime start, LocalDateTime end,
+                                                        List<Availability> storedEvents) {
+        log.debug("Calculating implied free time between {} events", storedEvents.size());
+
+        User user = userService.findUserById(userId);
         List<Availability> freeSlots = new ArrayList<>();
 
         storedEvents.sort(Comparator.comparing(Availability::getStartTime));
 
         LocalDateTime currentTime = start;
 
-        for(Availability event : storedEvents){
-            if(currentTime.isBefore(event.getStartTime())){
+        for (Availability event : storedEvents) {
+            if (currentTime.isBefore(event.getStartTime())) {
                 Availability freeSlot = createImpliedFreeSlot(user, currentTime, event.getStartTime());
                 freeSlots.add(freeSlot);
-                System.out.println("Created free slot: " + currentTime + " to " + event.getStartTime());
+                log.debug("Created free slot: {} to {}", currentTime, event.getStartTime());
             }
             if (event.getEndTime().isAfter(currentTime)) {
                 currentTime = event.getEndTime();
             }
         }
-        if(currentTime.isBefore(end)){
+
+        if (currentTime.isBefore(end)) {
             Availability freeSlot = createImpliedFreeSlot(user, currentTime, end);
             freeSlots.add(freeSlot);
-            System.out.println("Created final free slot: " + currentTime + " to " + end);
+            log.debug("Created final free slot: {} to {}", currentTime, end);
         }
-        System.out.println("Calculated " + freeSlots.size() + " implied free time slots");
+
+        log.debug("Calculated {} implied free time slots", freeSlots.size());
         return freeSlots;
     }
 
@@ -218,71 +275,41 @@ public class AvailabilityService {
     }
 
     private List<Availability> checkConflicts(Long userId, LocalDateTime startTime, LocalDateTime endTime) {
-        System.out.println("Checking conflicts for user " + userId + " between " + startTime + " and " + endTime);
+        log.debug("Checking conflicts for user {} between {} and {}", userId, startTime, endTime);
+
         List<Availability> overlapping = availabilityRepository.findOverlappingSlots(userId, startTime, endTime);
         List<Availability> conflicts = overlapping.stream()
                 .filter(Availability::getIsBusy)
                 .toList();
-        System.out.println("Found " + conflicts.size() + " potential conflicts");
+
+        log.debug("Found {} potential conflicts for user {}", conflicts.size(), userId);
         return conflicts;
     }
 
-    public void validateAvailability(Availability availability) {
-        System.out.println("Validating availability: " + availability.getTitle());
+    private void validateAvailability(Availability availability) {
+        log.debug("Validating availability: {}", availability.getTitle());
 
         if (!availability.isValidTimeRange()) {
-            throw new RuntimeException("Start time must be before end time");
+            log.warn("Invalid time range for availability: {} - {}",
+                    availability.getStartTime(), availability.getEndTime());
+            throw ValidationException.invalidTimeRange();
         }
 
         if (availability.getIsAllDay() && !availability.isValidAllDayEvent()) {
-            throw new RuntimeException("All day events must be full days");
+            log.warn("Invalid all day event configuration");
+            throw ValidationException.invalidAllDayEvent();
         }
 
         if (availability.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Cannot create events in the past");
+            log.warn("Attempted to create event in the past: {}", availability.getStartTime());
+            throw ValidationException.eventInPast();
         }
 
         if (availability.getReminderMinutes() != null && availability.getReminderMinutes() < 0) {
-            throw new RuntimeException("Reminder cannot be negative");
+            log.warn("Negative reminder minutes: {}", availability.getReminderMinutes());
+            throw ValidationException.negativeReminder();
         }
 
-        System.out.println("Availability validation passed");
+        log.debug("Availability validation passed for: {}", availability.getTitle());
     }
-
-    public List<Availability> getUpcomingEvents(Long userId) {
-        System.out.println("Getting upcoming events for user " + userId);
-
-        LocalDateTime now = LocalDateTime.now();
-        List<Availability> upcoming = availabilityRepository.findByUserIdAndStartTimeAfterOrderByStartTime(userId, now);
-
-        System.out.println("Found " + upcoming.size() + " upcoming events");
-        return upcoming;
-    }
-
-    public List<Availability> getCurrentEvents(Long userId) {
-        System.out.println("Getting current events for user " + userId);
-
-        LocalDateTime now = LocalDateTime.now();
-        List<Availability> current = availabilityRepository.findCurrentEvents(userId, now);
-
-        System.out.println("Found " + current.size() + " current events");
-        return current;
-    }
-
-    public Map<String, Long> getAvailabilityStatistics(Long userId) {
-        System.out.println("Getting availability statistics for user " + userId);
-
-        Map<String, Long> stats = new HashMap<>();
-        stats.put("totalEvents", availabilityRepository.countByUserId(userId));
-        stats.put("freeTimeSlots", availabilityRepository.countByUserIdAndIsBusyFalse(userId));
-        stats.put("busyTimeSlots", availabilityRepository.countByUserIdAndIsBusyTrue(userId));
-
-        System.out.println("Availability statistics: " + stats);
-        return stats;
-    }
-
-    public boolean hasAvailabilityInRange(Long userId, LocalDateTime start, LocalDateTime end) {
-        return availabilityRepository.existsByUserIdAndStartTimeBetween(userId, start, end);
-    }
-
 }

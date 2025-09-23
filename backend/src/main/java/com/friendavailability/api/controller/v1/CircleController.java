@@ -5,295 +5,198 @@ import com.friendavailability.domain.entity.Circle;
 import com.friendavailability.domain.entity.CircleMember;
 import com.friendavailability.domain.entity.enums.CircleRole;
 import com.friendavailability.domain.service.CircleService;
-import com.friendavailability.domain.service.UserService;
-
+import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/circles")
 @CrossOrigin(origins = "*")
+@Slf4j
 public class CircleController {
 
     private final CircleService circleService;
 
-    public CircleController(CircleService circleService, UserService userService) {
+    public CircleController(CircleService circleService) {
         this.circleService = circleService;
+        log.info("CircleController initialized successfully");
     }
 
     @PostMapping
-    public ResponseEntity<?> createCircle(@RequestBody CreateCircleRequest request, @RequestParam Long userId) {
-        try {
-            Circle circle = circleService.createCircle(userId, request.getName(), request.getDescription(),
-                    request.getMaxMembers());
+    public ResponseEntity<Circle> createCircle(@Valid @RequestBody CreateCircleRequest request, @RequestParam Long userId) {
+        log.info("Creating circle '{}' for user {}", request.getName(), userId);
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Circle created successfully",
-                    "circle", Map.of(
-                            "id", circle.getId(),
-                            "name", circle.getName(),
-                            "description", circle.getDescription(),
-                            "createdBy", circle.getCreatedBy(),
-                            "maxMembers", circle.getMaxMembers(),
-                            "circleColor", circle.getCircleColor(),
-                            "createdAt", circle.getCreatedAt(),
-                            "memberCount", 1)));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "CREATE_CIRCLE_FAILED"));
-        }
+        Circle circle = circleService.createCircle(userId, request.getName(), request.getDescription(), request.getMaxMembers());
+
+        log.info("Circle '{}' created successfully with ID {}", request.getName(), circle.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(circle);
     }
 
     @PutMapping("/{circleId}")
-    public ResponseEntity<?> updateCircle(@PathVariable Long circleId, @RequestBody UpdateCircleRequest request,
-            @RequestParam Long userId) {
-        try {
-            Circle circle = circleService.updateCircle(circleId, request.getName(), request.getDescription(), userId);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Circle updated successfully",
-                    "circle", Map.of(
-                            "id", circle.getId(),
-                            "name", circle.getName(),
-                            "description", circle.getDescription(),
-                            "updatedAt", circle.getUpdatedAt())));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "UPDATE_CIRCLE_FAILED"));
-        }
+    public ResponseEntity<Circle> updateCircle(@PathVariable Long circleId,
+                                               @Valid @RequestBody UpdateCircleRequest request,
+                                               @RequestParam Long userId) {
+        log.info("Updating circle {} by user {}", circleId, userId);
+
+        Circle circle = circleService.updateCircle(circleId, request.getName(), request.getDescription(), userId);
+
+        log.info("Circle {} updated successfully", circleId);
+        return ResponseEntity.ok(circle);
     }
 
     @DeleteMapping("/{circleId}")
-    public ResponseEntity<?> deleteCircle(@PathVariable Long circleId, @RequestParam Long userId) {
-        try {
-            boolean deleted = circleService.deleteCircle(circleId, userId);
+    public ResponseEntity<Map<String, String>> deleteCircle(@PathVariable Long circleId, @RequestParam Long userId) {
+        log.info("Deleting circle {} by user {}", circleId, userId);
 
-            if (deleted) {
-                return ResponseEntity.ok(Map.of(
-                        "message", "Circle deleted successfully"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "error", "Failed to delete circle",
-                        "errorCode", "DELETE_CIRCLE_FAILED"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "DELETE_CIRCLE_FAILED"));
-        }
+        circleService.deleteCircle(circleId, userId);
+
+        Map<String, String> response = Map.of("message", "Circle deleted successfully");
+
+        log.info("Circle {} deleted successfully", circleId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getUserCircles(@PathVariable Long userId) {
-        try {
-            List<Circle> userCircles = circleService.getCirclesForUser(userId);
-            List<Circle> createdCircles = circleService.getCirclesCreatedByUser(userId);
+    public ResponseEntity<Map<String, Object>> getUserCircles(@PathVariable Long userId) {
+        log.info("Getting circles for user {}", userId);
 
-            return ResponseEntity.ok(Map.of(
-                    "circles", userCircles,
-                    "totalCircles", userCircles.size(),
-                    "circlesAsOwner", createdCircles.size(),
-                    "circlesAsMember", userCircles.size() - createdCircles.size()));
+        List<Circle> userCircles = circleService.getCirclesForUser(userId);
+        List<Circle> createdCircles = circleService.getCirclesCreatedByUser(userId);
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "GET_CIRCLES_FAILED"));
-        }
+        Map<String, Object> response = Map.of(
+                "circles", userCircles,
+                "totalCircles", userCircles.size(),
+                "circlesAsOwner", createdCircles.size(),
+                "circlesAsMember", userCircles.size() - createdCircles.size()
+        );
+
+        log.info("Retrieved {} circles for user {}", userCircles.size(), userId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{circleId}")
-    public ResponseEntity<?> getCircle(@PathVariable Long circleId, @RequestParam Long userId) {
-        try {
-            boolean userAccess = circleService.canUserAccessCircle(circleId, userId);
+    public ResponseEntity<Map<String, Object>> getCircle(@PathVariable Long circleId, @RequestParam Long userId) {
+        log.info("Getting circle {} for user {}", circleId, userId);
 
-            if (!userAccess) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "error", "You are not a member of this circle ",
-                        "errorCode", "ACCESS_DENIED"));
-            }
+        Circle circle = circleService.getCircle(circleId);
+        long memberCount = circleService.getMemberCountForCircle(circleId);
+        CircleMember userMembership = circleService.getUserMembershipInCircle(circleId, userId);
 
-            Circle circle = circleService.getCircle(circleId);
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("id", circle.getId());
+        response.put("name", circle.getName());
+        response.put("description", circle.getDescription());
+        response.put("createdBy", circle.getCreatedBy());
+        response.put("maxMembers", circle.getMaxMembers());
+        response.put("currentMemberCount", memberCount);
+        response.put("circleColor", circle.getCircleColor());
+        response.put("createdAt", circle.getCreatedAt());
+        response.put("updatedAt", circle.getUpdatedAt());
+        response.put("userRole", userMembership.getRole().name());
+        response.put("canManageMembers", userMembership.canManageMembers());
+        response.put("canModifyCircle", userMembership.canModifyCircle());
+        response.put("isAtMaxCapacity", circle.isAtMaxCapacity());
 
-            long memberCount = circleService.getMemberCountForCircle(circleId);
-
-            CircleMember userMembership = circleService.getUserMembershipInCircle(circleId, userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", circle.getId());
-            response.put("name", circle.getName());
-            response.put("description", circle.getDescription());
-            response.put("createdBy", circle.getCreatedBy());
-            response.put("maxMembers", circle.getMaxMembers());
-            response.put("currentMemberCount", memberCount);
-            response.put("circleColor", circle.getCircleColor());
-            response.put("createdAt", circle.getCreatedAt());
-            response.put("updatedAt", circle.getUpdatedAt());
-            response.put("userRole", userMembership.getRole().name());
-            response.put("canManageMembers", userMembership.canManageMembers());
-            response.put("canModifyCircle", userMembership.canModifyCircle());
-            response.put("isAtMaxCapacity", circle.isAtMaxCapacity());
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "GET_CIRCLE_FAILED"));
-        }
+        log.info("Retrieved circle {} details for user {}", circleId, userId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{circleId}/members")
-    public ResponseEntity<?> getCircleMembers(@PathVariable Long circleId, @RequestParam Long userId) {
-        try {
-            boolean hasAccess = circleService.canUserAccessCircle(circleId, userId);
+    public ResponseEntity<Map<String, Object>> getCircleMembers(@PathVariable Long circleId, @RequestParam Long userId) {
+        log.info("Getting members of circle {} for user {}", circleId, userId);
 
-            if (!hasAccess) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                        "error", "you are not a member of this circle",
-                        "errorCode", "ACCESS_DENIED"));
-            }
+        List<CircleMember> members = circleService.getCircleMembers(circleId, userId);
 
-            List<CircleMember> members = circleService.getCircleMembers(circleId, userId);
+        Map<String, Object> response = Map.of(
+                "members", members,
+                "totalMembers", members.size(),
+                "ownerCount", members.stream().filter(m -> m.getRole().name().equals("OWNER")).count(),
+                "adminCount", members.stream().filter(m -> m.getRole().name().equals("ADMIN")).count(),
+                "memberCount", members.stream().filter(m -> m.getRole().name().equals("MEMBER")).count()
+        );
 
-            return ResponseEntity.ok(Map.of(
-                    "members", members,
-                    "totalMembers", members.size(),
-                    "OwnerCount", members.stream().filter(m -> m.getRole().name().equals("OWNER")).count(),
-                    "adminCount", members.stream().filter(m -> m.getRole().name().equals("ADMIN")).count(),
-                    "memberCount", members.stream().filter(m -> m.getRole().name().equals("MEMBER")).count(),
-                    "message", "Circle members retrieved successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "GET_MEMBERS_FAILED"));
-        }
+        log.info("Retrieved {} members for circle {}", members.size(), circleId);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{circleId}/members")
-    public ResponseEntity<?> addMemberToCircle(@PathVariable Long circleId, @RequestParam Long requestingUserId,
-            @RequestBody AddMemberToCircleRequest request) {
+    public ResponseEntity<CircleMember> addMemberToCircle(@PathVariable Long circleId,
+                                                          @RequestParam Long requestingUserId,
+                                                          @Valid @RequestBody AddMemberToCircleRequest request) {
+        log.info("Adding user {} to circle {} by user {}", request.getUserId(), circleId, requestingUserId);
 
-        try {
-            CircleMember membership = circleService.addMemberToCircle(circleId, request.getUserId(), requestingUserId);
+        CircleMember membership = circleService.addMemberToCircle(circleId, request.getUserId(), requestingUserId);
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Member added successfully",
-                    "membership", Map.of(
-                            "id", membership.getId(),
-                            "userId", membership.getUserId(),
-                            "userName", membership.getUserName(),
-                            "role", membership.getRole().name(),
-                            "joinedAt", membership.getJoinedAt())));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "ADD_MEMBER_FAILED"));
-        }
+        log.info("User {} added to circle {} successfully", request.getUserId(), circleId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(membership);
     }
 
     @DeleteMapping("/{circleId}/members/{userId}")
-    public ResponseEntity<?> removeMemberFromCircle(@PathVariable Long circleId, @PathVariable Long userId,
-            @RequestParam Long requestingUserId) {
-        try {
-            boolean deleted = circleService.removeMemberFromCircle(circleId, userId, requestingUserId);
+    public ResponseEntity<Map<String, String>> removeMemberFromCircle(@PathVariable Long circleId,
+                                                                      @PathVariable Long userId,
+                                                                      @RequestParam Long requestingUserId) {
+        log.info("Removing user {} from circle {} by user {}", userId, circleId, requestingUserId);
 
-            if (deleted) {
-                return ResponseEntity.ok(Map.of(
-                        "message", "Member removed successfully"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "erorr", "Failed to remove member",
-                        "errorCode", "REMOVE_FAILED"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "REMOVE_MEMBER_FAILED"));
-        }
+        circleService.removeMemberFromCircle(circleId, userId, requestingUserId);
+
+        Map<String, String> response = Map.of("message", "Member removed successfully");
+
+        log.info("User {} removed from circle {} successfully", userId, circleId);
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{circleId}/members/{userId}/role")
-    public ResponseEntity<?> updateMemberRole(@PathVariable Long circleId,
-            @PathVariable Long userId,
-            @RequestBody UpdateMemberRoleRequest request,
-            @RequestParam Long requestingUserId) {
-        try {
-            CircleRole newRole = CircleRole.valueOf(request.getNewRole().toUpperCase());
-            CircleMember updatedMember = circleService.updateMemberRole(circleId, userId, newRole, requestingUserId);
+    public ResponseEntity<CircleMember> updateMemberRole(@PathVariable Long circleId,
+                                                         @PathVariable Long userId,
+                                                         @Valid @RequestBody UpdateMemberRoleRequest request,
+                                                         @RequestParam Long requestingUserId) {
+        log.info("Updating role of user {} in circle {} to {} by user {}", userId, circleId, request.getNewRole(), requestingUserId);
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Member role updated successfully",
-                    "member", Map.of(
-                            "userId", updatedMember.getUserId(),
-                            "userName", updatedMember.getUserName(),
-                            "newRole", updatedMember.getRole().name(),
-                            "roleDisplayName", updatedMember.getRoleDisplayName())));
+        CircleRole newRole = CircleRole.valueOf(request.getNewRole().toUpperCase());
+        CircleMember updatedMember = circleService.updateMemberRole(circleId, userId, newRole, requestingUserId);
 
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", "Invalid role: " + request.getNewRole(),
-                    "errorCode", "INVALID_ROLE"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "UPDATE_ROLE_FAILED"));
-        }
+        log.info("Role of user {} in circle {} updated to {} successfully", userId, circleId, newRole);
+        return ResponseEntity.ok(updatedMember);
     }
 
     @PostMapping("/{circleId}/transfer-ownership")
-    public ResponseEntity<?> transferOwnership(@PathVariable Long circleId,
-            @RequestBody TransferOwnershipRequest request,
-            @RequestParam Long currentOwnerId) {
-        try {
-            boolean transferred = circleService.transferOwnership(
-                    circleId,
-                    request.getNewOwnerId(),
-                    currentOwnerId);
+    public ResponseEntity<Map<String, String>> transferOwnership(@PathVariable Long circleId,
+                                                                 @Valid @RequestBody TransferOwnershipRequest request,
+                                                                 @RequestParam Long currentOwnerId) {
+        log.info("Transferring ownership of circle {} from user {} to user {}", circleId, currentOwnerId, request.getNewOwnerId());
 
-            if (transferred) {
-                return ResponseEntity.ok(Map.of(
-                        "message", "Ownership transferred successfully"));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "error", "Failed to transfer ownership",
-                        "errorCode", "TRANSFER_FAILED"));
-            }
+        circleService.transferOwnership(circleId, request.getNewOwnerId(), currentOwnerId);
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "TRANSFER_OWNERSHIP_FAILED"));
-        }
+        Map<String, String> response = Map.of("message", "Ownership transferred successfully");
+
+        log.info("Ownership of circle {} transferred successfully", circleId);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchCircles(@RequestParam String searchTerm, @RequestParam Long userId) {
-        try {
-            List<Circle> allResults = circleService.searchCircles(searchTerm);
-            List<Circle> userCircles = circleService.getCirclesForUser(userId);
+    public ResponseEntity<Map<String, Object>> searchCircles(@RequestParam String searchTerm, @RequestParam Long userId) {
+        log.info("Searching circles with term '{}' for user {}", searchTerm, userId);
 
-            List<Circle> filteredResults = allResults.stream()
-                    .filter(circle -> userCircles.stream()
-                            .anyMatch(userCircle -> userCircle.getId().equals(circle.getId())))
-                    .toList();
+        List<Circle> allResults = circleService.searchCircles(searchTerm);
+        List<Circle> userCircles = circleService.getCirclesForUser(userId);
 
-            return ResponseEntity.ok(Map.of(
-                    "searchResults", filteredResults,
-                    "totalResults", filteredResults.size(),
-                    "searchTerm", searchTerm,
-                    "message", "Search completed successfully"));
+        List<Circle> filteredResults = allResults.stream()
+                .filter(circle -> userCircles.stream()
+                        .anyMatch(userCircle -> userCircle.getId().equals(circle.getId())))
+                .toList();
 
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "error", e.getMessage(),
-                    "errorCode", "SEARCH_FAILED"));
-        }
+        Map<String, Object> response = Map.of(
+                "searchResults", filteredResults,
+                "totalResults", filteredResults.size(),
+                "searchTerm", searchTerm
+        );
 
+        log.info("Found {} circles matching search term '{}' for user {}", filteredResults.size(), searchTerm, userId);
+        return ResponseEntity.ok(response);
     }
 }

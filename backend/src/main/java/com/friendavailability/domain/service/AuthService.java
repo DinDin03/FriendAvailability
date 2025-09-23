@@ -41,66 +41,59 @@ public class AuthService {
         this.googleJwtVerificationService = googleJwtVerificationService;
     }
 
-   public User authenticateAndLogin(AuthRequest loginRequest, HttpServletRequest httpRequest){
+    public User authenticateAndLogin(AuthRequest loginRequest, HttpServletRequest httpRequest){
         log.info("Processing login attempt for email: {}", loginRequest.getEmail());
 
-       String email = loginRequest.getEmail();
-       String password = loginRequest.getPassword();
+        String email = loginRequest.getEmail();
+        String password = loginRequest.getPassword();
 
-       if (email == null || email.trim().isEmpty()) {
-           log.warn("Login attempt with empty email");
-           throw ValidationException.requiredEmail();
-       }
-       if (password == null || password.isEmpty()) {
-           log.warn("Login attempt with empty password for email: {}", email);
-           throw ValidationException.requiredPassword();
-       }
+        if (email == null || email.trim().isEmpty()) {
+            log.warn("Login attempt with empty email");
+            throw ValidationException.requiredEmail();
+        }
+        if (password == null || password.isEmpty()) {
+            log.warn("Login attempt with empty password for email: {}", email);
+            throw ValidationException.requiredPassword();
+        }
 
-       String normalisedEmail = email.trim().toLowerCase();
+        String normalisedEmail = email.trim().toLowerCase();
 
-       Optional<User> userOptional = userService.findUserByEmail(normalisedEmail);
-       if(userOptional.isEmpty()){
-           log.warn("Login attempt for non-existent email: {}", normalisedEmail);
-           passwordEncoder.encode("prevent_timing_attacks");
-           throw ResourceNotFoundException.userEmailNotFound(normalisedEmail);
-       }
+        User user = userService.findUserByEmail(normalisedEmail);
 
-       User user = userOptional.get();
+        if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
+            log.warn("Login attempt for OAuth user with password: {}", normalisedEmail);
+            throw InvalidOperationException.googleUserUsingPassword(normalisedEmail);
+        }
 
-       if (user.getPasswordHash() == null || user.getPasswordHash().isEmpty()) {
-           log.warn("Login attempt for OAuth user with password: {}", normalisedEmail);
-           throw InvalidOperationException.googleUserUsingPassword(normalisedEmail);
-       }
+        if(!user.getEmailVerified()){
+            log.warn("Login attempt for unverified email: {}", normalisedEmail);
+            throw ValidationException.loginWithUnverifiedEmail(normalisedEmail);
+        }
 
-       if(!user.getEmailVerified()){
-           log.warn("Login attempt for unverified email: {}", normalisedEmail);
-           throw ValidationException.loginWithUnverifiedEmail(normalisedEmail);
-       }
+        if(!user.getIsActive()){
+            log.warn("Login attempt for disabled account: {}", normalisedEmail);
+            throw ValidationException.loginWithDisabledAccount(normalisedEmail);
+        }
 
-       if(!user.getIsActive()){
-           log.warn("Login attempt for disabled account: {}", normalisedEmail);
-           throw ValidationException.loginWithDisabledAccount(normalisedEmail);
-       }
+        boolean passwordMatches = passwordEncoder.matches(password, user.getPasswordHash());
+        if(!passwordMatches){
+            log.warn("Invalid password attempt for email: {}", normalisedEmail);
+            throw ValidationException.incorrectCredentials();
+        }
 
-       boolean passwordMatches = passwordEncoder.matches(password, user.getPasswordHash());
-       if(!passwordMatches){
-           log.warn("Invalid password attempt for email: {}", normalisedEmail);
-           throw ValidationException.incorrectCredentials();
-       }
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
 
-       user.setUpdatedAt(LocalDateTime.now());
-       userRepository.save(user);
+        HttpSession session = httpRequest.getSession();
+        session.setAttribute("authenticated", true);
+        session.setAttribute("user_id", user.getId());
 
-       HttpSession session = httpRequest.getSession();
-       session.setAttribute("authenticated", true);
-       session.setAttribute("user_id", user.getId());
+        log.info("Successful authentication for user: {} with ID: {}", user.getEmail(), user.getId());
 
-       log.info("Successful authentication for user: {} with ID: {}", user.getEmail(), user.getId());
+        return user;
+    }
 
-       return user;
-   }
-
-   public User registerUser(AuthRequest registerRequest){
+    public User registerUser(AuthRequest registerRequest){
         String name = registerRequest.getName();
         String email = registerRequest.getEmail();
         String password = registerRequest.getPassword();
@@ -111,29 +104,32 @@ public class AuthService {
 
         String normalisedEmail = email.trim().toLowerCase();
 
-        if(userService.findUserByEmail(normalisedEmail).isPresent()){
+        try {
+            userService.findUserByEmail(normalisedEmail);
             log.warn("Registration attempt for existing email: {}", normalisedEmail);
             throw DuplicateResourceException.duplicateEmail(normalisedEmail);
+        } catch (ResourceNotFoundException e) {
+            // Expected - email is available
         }
 
         String hashedPassword = passwordEncoder.encode(password);
         log.debug("Password hashed successfully for email: {}", normalisedEmail);
 
-       User newUser = User.builder()
-               .name(name.trim())
-               .email(normalisedEmail)
-               .passwordHash(hashedPassword)
-               .isActive(true)
-               .emailVerified(false)
-               .createdAt(LocalDateTime.now())
-               .updatedAt(LocalDateTime.now())
-               .build();
+        User newUser = User.builder()
+                .name(name.trim())
+                .email(normalisedEmail)
+                .passwordHash(hashedPassword)
+                .isActive(true)
+                .emailVerified(false)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-       User savedUser = userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
 
-       log.info("User registered successfully for email: {} with ID: {}", savedUser.getEmail(), savedUser.getId());
-       return savedUser;
-   }
+        log.info("User registered successfully for email: {} with ID: {}", savedUser.getEmail(), savedUser.getId());
+        return savedUser;
+    }
 
     public User getCurrentAuthenticatedUser(HttpServletRequest request) {
         log.debug("Checking current user authentication");
@@ -142,11 +138,9 @@ public class AuthService {
         if (session != null && session.getAttribute("authenticated") != null) {
             Long userId = (Long) session.getAttribute("user_id");
             if (userId != null) {
-                Optional<User> user = userService.findUserById(userId);
-                if (user.isPresent()) {
-                    log.debug("Found session authenticated user: {}", user.get().getId());
-                    return user.get();
-                }
+                User user = userService.findUserById(userId);
+                log.debug("Found session authenticated user: {}", user.getId());
+                return user;
             }
         }
 
@@ -157,18 +151,15 @@ public class AuthService {
             if (principal instanceof OidcUser oidcUser) {
                 String googleId = oidcUser.getSubject();
 
-                Optional<User> user = userService.findUserByGoogleId(googleId);
-                if (user.isPresent()) {
-                    log.debug("Found OAuth-authenticated user: {}", user.get().getId());
-                    return user.get();
-                }
+                User user = userService.findUserByGoogleId(googleId);
+                log.debug("Found OAuth-authenticated user: {}", user.getId());
+                return user;
             }
         }
 
         log.warn("No authenticated user found");
-        throw new ResourceNotFoundException("No authenticated user found");
+        throw ResourceNotFoundException.noAuthenticatedUser();
     }
-
 
     private void validateUserRegistrationInput(String name, String email, String rawPassword) {
         if (name == null || name.trim().isEmpty()) {
@@ -188,7 +179,6 @@ public class AuthService {
             throw ValidationException.invalidEmail(email.trim());
         }
 
-        // Password validation using convenience methods
         if (rawPassword == null || rawPassword.isEmpty()) {
             throw ValidationException.requiredPassword();
         }
@@ -207,36 +197,22 @@ public class AuthService {
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
         log.info("Processing password change for user: {}", userId);
 
-        try {
-            Optional<User> userOptional = userService.findUserById(userId);
-            if (userOptional.isEmpty()) {
-                log.warn("Password change attempt for non existent user: {}", userId);
-                throw new ResourceNotFoundException("User", userId);
-            }
+        User user = userService.findUserById(userId);
 
-            User user = userOptional.get();
-
-            if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
-                log.warn("Incorrect current password for user: {}", userId);
-                throw new ValidationException("Current password is incorrect");
-            }
-
-            validateUserRegistrationInput(user.getName(), user.getEmail(), newPassword);
-
-            String hashedPassword = passwordEncoder.encode(newPassword);
-            user.setPasswordHash(hashedPassword);
-            user.setUpdatedAt(LocalDateTime.now());
-            userRepository.save(user);
-
-            log.info("Password changed successfully for user: {}", userId);
-            return true;
-
-        } catch (BusinessException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error during password change for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to change password: " + e.getMessage());
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
+            log.warn("Incorrect current password for user: {}", userId);
+            throw ValidationException.invalidPassword("Current password is incorrect");
         }
+
+        validateUserRegistrationInput(user.getName(), user.getEmail(), newPassword);
+
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        user.setPasswordHash(hashedPassword);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        log.info("Password changed successfully for user: {}", userId);
+        return true;
     }
 
     public boolean isEmailAvailable(String email) {
@@ -245,10 +221,16 @@ public class AuthService {
         }
 
         String normalizedEmail = email.trim().toLowerCase();
-        boolean available = userService.findUserByEmail(normalizedEmail).isEmpty();
-        log.debug("Email availability check for {}: {}", normalizedEmail, available);
-        return available;
+        try {
+            userService.findUserByEmail(normalizedEmail);
+            log.debug("Email availability check for {}: false", normalizedEmail);
+            return false;
+        } catch (ResourceNotFoundException e) {
+            log.debug("Email availability check for {}: true", normalizedEmail);
+            return true;
+        }
     }
+
     private boolean isValidEmail(String email) {
         if (email == null) return false;
         String emailRegex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
@@ -270,18 +252,21 @@ public class AuthService {
     }
 
     private User processGoogleUser(String googleId, String email, String name) {
-        Optional<User> userByGoogleId = userService.findUserByGoogleId(googleId);
-        if (userByGoogleId.isPresent()) {
-            return userByGoogleId.get();
+        try {
+            User userByGoogleId = userService.findUserByGoogleId(googleId);
+            return userByGoogleId;
+        } catch (ResourceNotFoundException e) {
+            // No user with this Google ID
         }
 
-        Optional<User> userByEmail = userService.findUserByEmail(email);
-        if (userByEmail.isPresent()) {
-            User user = userByEmail.get();
-            if (user.getGoogleId() == null) {
-                return userService.linkGoogleAccount(user.getId(), googleId).orElse(user);
+        try {
+            User userByEmail = userService.findUserByEmail(email);
+            if (userByEmail.getGoogleId() == null) {
+                return userService.linkGoogleAccount(userByEmail.getId(), googleId);
             }
-            return user;
+            return userByEmail;
+        } catch (ResourceNotFoundException e) {
+            // No user with this email
         }
 
         return userService.createUserWithGoogle(name, email, googleId);
