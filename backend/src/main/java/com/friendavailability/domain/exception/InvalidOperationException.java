@@ -60,6 +60,14 @@ public class InvalidOperationException extends BusinessException {
                 .withDetail("suggestion", "Only pending requests can be accepted or deleted");
     }
 
+    public static InvalidOperationException friendShipAlreadyExists(Long userId1, Long userId2){
+        return (InvalidOperationException) new InvalidOperationException(
+                "Already friends with the user")
+                .withDetail("user1", userId1)
+                .withDetail("user2", userId2)
+                .withDetail("suggestion", "Users are already friends or have a pending request");
+    }
+
 
 
 

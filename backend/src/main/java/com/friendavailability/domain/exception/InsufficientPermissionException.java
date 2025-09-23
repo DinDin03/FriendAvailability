@@ -28,4 +28,11 @@ public class InsufficientPermissionException extends BusinessException {
             .withDetail("userId1", userId1)
             .withDetail("userId2", userId2);
     }
+
+    public static InsufficientPermissionException onlyRecipientsCanRespond(String action){
+        return (InsufficientPermissionException) new InsufficientPermissionException(String.format("Only recipients can %s this friend request", action))
+                .withDetail("action", action)
+                .withDetail("suggestion", "Only the person who received the request can respond to it");
+    }
+
 }
