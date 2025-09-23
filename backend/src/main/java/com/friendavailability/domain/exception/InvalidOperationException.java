@@ -137,6 +137,14 @@ public class InvalidOperationException extends BusinessException {
                 .withDetail("suggestion", "Please enter some text before sending");
     }
 
+    public static InvalidOperationException failedToUpdateReadStatus(Long userId, Long roomId) {
+        return new InvalidOperationException("Failed to update read status for user in room");
+    }
+
+    public static InvalidOperationException failedToDeleteMessage(Long messageId) {
+        return new InvalidOperationException("Failed to delete message");
+    }
+
 
 
 

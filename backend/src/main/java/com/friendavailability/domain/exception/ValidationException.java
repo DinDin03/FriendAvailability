@@ -215,6 +215,15 @@ public class ValidationException extends BusinessException {
                 .withDetail("suggestion", "Please enter a longer search term");
     }
 
+    public static ValidationException searchTermRequired() {
+        return new ValidationException("searchTerm", "Search term cannot be empty");
+    }
+
+    public static ValidationException searchTermTooShort(int minLength) {
+        return new ValidationException("searchTerm",
+                String.format("Search term must be at least %d characters", minLength));
+    }
+
 
 
 }

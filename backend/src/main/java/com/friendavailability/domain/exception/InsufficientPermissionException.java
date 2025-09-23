@@ -102,4 +102,12 @@ public class InsufficientPermissionException extends BusinessException {
                 .withDetail("roomId", roomId)
                 .withDetail("suggestion", "Make sure you are a participant in this chat room");
     }
+
+    public static InsufficientPermissionException cannotDeleteMessage(Long userId) {
+        return new InsufficientPermissionException("Only message sender or room admin can delete messages");
+    }
+
+    public static InsufficientPermissionException notActiveParticipant(Long userId, Long roomId) {
+        return new InsufficientPermissionException("User is not an active participant in this room");
+    }
 }
