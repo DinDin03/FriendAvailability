@@ -33,6 +33,10 @@ public class DuplicateResourceException extends BusinessException{
                 .withDetail("suggestion", "Users are already friends");
     }
 
+    public static DuplicateResourceException duplicateCircleName(String circleName) {
+        return new DuplicateResourceException("Circle", "name", circleName);
+    }
+
 
 
 }
