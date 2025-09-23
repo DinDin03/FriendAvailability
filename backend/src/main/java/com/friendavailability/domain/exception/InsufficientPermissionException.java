@@ -70,9 +70,10 @@ public class InsufficientPermissionException extends BusinessException {
                 .withDetail("suggestion", "Make sure you are a participant in this chat room");
     }
 
-    public static InsufficientPermissionException cannotSendMessageToRoom(Long roomId) {
+    public static InsufficientPermissionException cannotSendMessageToRoom(Long senderId, Long roomId) {
         return (InsufficientPermissionException) new InsufficientPermissionException(
                 "You don't have permission to send messages in this chat room")
+                .withDetail("senderId", senderId)
                 .withDetail("roomId", roomId)
                 .withDetail("suggestion", "Contact a group admin to get permission");
     }

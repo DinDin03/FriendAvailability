@@ -7,6 +7,7 @@ echo ""
 
 # shellcheck disable=SC2164
 cd backend
+mvn clean
 ./mvnw spring-boot:run
 # shellcheck disable=SC2103
 cd ..

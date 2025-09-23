@@ -2,8 +2,12 @@ package com.friendavailability.domain.service;
 
 import com.friendavailability.domain.entity.*;
 import com.friendavailability.domain.entity.enums.MessageType;
+import com.friendavailability.domain.exception.InsufficientPermissionException;
+import com.friendavailability.domain.exception.ResourceNotFoundException;
+import com.friendavailability.domain.exception.ValidationException;
 import com.friendavailability.domain.repository.*;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +20,7 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@Slf4j
 public class MessageService {
 
     private final MessageRepository messageRepository;
@@ -29,60 +34,55 @@ public class MessageService {
         this.chatParticipantRepository = chatParticipantRepository;
         this.chatRoomRepository = chatRoomRepository;
         this.userRepository = userRepository;
+        log.info("MessageService initialised successfully");
     }
 
     public Message sendMessage(Long senderId, Long roomId, String content){
         validateUserCanAccessRoom(senderId, roomId);
         validateMessageContent(content);
 
-        try{
-            Message message = Message.builder()
-            .senderId(senderId)
-                .chatRoomId(roomId)
-                .content(content.trim())
-                .messageType(MessageType.TEXT)
-                .sentAt(LocalDateTime.now())
-                .build();
-            Message savedMessage = messageRepository.save(message);
-            updateRoomLastActivity(roomId);
-            return savedMessage;
-        }catch(Exception e){
-            throw new RuntimeException("Failed to send message: " + e.getMessage(), e);
+        Message message = Message.builder()
+        .senderId(senderId)
+            .chatRoomId(roomId)
+            .content(content.trim())
+            .messageType(MessageType.TEXT)
+            .sentAt(LocalDateTime.now())
+            .build();
+        Message savedMessage = messageRepository.save(message);
 
-        }
+        log.info("Message sent successfully from user {} to room {}", senderId, roomId);
+        updateRoomLastActivity(roomId);
+        return savedMessage;
     }
 
     private void validateMessageContent(String content) {
-        if(content.trim().isEmpty() || content == null){
-            throw new RuntimeException("Message can not be empty");
+        if(content == null || content.trim().isEmpty()){
+            throw ValidationException.messageContentRequired();
         }
         if(content.length() > 1000){
-            throw new RuntimeException("Message can not exceed 1000 characters");
+            throw ValidationException.messageContentTooLong(1000);
         }
     }
 
     private void validateUserCanAccessRoom(Long senderId, Long roomId) {
         if(!userRepository.existsById(senderId)){
-            throw new RuntimeException("User not found with id " + senderId);
+            throw ResourceNotFoundException.userNotFound(senderId);
         }
         if(!chatRoomRepository.existsById(roomId)){
-            throw new RuntimeException("Chat not found with id " + roomId);
+            throw ResourceNotFoundException.chatRoomNotFound(roomId);
         }
         if(!chatParticipantRepository.isUserActiveInRoom(senderId, roomId)){
-            throw new RuntimeException("User " + senderId + " is not authorised to send messages to room " + roomId);
+            throw InsufficientPermissionException.cannotSendMessageToRoom(senderId, roomId);
         }
     }
 
     private void updateRoomLastActivity(Long roomId){
-        try{
-            Optional<ChatRoom> roomOpt = chatRoomRepository.findById(roomId);
-            if(roomOpt.isPresent()){
-                ChatRoom room = roomOpt.get();
-                room.setUpdatedAt(LocalDateTime.now());
-                chatRoomRepository.save(room);
-            }
-        }catch(Exception e){
-            System.out.println("Failed to update the room activity " + e.getMessage());
+
+        Optional<ChatRoom> roomOpt = chatRoomRepository.findById(roomId);
+        if(roomOpt.isPresent()){
+            ChatRoom room = roomOpt.get();
+            room.setUpdatedAt(LocalDateTime.now());
+            chatRoomRepository.save(room);
         }
     }
 
