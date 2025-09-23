@@ -11,8 +11,7 @@
 	<groupId>com.friendavailability</groupId>
 	<artifactId>backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Friend Availability App</name>
-	<description>Demo project for Spring Boot</description>
+	<name>Linkups</name>
 	<properties>
 		<java.version>17</java.version>
 		<maven.compiler.source>17</maven.compiler.source>
