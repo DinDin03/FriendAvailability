@@ -26,7 +26,7 @@ class UserServiceTest extends BaseUnitTest{
     private UserService userService;
 
     @Test
-    void shouldFindUserById(){
+    void shouldFindUserById() {
         Long userId = 1L;
         User expectedUser = User.builder()
                 .id(userId)
@@ -42,4 +42,18 @@ class UserServiceTest extends BaseUnitTest{
         then(userRepository).should().findById(userId);
 
     }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenUserNotFound(){
+        Long userId = 999L;
+        given(userRepository.findById(userId)).willReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.findUserById(userId))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("User with id 999 not found");
+
+        then(userRepository).should().findById(userId);
+    }
+
+
 }
