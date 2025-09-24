@@ -14,7 +14,7 @@ import java.sql.Connection;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TestInfrastructureVerificationTest extends BaseIntegrationTest{
+class TestInfrastructureVerificationTest extends BaseIntegrationTest{
 
     @Autowired
     private Environment environment;
