@@ -28,6 +28,18 @@ class UserServiceTest extends BaseUnitTest{
     @Test
     void shouldFindUserById(){
         Long userId = 1L;
+        User expectedUser = User.builder()
+                .id(userId)
+                .email("test@example.com")
+                .name("Test User")
+                .build();
+
+        given(userRepository.findById(userId)).willReturn(Optional.of(expectedUser));
+
+        User actualUser = userService.findUserById(userId);
+
+        assertThat(actualUser).isEqualTo(expectedUser);
+        then(userRepository).should().findById(userId);
 
     }
 }
