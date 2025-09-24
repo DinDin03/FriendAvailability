@@ -3,7 +3,7 @@ package com.friendavailability.config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.mail.MailSender;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.mockito.Mockito;
@@ -13,8 +13,8 @@ public class LinkUpTestConfiguration {
 
     @Bean
     @Primary
-    public MailSender mockMailSender(){
-        return Mockito.mock(MailSender.class);
+    public JavaMailSender mockMailSender(){
+        return Mockito.mock(JavaMailSender.class);
     }
 
     @Bean

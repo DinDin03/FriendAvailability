@@ -44,7 +44,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     @Query("SELECT m FROM Message m " +
             "WHERE m.chatRoomId = :chatRoomId " +
-            "AND DATE(m.sentAt) = CURRENT_DATE " +
+            "AND FUNCTION('DATE', m.sentAt) = CURRENT_DATE " +
             "ORDER BY m.sentAt ASC")
     List<Message> findTodaysMessages(@Param("chatRoomId") Long chatRoomId);
 
