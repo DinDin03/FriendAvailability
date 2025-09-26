@@ -5,8 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 export const ALTDashboard = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, isAuthenticated, isLoading } = useAuth();
     const navigate = useNavigate();
+
+    if (isLoading) {
+        return <div className='p-8'>Loading...</div>;
+    }
 
     const handleLogout = async () => {
         try {
@@ -53,7 +57,7 @@ export const ALTDashboard = () => {
                 {/* Welcome Section */}
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
                     <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                        Welcome back, {user?.name}! 👋
+                        Welcome back, {user?.name.split(' ')[0]}! 👋
                     </h2>
                     <p className="text-gray-600">
                         Here's what's happening with your friends and availability.

@@ -1,9 +1,35 @@
 import { X } from "lucide-react"
 import { useLoginForm } from '@/hooks/useLoginForm.jsx'
+import { useAuth } from "@/contexts/AuthContext";
+import { authService } from "@/services/authService";
 import { GoogleLogin } from "@react-oauth/google";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export const LoginForm = ({ onClose }) => {
+
+    const { updateUser } = useAuth();
+    const navigate = useNavigate();
     const { formData, errors, isSubmitting, handleInputChange, handleFormSubmit } = useLoginForm();
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const userData = await authService.googleLogin(credentialResponse);
+            if (userData) {
+                updateUser(userData)
+                const userFirstName = userData.name.split(' ')[0];
+                toast.success(`Welcome back, ${userFirstName || "User"}!`);
+                navigate("/dashboard");
+            }
+        } catch (error) {
+            toast.error(error.message || "Google sign-in failed.")
+        }
+    } 
+
+    const handleGoogleError = (error) => {
+        console.error("Google login failed:", error);
+        toast.error("Google sign-in failed. Please try again.")
+    }
 
     return (
         <div 
@@ -93,11 +119,8 @@ export const LoginForm = ({ onClose }) => {
             </form>
             <div className="mt-4 flex items-center justify-center">
                 <GoogleLogin
-                    onSuccess={(credentialResponse) => {
-                        console.log(credentialResponse)
-                        navigate("/dashboard")
-                    }}
-                    onError={() => console.log("Login failed")}
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
                 />
             </div>
             
