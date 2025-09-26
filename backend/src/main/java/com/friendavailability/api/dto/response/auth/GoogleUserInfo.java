@@ -1,4 +1,11 @@
-public static class GoogleUserInfo {
+package com.friendavailability.api.dto.response.auth;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class GoogleUserInfo {
 
         private final String googleId;
         private final String email;

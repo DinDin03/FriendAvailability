@@ -68,7 +68,6 @@ class MessageServiceTest extends BaseUnitTest {
         Message savedMessage = Message.builder()
                 .id(100L)
                 .senderId(senderId)
-                .senderName("Sender")
                 .chatRoomId(roomId)
                 .content(content)
                 .messageType(MessageType.TEXT)
@@ -77,7 +76,7 @@ class MessageServiceTest extends BaseUnitTest {
         
         given(userRepository.findById(senderId)).willReturn(Optional.of(sender));
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(chatRoom));
-        given(chatParticipantRepository.isUserActiveParticipant(senderId, roomId)).willReturn(true);
+        given(chatParticipantRepository.isUserActiveInRoom(senderId, roomId)).willReturn(true);
         given(messageRepository.save(any(Message.class))).willReturn(savedMessage);
 
         // When
@@ -92,7 +91,7 @@ class MessageServiceTest extends BaseUnitTest {
         
         then(userRepository).should().findById(senderId);
         then(chatRoomRepository).should().findById(roomId);
-        then(chatParticipantRepository).should().isUserActiveParticipant(senderId, roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(senderId, roomId);
         then(messageRepository).should().save(any(Message.class));
     }
 
@@ -138,7 +137,7 @@ class MessageServiceTest extends BaseUnitTest {
         
         given(userRepository.findById(senderId)).willReturn(Optional.of(sender));
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(chatRoom));
-        given(chatParticipantRepository.isUserActiveParticipant(senderId, roomId)).willReturn(false);
+        given(chatParticipantRepository.isUserActiveInRoom(senderId, roomId)).willReturn(false);
 
         // When & Then
         assertThatThrownBy(() -> messageService.sendMessage(senderId, roomId, content))
@@ -147,7 +146,7 @@ class MessageServiceTest extends BaseUnitTest {
         
         then(userRepository).should().findById(senderId);
         then(chatRoomRepository).should().findById(roomId);
-        then(chatParticipantRepository).should().isUserActiveParticipant(senderId, roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(senderId, roomId);
         then(messageRepository).should(never()).save(any(Message.class));
     }
 
@@ -174,8 +173,8 @@ class MessageServiceTest extends BaseUnitTest {
         List<Message> messages = List.of(message2, message1); // Newest first
         Page<Message> messagePage = new PageImpl<>(messages, PageRequest.of(page, size), 2);
         
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
-        given(messageRepository.findMessagesInRoomOrderedByTime(eq(roomId), any(Pageable.class)))
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
+        given(messageRepository.findByChatRoomIdOrderBySentAtDesc(eq(roomId), any(Pageable.class)))
                 .willReturn(messagePage);
 
         // When
@@ -188,8 +187,8 @@ class MessageServiceTest extends BaseUnitTest {
         assertThat(result.getTotalElements()).isEqualTo(2);
         assertThat(result.getTotalPages()).isEqualTo(1);
         
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
-        then(messageRepository).should().findMessagesInRoomOrderedByTime(eq(roomId), any(Pageable.class));
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
+        then(messageRepository).should().findByChatRoomIdOrderBySentAtDesc(eq(roomId), any(Pageable.class));
     }
 
     @Test
@@ -200,15 +199,15 @@ class MessageServiceTest extends BaseUnitTest {
         int page = 0;
         int size = 20;
         
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(false);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(false);
 
         // When & Then
         assertThatThrownBy(() -> messageService.getMessageHistory(roomId, userId, page, size))
                 .isInstanceOf(InsufficientPermissionException.class)
                 .hasMessageContaining("User does not have access to this chat room");
         
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
-        then(messageRepository).should(never()).findMessagesInRoomOrderedByTime(any(), any());
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
+        then(messageRepository).should(never()).findByChatRoomIdOrderBySentAtDesc(any(), any());
     }
 
     @Test
@@ -232,7 +231,7 @@ class MessageServiceTest extends BaseUnitTest {
         
         List<Message> recentMessages = List.of(recentMessage2, recentMessage1);
         
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
         given(messageRepository.findRecentMessagesInRoom(roomId, limit)).willReturn(recentMessages);
 
         // When
@@ -242,7 +241,7 @@ class MessageServiceTest extends BaseUnitTest {
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(recentMessage2, recentMessage1);
         
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
         then(messageRepository).should().findRecentMessagesInRoom(roomId, limit);
     }
 
@@ -265,7 +264,7 @@ class MessageServiceTest extends BaseUnitTest {
         
         List<Message> searchResults = List.of(matchingMessage1, matchingMessage2);
         
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
         given(messageRepository.searchMessagesInRoom(roomId, searchTerm)).willReturn(searchResults);
 
         // When
@@ -275,7 +274,7 @@ class MessageServiceTest extends BaseUnitTest {
         assertThat(result).hasSize(2);
         assertThat(result).containsExactly(matchingMessage1, matchingMessage2);
         
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
         then(messageRepository).should().searchMessagesInRoom(roomId, searchTerm);
     }
 
@@ -286,8 +285,8 @@ class MessageServiceTest extends BaseUnitTest {
         Long userId = 1L;
         long expectedCount = 5L;
         
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
-        given(messageRepository.countUnreadMessagesForUser(roomId, userId)).willReturn(expectedCount);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
+        given(messageRepository.countUnreadMessages(eq(roomId), eq(userId), any(LocalDateTime.class))).willReturn(expectedCount);
 
         // When
         long result = messageService.getUnreadMessagesCount(roomId, userId);
@@ -295,8 +294,8 @@ class MessageServiceTest extends BaseUnitTest {
         // Then
         assertThat(result).isEqualTo(expectedCount);
         
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
-        then(messageRepository).should().countUnreadMessagesForUser(roomId, userId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
+        then(messageRepository).should().countUnreadMessages(eq(roomId), eq(userId), any(LocalDateTime.class));
     }
 
     @Test
@@ -305,13 +304,13 @@ class MessageServiceTest extends BaseUnitTest {
         Long roomId = 10L;
         Long userId = 1L;
         
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
 
         // When
         messageService.markMessagesAsRead(roomId, userId);
 
         // Then
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
-        then(messageRepository).should().markMessagesAsReadForUser(roomId, userId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
+        then(chatParticipantRepository).should().updateLastReadTime(eq(userId), eq(roomId), any(LocalDateTime.class));
     }
 }

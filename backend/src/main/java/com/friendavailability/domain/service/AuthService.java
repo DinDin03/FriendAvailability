@@ -5,7 +5,7 @@ import com.friendavailability.api.dto.response.auth.AuthResponse;
 import com.friendavailability.domain.entity.User;
 import com.friendavailability.domain.exception.*;
 import com.friendavailability.domain.repository.UserRepository;
-
+import com.friendavailability.api.dto.response.auth.GoogleUserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -242,7 +242,7 @@ public class AuthService {
     }
 
     public User authenticateWithGoogleJwt(String credential, HttpServletRequest request) {
-        GoogleJwtVerificationService.GoogleUserInfo userInfo = googleJwtVerificationService.verifyToken(credential);
+        GoogleUserInfo userInfo = googleJwtVerificationService.verifyToken(credential);
 
         User user = processGoogleUser(userInfo.getGoogleId(), userInfo.getEmail(), userInfo.getName());
 

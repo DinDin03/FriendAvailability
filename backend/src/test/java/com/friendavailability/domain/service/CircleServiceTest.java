@@ -479,7 +479,7 @@ class CircleServiceTest extends BaseUnitTest {
         
         given(userService.findUserById(memberId)).willReturn(member);
         given(circleRepository.findById(circleId)).willReturn(Optional.of(circle));
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(memberId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(memberId, circleId))
                 .willReturn(Optional.of(membership));
 
         // ============== WHEN ==============
@@ -508,7 +508,7 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(adminId)).willReturn(admin);
         given(userService.findUserById(memberId)).willReturn(member);
         given(circleRepository.findById(circleId)).willReturn(Optional.of(circle));
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(memberId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(memberId, circleId))
                 .willReturn(Optional.of(membership));
         given(circleMemberRepository.isUserAdminOrOwnerOfCircle(adminId, circleId))
                 .willReturn(true); // Admin has permission
@@ -538,7 +538,7 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(regularUserId)).willReturn(regularUser);
         given(userService.findUserById(targetMemberId)).willReturn(targetMember);
         given(circleRepository.findById(circleId)).willReturn(Optional.of(circle));
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(targetMemberId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(targetMemberId, circleId))
                 .willReturn(Optional.of(membership));
         given(circleMemberRepository.isUserAdminOrOwnerOfCircle(regularUserId, circleId))
                 .willReturn(false); // Not admin or owner
@@ -567,7 +567,7 @@ class CircleServiceTest extends BaseUnitTest {
         
         given(userService.findUserById(ownerId)).willReturn(owner);
         given(circleRepository.findById(circleId)).willReturn(Optional.of(circle));
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(ownerId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(ownerId, circleId))
                 .willReturn(Optional.of(ownerMembership));
         given(circleMemberRepository.countMembersByRole(circleId, CircleRole.OWNER))
                 .willReturn(1L); // Only one owner
@@ -611,7 +611,7 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(ownerId)).willReturn(owner);
         given(userService.findUserById(memberId)).willReturn(member);
         given(circleMemberRepository.isUserOwnerOfCircle(ownerId, circleId)).willReturn(true);
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(memberId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(memberId, circleId))
                 .willReturn(Optional.of(originalMembership));
         given(circleMemberRepository.findById(originalMembership.getId()))
                 .willReturn(Optional.of(updatedMembership));
@@ -667,7 +667,7 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(ownerId)).willReturn(owner);
         given(userService.findUserById(ownerId)).willReturn(owner); // Called twice
         given(circleMemberRepository.isUserOwnerOfCircle(ownerId, circleId)).willReturn(true);
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(ownerId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(ownerId, circleId))
                 .willReturn(Optional.of(ownerMembership));
         given(circleMemberRepository.countMembersByRole(circleId, CircleRole.OWNER))
                 .willReturn(1L); // Only one owner
@@ -732,9 +732,9 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(currentOwnerId)).willReturn(currentOwner);
         given(userService.findUserById(newOwnerId)).willReturn(newOwner);
         given(circleMemberRepository.isUserOwnerOfCircle(currentOwnerId, circleId)).willReturn(true);
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(newOwnerId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(newOwnerId, circleId))
                 .willReturn(Optional.of(newOwnerMembership));
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(currentOwnerId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(currentOwnerId, circleId))
                 .willReturn(Optional.of(currentOwnerMembership));
 
         // ============== WHEN ==============
@@ -968,7 +968,7 @@ class CircleServiceTest extends BaseUnitTest {
                 .build();
         
         given(userService.findUserById(userId)).willReturn(user);
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(userId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(userId, circleId))
                 .willReturn(Optional.of(membership));
 
         // ============== WHEN ==============
@@ -978,7 +978,7 @@ class CircleServiceTest extends BaseUnitTest {
         assertThat(result).isEqualTo(membership);
         assertThat(result.getRole()).isEqualTo(CircleRole.ADMIN);
         
-        then(circleMemberRepository).should().findByUserIdAndCircleIdAndIsActiveTrue(userId, circleId);
+        then(circleMemberRepository).should().findActiveMembershipRecord(userId, circleId);
     }
 
     @Test
@@ -1052,7 +1052,7 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(requestingUserId)).willReturn(requestingUser);
         given(userService.findUserById(userId)).willReturn(user);
         given(circleRepository.findById(circleId)).willReturn(Optional.of(circle));
-        given(circleMemberRepository.findByUserIdAndCircleIdAndIsActiveTrue(userId, circleId))
+        given(circleMemberRepository.findActiveMembershipRecord(userId, circleId))
                 .willReturn(Optional.empty()); // Membership not found
 
         // ============== WHEN & THEN ==============

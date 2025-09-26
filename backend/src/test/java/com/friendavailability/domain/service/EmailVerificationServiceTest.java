@@ -87,7 +87,14 @@ class EmailVerificationServiceTest extends BaseUnitTest {
         given(tokenRepository.save(any(EmailVerificationToken.class)))
                 .willAnswer(invocation -> {
                     EmailVerificationToken token = invocation.getArgument(0);
-                    return token.toBuilder().id(1L).build(); // Simulate database save
+                    return EmailVerificationToken.builder()
+                            .id(1L)
+                            .user(token.getUser())
+                            .token(token.getToken())
+                            .expiresAt(token.getExpiresAt())
+                            .createdAt(token.getCreatedAt())
+                            .used(token.isUsed())
+                            .build(); // Simulate database save
                 });
         
         // Mock successful email sending

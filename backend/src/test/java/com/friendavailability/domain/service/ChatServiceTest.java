@@ -143,7 +143,7 @@ class ChatServiceTest extends BaseUnitTest {
         
         given(userService.findUserById(userId1)).willReturn(user1);
         given(userService.findUserById(userId2)).willReturn(user2);
-        given(friendRepository.areFriends(userId1, userId2)).willReturn(true);
+        given(friendRepository.existsFriendshipBetweenUsers(userId1, userId2)).willReturn(true);
         given(chatRoomRepository.findPrivateChatBetweenUsers(userId1, userId2))
                 .willReturn(Optional.empty());
         given(chatRoomRepository.save(any(ChatRoom.class))).willReturn(savedChatRoom);
@@ -158,7 +158,7 @@ class ChatServiceTest extends BaseUnitTest {
         
         then(userService).should().findUserById(userId1);
         then(userService).should().findUserById(userId2);
-        then(friendRepository).should().areFriends(userId1, userId2);
+        then(friendRepository).should().existsFriendshipBetweenUsers(userId1, userId2);
         then(chatRoomRepository).should().findPrivateChatBetweenUsers(userId1, userId2);
         then(chatRoomRepository).should().save(any(ChatRoom.class));
         then(chatParticipantRepository).should(times(2)).save(any(ChatParticipant.class));
@@ -181,7 +181,7 @@ class ChatServiceTest extends BaseUnitTest {
         
         given(userService.findUserById(userId1)).willReturn(user1);
         given(userService.findUserById(userId2)).willReturn(user2);
-        given(friendRepository.areFriends(userId1, userId2)).willReturn(true);
+        given(friendRepository.existsFriendshipBetweenUsers(userId1, userId2)).willReturn(true);
         given(chatRoomRepository.findPrivateChatBetweenUsers(userId1, userId2))
                 .willReturn(Optional.of(existingChatRoom));
 
@@ -193,7 +193,7 @@ class ChatServiceTest extends BaseUnitTest {
         
         then(userService).should().findUserById(userId1);
         then(userService).should().findUserById(userId2);
-        then(friendRepository).should().areFriends(userId1, userId2);
+        then(friendRepository).should().existsFriendshipBetweenUsers(userId1, userId2);
         then(chatRoomRepository).should().findPrivateChatBetweenUsers(userId1, userId2);
         then(chatRoomRepository).should(never()).save(any(ChatRoom.class));
     }
@@ -209,14 +209,14 @@ class ChatServiceTest extends BaseUnitTest {
         
         given(userService.findUserById(userId1)).willReturn(user1);
         given(userService.findUserById(userId2)).willReturn(user2);
-        given(friendRepository.areFriends(userId1, userId2)).willReturn(false);
+        given(friendRepository.existsFriendshipBetweenUsers(userId1, userId2)).willReturn(false);
 
         // When & Then
         assertThatThrownBy(() -> chatService.getOrCreatePrivateChat(userId1, userId2))
                 .isInstanceOf(InvalidOperationException.class)
                 .hasMessageContaining("Cannot create private chat with non-friend");
         
-        then(friendRepository).should().areFriends(userId1, userId2);
+        then(friendRepository).should().existsFriendshipBetweenUsers(userId1, userId2);
         then(chatRoomRepository).should(never()).save(any(ChatRoom.class));
     }
 
@@ -262,7 +262,7 @@ class ChatServiceTest extends BaseUnitTest {
                 .build();
         
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(chatRoom));
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
 
         // When
         ChatRoom result = chatService.getChatRoom(roomId, userId);
@@ -271,7 +271,7 @@ class ChatServiceTest extends BaseUnitTest {
         assertThat(result).isEqualTo(chatRoom);
         
         then(chatRoomRepository).should().findById(roomId);
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
     }
 
     @Test
@@ -283,7 +283,7 @@ class ChatServiceTest extends BaseUnitTest {
         ChatRoom chatRoom = ChatRoom.builder().id(roomId).build();
         
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(chatRoom));
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(false);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(false);
 
         // When & Then
         assertThatThrownBy(() -> chatService.getChatRoom(roomId, userId))
@@ -291,7 +291,7 @@ class ChatServiceTest extends BaseUnitTest {
                 .hasMessageContaining("User does not have access to this chat room");
         
         then(chatRoomRepository).should().findById(roomId);
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
     }
 
     @Test
@@ -306,7 +306,7 @@ class ChatServiceTest extends BaseUnitTest {
         
         given(userService.findUserById(newUserId)).willReturn(newUser);
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(chatRoom));
-        given(chatParticipantRepository.isUserParticipantWithRole(adminUserId, roomId, ParticipantRole.ADMIN))
+        given(chatParticipantRepository.isUserAdminInRoom(adminUserId, roomId))
                 .willReturn(true);
         given(chatParticipantRepository.userExistsInRoom(newUserId, roomId)).willReturn(false);
 
@@ -316,7 +316,7 @@ class ChatServiceTest extends BaseUnitTest {
         // Then
         then(userService).should().findUserById(newUserId);
         then(chatRoomRepository).should().findById(roomId);
-        then(chatParticipantRepository).should().isUserParticipantWithRole(adminUserId, roomId, ParticipantRole.ADMIN);
+        then(chatParticipantRepository).should().isUserAdminInRoom(adminUserId, roomId);
         then(chatParticipantRepository).should().userExistsInRoom(newUserId, roomId);
         then(chatParticipantRepository).should().save(any(ChatParticipant.class));
     }
@@ -328,7 +328,7 @@ class ChatServiceTest extends BaseUnitTest {
         Long newUserId = 3L;
         Long regularUserId = 1L;
         
-        given(chatParticipantRepository.isUserParticipantWithRole(regularUserId, roomId, ParticipantRole.ADMIN))
+        given(chatParticipantRepository.isUserAdminInRoom(regularUserId, roomId))
                 .willReturn(false);
 
         // When & Then
@@ -336,7 +336,7 @@ class ChatServiceTest extends BaseUnitTest {
                 .isInstanceOf(InsufficientPermissionException.class)
                 .hasMessageContaining("Only group admins can add new participants");
         
-        then(chatParticipantRepository).should().isUserParticipantWithRole(regularUserId, roomId, ParticipantRole.ADMIN);
+        then(chatParticipantRepository).should().isUserAdminInRoom(regularUserId, roomId);
         then(chatParticipantRepository).should(never()).save(any(ChatParticipant.class));
     }
 
@@ -361,8 +361,8 @@ class ChatServiceTest extends BaseUnitTest {
         List<ChatParticipant> participants = List.of(admin, member);
         
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(ChatRoom.builder().id(roomId).build()));
-        given(chatParticipantRepository.isUserActiveParticipant(userId, roomId)).willReturn(true);
-        given(chatParticipantRepository.findActiveParticipantsInRoom(roomId)).willReturn(participants);
+        given(chatParticipantRepository.isUserActiveInRoom(userId, roomId)).willReturn(true);
+        given(chatParticipantRepository.findByChatRoomIdAndIsActiveTrue(roomId)).willReturn(participants);
 
         // When
         List<ChatParticipant> result = chatService.getChatParticipants(roomId, userId);
@@ -372,7 +372,7 @@ class ChatServiceTest extends BaseUnitTest {
         assertThat(result).containsExactly(admin, member);
         
         then(chatRoomRepository).should().findById(roomId);
-        then(chatParticipantRepository).should().isUserActiveParticipant(userId, roomId);
-        then(chatParticipantRepository).should().findActiveParticipantsInRoom(roomId);
+        then(chatParticipantRepository).should().isUserActiveInRoom(userId, roomId);
+        then(chatParticipantRepository).should().findByChatRoomIdAndIsActiveTrue(roomId);
     }
 }

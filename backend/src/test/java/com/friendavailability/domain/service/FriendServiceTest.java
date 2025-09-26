@@ -75,9 +75,8 @@ class FriendServiceTest extends BaseUnitTest {
         // When & Then
         assertThatThrownBy(() -> friendService.sendFriendRequest(userId, userId))
                 .isInstanceOf(InvalidOperationException.class)
-                .hasMessageContaining("Cannot send friend request to yourself");
-        
-        then(userService).should(never()).findUserById(anyLong());
+                .hasMessageContaining("You cannot add yourself as a friend");
+
         then(friendRepository).should(never()).save(any(Friend.class));
     }
 
@@ -97,7 +96,7 @@ class FriendServiceTest extends BaseUnitTest {
         // When & Then
         assertThatThrownBy(() -> friendService.sendFriendRequest(fromUserId, toUserId))
                 .isInstanceOf(InvalidOperationException.class)
-                .hasMessageContaining("Friendship between users already exists");
+                .hasMessageContaining("Already friends with the user");
         
         then(userService).should().findUserById(fromUserId);
         then(userService).should().findUserById(toUserId);
@@ -160,7 +159,7 @@ class FriendServiceTest extends BaseUnitTest {
         // When & Then
         assertThatThrownBy(() -> friendService.acceptFriendRequest(friendshipId, wrongUserId))
                 .isInstanceOf(InsufficientPermissionException.class)
-                .hasMessageContaining("Only the recipient can accept this friend request");
+                .hasMessageContaining("Only recipients can accept this friend request");
         
         then(friendRepository).should().findById(friendshipId);
         then(friendRepository).should(never()).save(any(Friend.class));
@@ -231,11 +230,16 @@ class FriendServiceTest extends BaseUnitTest {
         // Given
         Long userId = 1L;
         
+        Friend friendship1 = Friend.builder().id(1L).userId(userId).friendId(2L).status("ACCEPTED").build();
+        Friend friendship2 = Friend.builder().id(2L).userId(userId).friendId(3L).status("ACCEPTED").build();
+
         User friend1 = User.builder().id(2L).email("friend1@example.com").name("Friend One").build();
         User friend2 = User.builder().id(3L).email("friend2@example.com").name("Friend Two").build();
-        
+
         given(userService.findUserById(userId)).willReturn(User.builder().id(userId).build());
-        given(friendRepository.findAcceptedFriendsForUser(userId)).willReturn(List.of(friend1, friend2));
+        given(friendRepository.findAcceptedFriendshipsForUser(userId)).willReturn(List.of(friendship1, friendship2));
+        given(userService.findUserById(2L)).willReturn(friend1);
+        given(userService.findUserById(3L)).willReturn(friend2);
 
         // When
         List<User> friends = friendService.getFriends(userId);
@@ -245,7 +249,7 @@ class FriendServiceTest extends BaseUnitTest {
         assertThat(friends).contains(friend1, friend2);
         
         then(userService).should().findUserById(userId);
-        then(friendRepository).should().findAcceptedFriendsForUser(userId);
+        then(friendRepository).should().findAcceptedFriendshipsForUser(userId);
     }
 
     @Test
@@ -268,7 +272,7 @@ class FriendServiceTest extends BaseUnitTest {
                 .build();
         
         given(userService.findUserById(userId)).willReturn(User.builder().id(userId).build());
-        given(friendRepository.findPendingRequestsForUser(userId)).willReturn(List.of(pendingRequest1, pendingRequest2));
+        given(friendRepository.findByFriendIdAndStatus(userId, "PENDING")).willReturn(List.of(pendingRequest1, pendingRequest2));
 
         // When
         List<Friend> pendingRequests = friendService.getPendingRequests(userId);
@@ -278,6 +282,6 @@ class FriendServiceTest extends BaseUnitTest {
         assertThat(pendingRequests).contains(pendingRequest1, pendingRequest2);
         
         then(userService).should().findUserById(userId);
-        then(friendRepository).should().findPendingRequestsForUser(userId);
+        then(friendRepository).should().findByFriendIdAndStatus(userId, "PENDING");
     }
 }

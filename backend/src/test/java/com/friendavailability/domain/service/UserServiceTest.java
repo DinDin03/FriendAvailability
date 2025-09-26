@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,7 +108,7 @@ class UserServiceTest extends BaseUnitTest{
         given(userRepository.save(any(User.class))).willReturn(savedUser);
 
         // When
-        User createdUser = userService.createUser(email, name, password);
+        User createdUser = userService.createUserWithPassword(name, email, password);
 
         // Then
         assertThat(createdUser).isEqualTo(savedUser);
@@ -125,7 +126,7 @@ class UserServiceTest extends BaseUnitTest{
         given(userRepository.existsByEmail(email)).willReturn(true);
 
         // When & Then
-        assertThatThrownBy(() -> userService.createUser(email, name, password))
+        assertThatThrownBy(() -> userService.createUserWithPassword(name, email, password))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining("User with email 'existing@example.com' already exists");
         
@@ -153,7 +154,7 @@ class UserServiceTest extends BaseUnitTest{
                 .build();
         
         given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
-        given(userRepository.existsByEmailAndIdNot(newEmail, userId)).willReturn(false);
+        given(userRepository.existsByEmail(newEmail)).willReturn(false);
         given(userRepository.save(any(User.class))).willReturn(updatedUser);
 
         // When
@@ -162,7 +163,7 @@ class UserServiceTest extends BaseUnitTest{
         // Then
         assertThat(result).isEqualTo(updatedUser);
         then(userRepository).should().findById(userId);
-        then(userRepository).should().existsByEmailAndIdNot(newEmail, userId);
+        then(userRepository).should().existsByEmail(newEmail);
         then(userRepository).should().save(any(User.class));
     }
 
@@ -180,7 +181,7 @@ class UserServiceTest extends BaseUnitTest{
                 .build();
         
         given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
-        given(userRepository.existsByEmailAndIdNot(existingEmail, userId)).willReturn(true);
+        given(userRepository.existsByEmail(existingEmail)).willReturn(true);
 
         // When & Then
         assertThatThrownBy(() -> userService.updateUser(userId, newName, existingEmail))
@@ -188,7 +189,7 @@ class UserServiceTest extends BaseUnitTest{
                 .hasMessageContaining("User with email 'existing@example.com' already exists");
         
         then(userRepository).should().findById(userId);
-        then(userRepository).should().existsByEmailAndIdNot(existingEmail, userId);
+        then(userRepository).should().existsByEmail(existingEmail);
         then(userRepository).should(never()).save(any(User.class));
     }
 
@@ -205,7 +206,7 @@ class UserServiceTest extends BaseUnitTest{
         given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
 
         // When
-        userService.deleteUser(userId);
+        userService.deleteUserById(userId);
 
         // Then
         then(userRepository).should().findById(userId);

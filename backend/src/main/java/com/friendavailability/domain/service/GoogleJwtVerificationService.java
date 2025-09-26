@@ -1,5 +1,6 @@
 package com.friendavailability.domain.service;
 
+import com.friendavailability.api.dto.response.auth.GoogleUserInfo;
 import com.friendavailability.domain.exception.GoogleAuthenticationException;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;

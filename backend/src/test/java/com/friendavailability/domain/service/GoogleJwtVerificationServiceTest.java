@@ -2,7 +2,7 @@ package com.friendavailability.domain.service;
 
 import com.friendavailability.base.BaseUnitTest;
 import com.friendavailability.domain.exception.GoogleAuthenticationException;
-import com.friendavailability.domain.service.GoogleJwtVerificationService.GoogleUserInfo;
+import com.friendavailability.api.dto.response.auth.GoogleUserInfo;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -170,7 +170,7 @@ class GoogleJwtVerificationServiceTest extends BaseUnitTest {
     // These test various invalid input scenarios
 
     @Test
-    void shouldThrowExceptionForNullToken() {
+    void shouldThrowExceptionForNullToken() throws GeneralSecurityException, IOException {
         // ============== WHEN & THEN ==============
         assertThatThrownBy(() -> googleJwtVerificationService.verifyToken(null))
                 .isInstanceOf(GoogleAuthenticationException.class)
@@ -181,7 +181,7 @@ class GoogleJwtVerificationServiceTest extends BaseUnitTest {
     }
 
     @Test
-    void shouldThrowExceptionForEmptyToken() {
+    void shouldThrowExceptionForEmptyToken() throws GeneralSecurityException, IOException {
         // ============== WHEN & THEN ==============
         assertThatThrownBy(() -> googleJwtVerificationService.verifyToken(""))
                 .isInstanceOf(GoogleAuthenticationException.class)
@@ -191,7 +191,7 @@ class GoogleJwtVerificationServiceTest extends BaseUnitTest {
     }
 
     @Test
-    void shouldThrowExceptionForWhitespaceToken() {
+    void shouldThrowExceptionForWhitespaceToken() throws GeneralSecurityException, IOException {
         // ============== WHEN & THEN ==============
         assertThatThrownBy(() -> googleJwtVerificationService.verifyToken("   "))
                 .isInstanceOf(GoogleAuthenticationException.class)
@@ -464,7 +464,7 @@ class GoogleJwtVerificationServiceTest extends BaseUnitTest {
     // This tests multiple error scenarios in sequence
 
     @Test
-    void shouldHandleMultipleErrorScenarios() {
+    void shouldHandleMultipleErrorScenarios() throws GeneralSecurityException, IOException {
         // Test 1: Null token
         assertThatThrownBy(() -> googleJwtVerificationService.verifyToken(null))
                 .isInstanceOf(GoogleAuthenticationException.class);

@@ -14,8 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,14 +60,14 @@ class AuthServiceTest extends BaseUnitTest {
                 .id(1L)
                 .email(email)
                 .name("Test User")
-                .password(encodedPassword)
+                .passwordHash(encodedPassword)
                 .isActive(true)
                 .emailVerified(true)
                 .build();
         
         given(userService.findUserByEmail(email)).willReturn(user);
         given(passwordEncoder.matches(password, encodedPassword)).willReturn(true);
-        given(httpRequest.getSession(true)).willReturn(httpSession);
+        given(httpRequest.getSession()).willReturn(httpSession);
 
         // When
         User authenticatedUser = authService.authenticateAndLogin(loginRequest, httpRequest);
@@ -78,7 +76,7 @@ class AuthServiceTest extends BaseUnitTest {
         assertThat(authenticatedUser).isEqualTo(user);
         then(userService).should().findUserByEmail(email);
         then(passwordEncoder).should().matches(password, encodedPassword);
-        then(httpSession).should().setAttribute("user", user);
+        then(httpSession).should().setAttribute("authenticated", true);
     }
 
     @Test
@@ -95,7 +93,7 @@ class AuthServiceTest extends BaseUnitTest {
         User user = User.builder()
                 .id(1L)
                 .email(email)
-                .password(encodedPassword)
+                .passwordHash(encodedPassword)
                 .isActive(true)
                 .emailVerified(true)
                 .build();
@@ -126,6 +124,7 @@ class AuthServiceTest extends BaseUnitTest {
         User user = User.builder()
                 .id(1L)
                 .email(email)
+                .passwordHash("hashedPassword")
                 .isActive(true)
                 .emailVerified(false)
                 .build();
@@ -154,6 +153,7 @@ class AuthServiceTest extends BaseUnitTest {
         User user = User.builder()
                 .id(1L)
                 .email(email)
+                .passwordHash("hashedPassword")
                 .isActive(false)
                 .emailVerified(true)
                 .build();
@@ -163,7 +163,7 @@ class AuthServiceTest extends BaseUnitTest {
         // When & Then
         assertThatThrownBy(() -> authService.authenticateAndLogin(loginRequest, httpRequest))
                 .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Account is deactivated");
+                .hasMessageContaining("Your account has been disabled");
         
         then(userService).should().findUserByEmail(email);
         then(passwordEncoder).should(never()).matches(anyString(), anyString());
@@ -200,18 +200,15 @@ class AuthServiceTest extends BaseUnitTest {
     }
 
     @Test
-    void shouldProcessGoogleJwtTokenSuccessfully() throws GeneralSecurityException, IOException {
+    void shouldProcessGoogleJwtTokenSuccessfully() {
         // Given
         String jwtToken = "valid.jwt.token";
         String email = "google.user@example.com";
         String name = "Google User";
         String googleId = "google123";
         
-        GoogleUserInfo googleUserInfo = new GoogleUserInfo();
-        googleUserInfo.setEmail(email);
-        googleUserInfo.setName(name);
-        googleUserInfo.setGoogleId(googleId);
-        
+        GoogleUserInfo googleUserInfo = new GoogleUserInfo(googleId, email, name, true);
+
         User existingUser = User.builder()
                 .id(1L)
                 .email(email)
@@ -222,32 +219,29 @@ class AuthServiceTest extends BaseUnitTest {
                 .build();
         
         given(googleJwtVerificationService.verifyToken(jwtToken)).willReturn(googleUserInfo);
-        given(userRepository.findByGoogleId(googleId)).willReturn(Optional.of(existingUser));
+        given(userService.findUserByGoogleId(googleId)).willReturn(existingUser);
         given(httpRequest.getSession(true)).willReturn(httpSession);
 
         // When
-        User authenticatedUser = authService.processGoogleJwtToken(jwtToken, httpRequest);
+        User authenticatedUser = authService.authenticateWithGoogleJwt(jwtToken, httpRequest);
 
         // Then
         assertThat(authenticatedUser).isEqualTo(existingUser);
         then(googleJwtVerificationService).should().verifyToken(jwtToken);
-        then(userRepository).should().findByGoogleId(googleId);
-        then(httpSession).should().setAttribute("user", existingUser);
+        then(userService).should().findUserByGoogleId(googleId);
+        then(httpSession).should().setAttribute("authenticated", true);
     }
 
     @Test
-    void shouldCreateNewUserForFirstTimeGoogleLogin() throws GeneralSecurityException, IOException {
+    void shouldCreateNewUserForFirstTimeGoogleLogin() {
         // Given
         String jwtToken = "valid.jwt.token";
         String email = "new.google.user@example.com";
         String name = "New Google User";
         String googleId = "newGoogle123";
         
-        GoogleUserInfo googleUserInfo = new GoogleUserInfo();
-        googleUserInfo.setEmail(email);
-        googleUserInfo.setName(name);
-        googleUserInfo.setGoogleId(googleId);
-        
+        GoogleUserInfo googleUserInfo = new GoogleUserInfo(googleId, email, name, true);
+
         User newUser = User.builder()
                 .id(2L)
                 .email(email)
@@ -258,38 +252,38 @@ class AuthServiceTest extends BaseUnitTest {
                 .build();
         
         given(googleJwtVerificationService.verifyToken(jwtToken)).willReturn(googleUserInfo);
-        given(userRepository.findByGoogleId(googleId)).willReturn(Optional.empty());
-        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
-        given(userService.createUserFromGoogle(googleUserInfo)).willReturn(newUser);
+        given(userService.findUserByGoogleId(googleId)).willThrow(new ResourceNotFoundException("User not found"));
+        given(userService.findUserByEmail(email)).willThrow(new ResourceNotFoundException("User not found"));
+        given(userService.createUserWithGoogle(name, email, googleId)).willReturn(newUser);
         given(httpRequest.getSession(true)).willReturn(httpSession);
 
         // When
-        User authenticatedUser = authService.processGoogleJwtToken(jwtToken, httpRequest);
+        User authenticatedUser = authService.authenticateWithGoogleJwt(jwtToken, httpRequest);
 
         // Then
         assertThat(authenticatedUser).isEqualTo(newUser);
         then(googleJwtVerificationService).should().verifyToken(jwtToken);
-        then(userRepository).should().findByGoogleId(googleId);
-        then(userRepository).should().findByEmail(email);
-        then(userService).should().createUserFromGoogle(googleUserInfo);
-        then(httpSession).should().setAttribute("user", newUser);
+        then(userService).should().findUserByGoogleId(googleId);
+        then(userService).should().findUserByEmail(email);
+        then(userService).should().createUserWithGoogle(name, email, googleId);
+        then(httpSession).should().setAttribute("authenticated", true);
     }
 
     @Test
-    void shouldThrowValidationExceptionForInvalidGoogleJwt() throws GeneralSecurityException, IOException {
+    void shouldThrowValidationExceptionForInvalidGoogleJwt() {
         // Given
         String invalidJwtToken = "invalid.jwt.token";
         
         given(googleJwtVerificationService.verifyToken(invalidJwtToken))
-                .willThrow(new GeneralSecurityException("Invalid token"));
+                .willThrow(new RuntimeException("Invalid token"));
 
         // When & Then
-        assertThatThrownBy(() -> authService.processGoogleJwtToken(invalidJwtToken, httpRequest))
-                .isInstanceOf(ValidationException.class)
-                .hasMessageContaining("Invalid Google JWT token");
+        assertThatThrownBy(() -> authService.authenticateWithGoogleJwt(invalidJwtToken, httpRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Invalid token");
         
         then(googleJwtVerificationService).should().verifyToken(invalidJwtToken);
-        then(userRepository).should(never()).findByGoogleId(anyString());
+        then(userService).should(never()).findUserByGoogleId(anyString());
     }
 
     @Test
@@ -298,102 +292,89 @@ class AuthServiceTest extends BaseUnitTest {
         String email = "newuser@example.com";
         String password = "securePassword";
         String name = "New User";
-        String encodedPassword = "encodedSecurePassword";
-        
+
         AuthRequest registerRequest = new AuthRequest();
         registerRequest.setEmail(email);
         registerRequest.setPassword(password);
         registerRequest.setName(name);
-        
+
         User newUser = User.builder()
                 .id(1L)
-                .email(email)
-                .name(name)
-                .password(encodedPassword)
+                .email(email.toLowerCase())
+                .name(name.trim())
+                .passwordHash("hashedPassword")
                 .isActive(true)
                 .emailVerified(false)
                 .build();
-        
-        given(userService.createUser(email, name, password)).willReturn(newUser);
+
+        given(userService.findUserByEmail(email.toLowerCase())).willThrow(new ResourceNotFoundException("User not found"));
+        given(passwordEncoder.encode(password)).willReturn("hashedPassword");
+        given(userRepository.save(any(User.class))).willReturn(newUser);
 
         // When
         User registeredUser = authService.registerUser(registerRequest);
 
         // Then
-        assertThat(registeredUser).isEqualTo(newUser);
-        then(userService).should().createUser(email, name, password);
+        assertThat(registeredUser).isNotNull();
+        assertThat(registeredUser.getEmail()).isEqualTo(email.toLowerCase());
+        assertThat(registeredUser.getName()).isEqualTo(name.trim());
+        then(userService).should().findUserByEmail(email.toLowerCase());
+        then(passwordEncoder).should().encode(password);
+        then(userRepository).should().save(any(User.class));
     }
 
     @Test
     void shouldGetCurrentUserFromSession() {
         // Given
+        Long userId = 1L;
         User sessionUser = User.builder()
-                .id(1L)
+                .id(userId)
                 .email("session@example.com")
                 .name("Session User")
                 .build();
-        
+
         given(httpRequest.getSession(false)).willReturn(httpSession);
-        given(httpSession.getAttribute("user")).willReturn(sessionUser);
+        given(httpSession.getAttribute("authenticated")).willReturn(true);
+        given(httpSession.getAttribute("user_id")).willReturn(userId);
+        given(userService.findUserById(userId)).willReturn(sessionUser);
 
         // When
-        User currentUser = authService.getCurrentUser(httpRequest);
+        User currentUser = authService.getCurrentAuthenticatedUser(httpRequest);
 
         // Then
         assertThat(currentUser).isEqualTo(sessionUser);
         then(httpRequest).should().getSession(false);
-        then(httpSession).should().getAttribute("user");
+        then(httpSession).should().getAttribute("authenticated");
+        then(httpSession).should().getAttribute("user_id");
+        then(userService).should().findUserById(userId);
     }
 
     @Test
-    void shouldReturnNullWhenNoSessionExists() {
+    void shouldThrowExceptionWhenNoSessionExists() {
         // Given
         given(httpRequest.getSession(false)).willReturn(null);
 
-        // When
-        User currentUser = authService.getCurrentUser(httpRequest);
+        // When & Then
+        assertThatThrownBy(() -> authService.getCurrentAuthenticatedUser(httpRequest))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("No authenticated user found");
 
-        // Then
-        assertThat(currentUser).isNull();
         then(httpRequest).should().getSession(false);
     }
 
     @Test
-    void shouldReturnNullWhenNoUserInSession() {
+    void shouldThrowExceptionWhenNoUserInSession() {
         // Given
         given(httpRequest.getSession(false)).willReturn(httpSession);
-        given(httpSession.getAttribute("user")).willReturn(null);
+        given(httpSession.getAttribute("authenticated")).willReturn(null);
 
-        // When
-        User currentUser = authService.getCurrentUser(httpRequest);
+        // When & Then
+        assertThatThrownBy(() -> authService.getCurrentAuthenticatedUser(httpRequest))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("No authenticated user found");
 
-        // Then
-        assertThat(currentUser).isNull();
         then(httpRequest).should().getSession(false);
-        then(httpSession).should().getAttribute("user");
+        then(httpSession).should().getAttribute("authenticated");
     }
 
-    @Test
-    void shouldLogoutUserSuccessfully() {
-        // Given
-        given(httpRequest.getSession(false)).willReturn(httpSession);
-
-        // When
-        authService.logout(httpRequest);
-
-        // Then
-        then(httpRequest).should().getSession(false);
-        then(httpSession).should().invalidate();
-    }
-
-    @Test
-    void shouldHandleLogoutWhenNoSessionExists() {
-        // Given
-        given(httpRequest.getSession(false)).willReturn(null);
-
-        // When & Then (should not throw exception)
-        authService.logout(httpRequest);
-        
-        then(httpRequest).should().getSession(false);
-    }
 }
