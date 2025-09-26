@@ -55,5 +55,179 @@ class UserServiceTest extends BaseUnitTest{
         then(userRepository).should().findById(userId);
     }
 
+    @Test
+    void shouldFindUserByEmail() {
+        // Given
+        String email = "test@example.com";
+        User expectedUser = User.builder()
+                .id(1L)
+                .email(email)
+                .name("Test User")
+                .build();
+        
+        given(userRepository.findByEmail(email)).willReturn(Optional.of(expectedUser));
+
+        // When
+        User actualUser = userService.findUserByEmail(email);
+
+        // Then
+        assertThat(actualUser).isEqualTo(expectedUser);
+        then(userRepository).should().findByEmail(email);
+    }
+
+    @Test
+    void shouldThrowResourceNotFoundExceptionWhenUserNotFoundByEmail() {
+        // Given
+        String email = "nonexistent@example.com";
+        given(userRepository.findByEmail(email)).willReturn(Optional.empty());
+
+        // When & Then
+        assertThatThrownBy(() -> userService.findUserByEmail(email))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("User with id nonexistent@example.com not found");
+        
+        then(userRepository).should().findByEmail(email);
+    }
+
+    @Test
+    void shouldCreateUserSuccessfully() {
+        // Given
+        String email = "newuser@example.com";
+        String name = "New User";
+        String password = "securePassword";
+        
+        given(userRepository.existsByEmail(email)).willReturn(false);
+        
+        User savedUser = User.builder()
+                .id(1L)
+                .email(email)
+                .name(name)
+                .build();
+        
+        given(userRepository.save(any(User.class))).willReturn(savedUser);
+
+        // When
+        User createdUser = userService.createUser(email, name, password);
+
+        // Then
+        assertThat(createdUser).isEqualTo(savedUser);
+        then(userRepository).should().existsByEmail(email);
+        then(userRepository).should().save(any(User.class));
+    }
+
+    @Test
+    void shouldThrowDuplicateResourceExceptionWhenEmailAlreadyExists() {
+        // Given
+        String email = "existing@example.com";
+        String name = "Test User";
+        String password = "password";
+        
+        given(userRepository.existsByEmail(email)).willReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> userService.createUser(email, name, password))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("User with email 'existing@example.com' already exists");
+        
+        then(userRepository).should().existsByEmail(email);
+        then(userRepository).should(never()).save(any(User.class));
+    }
+
+    @Test
+    void shouldUpdateUserSuccessfully() {
+        // Given
+        Long userId = 1L;
+        String newName = "Updated Name";
+        String newEmail = "updated@example.com";
+        
+        User existingUser = User.builder()
+                .id(userId)
+                .email("old@example.com")
+                .name("Old Name")
+                .build();
+        
+        User updatedUser = User.builder()
+                .id(userId)
+                .email(newEmail)
+                .name(newName)
+                .build();
+        
+        given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
+        given(userRepository.existsByEmailAndIdNot(newEmail, userId)).willReturn(false);
+        given(userRepository.save(any(User.class))).willReturn(updatedUser);
+
+        // When
+        User result = userService.updateUser(userId, newName, newEmail);
+
+        // Then
+        assertThat(result).isEqualTo(updatedUser);
+        then(userRepository).should().findById(userId);
+        then(userRepository).should().existsByEmailAndIdNot(newEmail, userId);
+        then(userRepository).should().save(any(User.class));
+    }
+
+    @Test
+    void shouldThrowDuplicateResourceExceptionWhenUpdatingWithExistingEmail() {
+        // Given
+        Long userId = 1L;
+        String newName = "Updated Name";
+        String existingEmail = "existing@example.com";
+        
+        User existingUser = User.builder()
+                .id(userId)
+                .email("old@example.com")
+                .name("Old Name")
+                .build();
+        
+        given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
+        given(userRepository.existsByEmailAndIdNot(existingEmail, userId)).willReturn(true);
+
+        // When & Then
+        assertThatThrownBy(() -> userService.updateUser(userId, newName, existingEmail))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("User with email 'existing@example.com' already exists");
+        
+        then(userRepository).should().findById(userId);
+        then(userRepository).should().existsByEmailAndIdNot(existingEmail, userId);
+        then(userRepository).should(never()).save(any(User.class));
+    }
+
+    @Test
+    void shouldDeleteUserSuccessfully() {
+        // Given
+        Long userId = 1L;
+        User existingUser = User.builder()
+                .id(userId)
+                .email("test@example.com")
+                .name("Test User")
+                .build();
+        
+        given(userRepository.findById(userId)).willReturn(Optional.of(existingUser));
+
+        // When
+        userService.deleteUser(userId);
+
+        // Then
+        then(userRepository).should().findById(userId);
+        then(userRepository).should().deleteById(userId);
+    }
+
+    @Test
+    void shouldGetAllUsers() {
+        // Given
+        User user1 = User.builder().id(1L).email("user1@example.com").name("User One").build();
+        User user2 = User.builder().id(2L).email("user2@example.com").name("User Two").build();
+        
+        given(userRepository.findAll()).willReturn(List.of(user1, user2));
+
+        // When
+        List<User> users = userService.findAllUsers();
+
+        // Then
+        assertThat(users).hasSize(2);
+        assertThat(users).contains(user1, user2);
+        then(userRepository).should().findAll();
+    }
+
 
 }
