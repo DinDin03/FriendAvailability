@@ -66,7 +66,4 @@ public class GoogleJwtVerificationService {
             throw GoogleAuthenticationException.tokenVerificationFailed(e.getMessage());
         }
     }
-
-    @Getter
-    
 }
