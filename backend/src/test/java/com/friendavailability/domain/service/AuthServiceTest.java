@@ -22,6 +22,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.*;
 
+//all tests passed
 class AuthServiceTest extends BaseUnitTest {
 
     @Mock
