@@ -90,7 +90,7 @@ public class EmailService {
         }
     }
 
-    private String loadTemplate(String templateName) throws Exception {
+    String loadTemplate(String templateName) throws Exception {
         String templatePath = "static/email/templates/" + templateName;
         ClassPathResource resource = new ClassPathResource(templatePath);
 
