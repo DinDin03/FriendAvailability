@@ -235,6 +235,7 @@ public class AvailabilityService {
         User user = userService.findUserById(userId);
         List<Availability> freeSlots = new ArrayList<>();
 
+        storedEvents = new ArrayList<>(storedEvents);
         storedEvents.sort(Comparator.comparing(Availability::getStartTime));
 
         LocalDateTime currentTime = start;
