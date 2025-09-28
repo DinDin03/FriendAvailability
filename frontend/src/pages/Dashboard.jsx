@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { dashboardService } from '../services/dashboardService';
+import { friendService } from '../services/friendService';
 
 export const Dashboard = () => {
     const { user, logout, isLoading } = useAuth();
@@ -21,10 +22,20 @@ export const Dashboard = () => {
     const [testResults, setTestResults] = useState({});
     const [testInProgress, setTestInProgress] = useState({});
 
+    // Friend request state
+    const [friendRequestUserId, setFriendRequestUserId] = useState('');
+    const [isSendingRequest, setIsSendingRequest] = useState(false);
+
+    // Pending requests state
+    const [pendingRequests, setPendingRequests] = useState([]);
+    const [isLoadingRequests, setIsLoadingRequests] = useState(false);
+    const [processingRequests, setProcessingRequests] = useState(new Set());
+
     // Load dashboard data on component mount or user change
     useEffect(() => {
         if (user?.id) {
             loadDashboardData();
+            loadPendingRequests();
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]);
@@ -56,6 +67,68 @@ export const Dashboard = () => {
             toast.error(error.message);
         } finally {
             setIsRefreshing(false);
+        }
+    };
+
+    // Load pending friend requests
+    const loadPendingRequests = async () => {
+        try {
+            setIsLoadingRequests(true);
+            const requests = await friendService.getPendingRequests(user.id);
+            setPendingRequests(requests);
+        } catch (error) {
+            console.error('Failed to load pending requests:', error);
+            toast.error('Failed to load pending requests');
+        } finally {
+            setIsLoadingRequests(false);
+        }
+    };
+
+    // Accept friend request
+    const handleAcceptRequest = async (requestId) => {
+        try {
+            setProcessingRequests(prev => new Set([...prev, requestId]));
+
+            await friendService.acceptFriendRequest(requestId, user.id);
+
+            toast.success('Friend request accepted!');
+
+            // Remove the accepted request from the list
+            setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+
+        } catch (error) {
+            console.error('Failed to accept friend request:', error);
+            toast.error(error.message || 'Failed to accept friend request');
+        } finally {
+            setProcessingRequests(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(requestId);
+                return newSet;
+            });
+        }
+    };
+
+    // Reject friend request
+    const handleRejectRequest = async (requestId) => {
+        try {
+            setProcessingRequests(prev => new Set([...prev, requestId]));
+
+            await friendService.rejectFriendRequest(requestId, user.id);
+
+            toast.success('Friend request rejected');
+
+            // Remove the rejected request from the list
+            setPendingRequests(prev => prev.filter(req => req.id !== requestId));
+
+        } catch (error) {
+            console.error('Failed to reject friend request:', error);
+            toast.error(error.message || 'Failed to reject friend request');
+        } finally {
+            setProcessingRequests(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(requestId);
+                return newSet;
+            });
         }
     };
 
@@ -155,6 +228,96 @@ export const Dashboard = () => {
         throw new Error('Error handling test failed - no error was thrown');
     });
 
+    // Friend Service Tests
+    const testGetFriends = () => runServiceTest('getFriends', async () => {
+        return await friendService.getFriends(user.id, { page: 1, limit: 10 });
+    });
+
+    const testGetPendingRequests = () => runServiceTest('getPendingRequests', async () => {
+        return await friendService.getPendingRequests(user.id);
+    });
+
+    const testFriendshipStatistics = () => runServiceTest('friendshipStatistics', async () => {
+        return await friendService.getFriendshipStatistics(user.id);
+    });
+
+    const testFriendRecommendations = () => runServiceTest('friendRecommendations', async () => {
+        return await friendService.getFriendRecommendations(user.id, 5);
+    });
+
+    const testFriendSearch = () => runServiceTest('friendSearch', async () => {
+        return await friendService.searchFriends('test', {
+            userId: user.id,
+            filters: ['non-friends'],
+            sort: 'name',
+            limit: 5
+        });
+    });
+
+    const testFriendCacheManagement = () => runServiceTest('friendCacheManagement', async () => {
+        // Test cache operations
+        const cacheKey = 'test_friend_cache';
+        const testData = { test: 'friend_data', timestamp: Date.now() };
+
+        // Test cache set
+        friendService.cacheData(cacheKey, testData, 1000);
+
+        // Test cache get
+        const cachedData = friendService.getCachedData(cacheKey);
+        if (!cachedData || cachedData.test !== testData.test) {
+            throw new Error('Friend cache set/get failed');
+        }
+
+        // Test cache invalidation
+        friendService.invalidateCache(cacheKey);
+        const invalidatedData = friendService.getCachedData(cacheKey);
+        if (invalidatedData !== null) {
+            throw new Error('Friend cache invalidation failed');
+        }
+
+        // Test cache stats
+        const stats = friendService.getCacheStats();
+
+        return {
+            message: 'Friend cache operations successful',
+            stats
+        };
+    });
+
+    // Friend request function
+    const handleSendFriendRequest = async () => {
+        if (!friendRequestUserId.trim()) {
+            toast.error('Please enter a user ID');
+            return;
+        }
+
+        const targetUserId = parseInt(friendRequestUserId.trim());
+        if (isNaN(targetUserId)) {
+            toast.error('Please enter a valid numeric user ID');
+            return;
+        }
+
+        if (targetUserId === user?.id) {
+            toast.error('You cannot send a friend request to yourself');
+            return;
+        }
+
+        try {
+            setIsSendingRequest(true);
+
+            await friendService.sendFriendRequest(user.id, targetUserId);
+
+            toast.success(`Friend request sent to user ${targetUserId}!`);
+            setFriendRequestUserId(''); // Clear the input
+
+        } catch (error) {
+            console.error('Failed to send friend request:', error);
+            toast.error(error.message || 'Failed to send friend request');
+        } finally {
+            setIsSendingRequest(false);
+        }
+    };
+
     const runAllTests = async () => {
         toast.promise(
             Promise.all([
@@ -163,7 +326,13 @@ export const Dashboard = () => {
                 testGetRecentActivity(),
                 testGetDashboardData(),
                 testCacheManagement(),
-                testErrorHandling()
+                testErrorHandling(),
+                testGetFriends(),
+                testGetPendingRequests(),
+                testFriendshipStatistics(),
+                testFriendRecommendations(),
+                testFriendSearch(),
+                testFriendCacheManagement()
             ]),
             {
                 loading: 'Running all dashboard service tests...',
@@ -257,13 +426,152 @@ export const Dashboard = () => {
                     </p>
                 </div>
 
+                {/* Friend Request Section */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                    <div className="flex items-center space-x-3 mb-4">
+                        <Users className="w-6 h-6 text-green-600" />
+                        <h3 className="text-lg font-semibold text-gray-900">Send Friend Request</h3>
+                    </div>
+                    <div className="flex space-x-4">
+                        <div className="flex-1">
+                            <label htmlFor="friendUserId" className="block text-sm font-medium text-gray-700 mb-2">
+                                User ID
+                            </label>
+                            <input
+                                id="friendUserId"
+                                type="text"
+                                value={friendRequestUserId}
+                                onChange={(e) => setFriendRequestUserId(e.target.value)}
+                                placeholder="Enter user ID (e.g., 123)"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                disabled={isSendingRequest}
+                            />
+                        </div>
+                        <div className="flex items-end">
+                            <button
+                                onClick={handleSendFriendRequest}
+                                disabled={isSendingRequest || !friendRequestUserId.trim()}
+                                className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                            >
+                                {isSendingRequest ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <span>Sending...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Users className="w-4 h-4" />
+                                        <span>Send Request</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2">
+                        Enter the user ID of the person you want to send a friend request to.
+                    </p>
+                </div>
+
+                {/* Pending Friend Requests Section */}
+                <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-3">
+                            <MessageCircle className="w-6 h-6 text-purple-600" />
+                            <h3 className="text-lg font-semibold text-gray-900">Pending Friend Requests</h3>
+                            {pendingRequests.length > 0 && (
+                                <span className="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+                                    {pendingRequests.length}
+                                </span>
+                            )}
+                        </div>
+                        <button
+                            onClick={loadPendingRequests}
+                            disabled={isLoadingRequests}
+                            className="text-purple-600 hover:text-purple-700 flex items-center space-x-1 text-sm"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${isLoadingRequests ? 'animate-spin' : ''}`} />
+                            <span>Refresh</span>
+                        </button>
+                    </div>
+
+                    {isLoadingRequests ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                            <span className="ml-3 text-gray-600">Loading requests...</span>
+                        </div>
+                    ) : pendingRequests.length === 0 ? (
+                        <div className="text-center py-8">
+                            <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                            <p className="text-gray-500">No pending friend requests</p>
+                            <p className="text-sm text-gray-400">When someone sends you a friend request, it will appear here.</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {pendingRequests.map((request) => (
+                                <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-purple-300 transition-colors">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <Users className="w-5 h-5 text-purple-600" />
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">
+                                                Friend request from User {request.userId}
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {new Date(request.createdAt).toLocaleDateString()} at {new Date(request.createdAt).toLocaleTimeString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <button
+                                            onClick={() => handleAcceptRequest(request.id)}
+                                            disabled={processingRequests.has(request.id)}
+                                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                        >
+                                            {processingRequests.has(request.id) ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    <span>Processing...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle className="w-4 h-4" />
+                                                    <span>Accept</span>
+                                                </>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => handleRejectRequest(request.id)}
+                                            disabled={processingRequests.has(request.id)}
+                                            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                        >
+                                            {processingRequests.has(request.id) ? (
+                                                <>
+                                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                    <span>Processing...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <AlertCircle className="w-4 h-4" />
+                                                    <span>Reject</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
                 {/* Test Panel */}
                 {showTestPanel && (
                     <div className="bg-white rounded-lg shadow-sm p-6 mb-8 border-l-4 border-blue-500">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center space-x-3">
                                 <TestTube className="w-6 h-6 text-blue-600" />
-                                <h3 className="text-xl font-semibold text-gray-900">Dashboard Service Tests</h3>
+                                <h3 className="text-xl font-semibold text-gray-900">Service Layer Tests</h3>
+                                <span className="text-sm text-gray-600">(Dashboard & Friend Services)</span>
                             </div>
                             <button
                                 onClick={runAllTests}
@@ -360,6 +668,97 @@ export const Dashboard = () => {
                                     <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                                 ) : testResults.errorHandling ? (
                                     testResults.errorHandling.success ?
+                                        <CheckCircle className="w-4 h-4 text-green-600" /> :
+                                        <AlertCircle className="w-4 h-4 text-red-600" />
+                                ) : null}
+                            </button>
+
+                            {/* Friend Service Tests */}
+                            <button
+                                onClick={testGetFriends}
+                                disabled={testInProgress.getFriends}
+                                className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:border-green-300 transition-colors disabled:opacity-50"
+                            >
+                                <span className="text-sm font-medium">Get Friends</span>
+                                {testInProgress.getFriends ? (
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : testResults.getFriends ? (
+                                    testResults.getFriends.success ?
+                                        <CheckCircle className="w-4 h-4 text-green-600" /> :
+                                        <AlertCircle className="w-4 h-4 text-red-600" />
+                                ) : null}
+                            </button>
+
+                            <button
+                                onClick={testGetPendingRequests}
+                                disabled={testInProgress.getPendingRequests}
+                                className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:border-green-300 transition-colors disabled:opacity-50"
+                            >
+                                <span className="text-sm font-medium">Pending Requests</span>
+                                {testInProgress.getPendingRequests ? (
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : testResults.getPendingRequests ? (
+                                    testResults.getPendingRequests.success ?
+                                        <CheckCircle className="w-4 h-4 text-green-600" /> :
+                                        <AlertCircle className="w-4 h-4 text-red-600" />
+                                ) : null}
+                            </button>
+
+                            <button
+                                onClick={testFriendshipStatistics}
+                                disabled={testInProgress.friendshipStatistics}
+                                className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:border-green-300 transition-colors disabled:opacity-50"
+                            >
+                                <span className="text-sm font-medium">Friend Statistics</span>
+                                {testInProgress.friendshipStatistics ? (
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : testResults.friendshipStatistics ? (
+                                    testResults.friendshipStatistics.success ?
+                                        <CheckCircle className="w-4 h-4 text-green-600" /> :
+                                        <AlertCircle className="w-4 h-4 text-red-600" />
+                                ) : null}
+                            </button>
+
+                            <button
+                                onClick={testFriendRecommendations}
+                                disabled={testInProgress.friendRecommendations}
+                                className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:border-green-300 transition-colors disabled:opacity-50"
+                            >
+                                <span className="text-sm font-medium">Friend Recommendations</span>
+                                {testInProgress.friendRecommendations ? (
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : testResults.friendRecommendations ? (
+                                    testResults.friendRecommendations.success ?
+                                        <CheckCircle className="w-4 h-4 text-green-600" /> :
+                                        <AlertCircle className="w-4 h-4 text-red-600" />
+                                ) : null}
+                            </button>
+
+                            <button
+                                onClick={testFriendSearch}
+                                disabled={testInProgress.friendSearch}
+                                className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:border-green-300 transition-colors disabled:opacity-50"
+                            >
+                                <span className="text-sm font-medium">Friend Search</span>
+                                {testInProgress.friendSearch ? (
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : testResults.friendSearch ? (
+                                    testResults.friendSearch.success ?
+                                        <CheckCircle className="w-4 h-4 text-green-600" /> :
+                                        <AlertCircle className="w-4 h-4 text-red-600" />
+                                ) : null}
+                            </button>
+
+                            <button
+                                onClick={testFriendCacheManagement}
+                                disabled={testInProgress.friendCacheManagement}
+                                className="flex items-center justify-between p-3 border border-green-200 rounded-lg hover:border-green-300 transition-colors disabled:opacity-50"
+                            >
+                                <span className="text-sm font-medium">Friend Cache</span>
+                                {testInProgress.friendCacheManagement ? (
+                                    <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                ) : testResults.friendCacheManagement ? (
+                                    testResults.friendCacheManagement.success ?
                                         <CheckCircle className="w-4 h-4 text-green-600" /> :
                                         <AlertCircle className="w-4 h-4 text-red-600" />
                                 ) : null}

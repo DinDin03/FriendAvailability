@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -183,6 +184,30 @@ public class FriendService {
 
         log.debug("Friendship statistics for user {}: {}", userId, stats);
         return stats;
+    }
+
+    public List<User> getMutualFriends(Long userId1, Long userId2) {
+        log.debug("Getting mutual friends between users {} and {}", userId1, userId2);
+
+        // Validate both users exist
+        userService.findUserById(userId1);
+        userService.findUserById(userId2);
+
+        // Get friends for both users
+        List<User> user1Friends = getFriends(userId1);
+        List<User> user2Friends = getFriends(userId2);
+
+        // Find intersection (mutual friends)
+        Set<Long> user1FriendIds = user1Friends.stream()
+                .map(User::getId)
+                .collect(Collectors.toSet());
+
+        List<User> mutualFriends = user2Friends.stream()
+                .filter(friend -> user1FriendIds.contains(friend.getId()))
+                .toList();
+
+        log.debug("Found {} mutual friends between users {} and {}", mutualFriends.size(), userId1, userId2);
+        return mutualFriends;
     }
 
     private Friend findFriendRequestById(Long friendshipId) {

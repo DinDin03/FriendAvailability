@@ -99,7 +99,10 @@ export const API_ENDPOINTS = {
     ACCEPT: (requestId, userId) => `/friends/${requestId}/accept?userId=${userId}`,
     REJECT: (requestId, userId) => `/friends/${requestId}/reject?userId=${userId}`,
     REMOVE: '/friends/remove',
-    REMOVE_ALL: (userId) => `/friends/${userId}/all`
+    REMOVE_ALL: (userId) => `/friends/${userId}/all`,
+    MUTUAL: (userId1, userId2) => `/friends/mutual/${userId1}/${userId2}`,
+    CHECK: '/friends/check',
+    STATS: (userId) => `/friends/${userId}/stats`
   },
   CALENDAR: {
     AVAILABILITY: (userId) => `/calendar/${userId}/availability`,
