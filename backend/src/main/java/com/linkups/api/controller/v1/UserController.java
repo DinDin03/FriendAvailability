@@ -128,4 +128,23 @@ public class UserController {
         boolean available = userService.isEmailAvailable(email);
         return ResponseEntity.ok(available);
     }
+
+    @GetMapping("/profile")
+    public ResponseEntity<User> getCurrentUserProfile(@RequestParam Long userId) {
+        log.info("Getting current user profile for user ID: {}", userId);
+
+        User user = userService.findUserById(userId);
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<User> updateCurrentUserProfile(@RequestParam Long userId,
+                                                         @Valid @RequestBody UpdateUserRequest request) {
+        log.info("Updating current user profile for user ID: {}", userId);
+
+        User updatedUser = userService.updateUser(userId, request.getName(), request.getEmail());
+
+        log.info("User profile updated successfully: {} (ID: {})", updatedUser.getEmail(), updatedUser.getId());
+        return ResponseEntity.ok(updatedUser);
+    }
 }

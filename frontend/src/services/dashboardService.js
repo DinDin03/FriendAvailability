@@ -95,7 +95,7 @@ class DashboardService {
         return cachedProfile;
       }
 
-      const profile = await api.get(API_ENDPOINTS.USERS.BY_ID(userId));
+      const profile = await api.get(`${API_ENDPOINTS.USERS.PROFILE}?userId=${userId}`);
 
       if (!profile) {
         throw new Error('Profile data not found');
@@ -215,7 +215,10 @@ class DashboardService {
     try {
       this.logApiCall('updateUserProfile', { userId, updates: Object.keys(profileData) });
 
-      const updatedProfile = await api.put(API_ENDPOINTS.USERS.UPDATE_PROFILE, profileData);
+      // Validate profile data before sending
+      this.validateProfileData(profileData);
+
+      const updatedProfile = await api.put(`${API_ENDPOINTS.USERS.UPDATE_PROFILE}?userId=${userId}`, profileData);
 
       // Invalidate cached profile data
       this.invalidateCache(`profile_${userId}`);
@@ -227,6 +230,46 @@ class DashboardService {
     } catch (error) {
       this.logApiCall('updateUserProfile - error', { userId, error: error.message });
       throw this.handleApiError(error, 'Failed to update profile');
+    }
+  }
+
+  /**
+   * Validate profile data before sending to API
+   *
+   * @param {Object} profileData - Profile data to validate
+   * @throws {Error} When validation fails
+   */
+  validateProfileData(profileData) {
+    if (!profileData || typeof profileData !== 'object') {
+      throw new Error('Profile data must be an object');
+    }
+
+    // Validate name
+    if ('name' in profileData) {
+      if (typeof profileData.name !== 'string' || profileData.name.trim().length === 0) {
+        throw new Error('Name must be a non-empty string');
+      }
+      if (profileData.name.trim().length > 100) {
+        throw new Error('Name must be less than 100 characters');
+      }
+    }
+
+    // Validate email
+    if ('email' in profileData) {
+      if (typeof profileData.email !== 'string' || profileData.email.trim().length === 0) {
+        throw new Error('Email must be a non-empty string');
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(profileData.email.trim())) {
+        throw new Error('Email must be a valid email address');
+      }
+    }
+
+    // Validate any additional profile fields
+    const allowedFields = ['name', 'email', 'phone', 'bio', 'location', 'timezone', 'avatar'];
+    const invalidFields = Object.keys(profileData).filter(field => !allowedFields.includes(field));
+    if (invalidFields.length > 0) {
+      throw new Error(`Invalid profile fields: ${invalidFields.join(', ')}`);
     }
   }
 
