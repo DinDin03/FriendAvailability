@@ -4,7 +4,7 @@ import { Calendar, Users, MessageCircle, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-export const Dashboard = () => {
+export const ALTDashboard = () => {
     const { user, logout, isAuthenticated, isLoading } = useAuth();
     const navigate = useNavigate();
 

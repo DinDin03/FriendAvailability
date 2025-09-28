@@ -5,9 +5,8 @@ echo "Backend will be available at: http://localhost:8080"
 echo "Press Ctrl+C to stop"
 echo ""
 
-# shellcheck disable=SC2164
+cd ..
 cd backend
 mvn clean
 ./mvnw spring-boot:run
 # shellcheck disable=SC2103
-cd ..

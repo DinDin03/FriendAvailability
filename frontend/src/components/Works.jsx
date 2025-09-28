@@ -7,7 +7,7 @@ import calendar2 from "@/assets/Calendar-amico/Calendar-amico-2.png"
 import calendar3 from "@/assets/Calendar-amico/Calendar-amico-3.png"
 import Logo from '@/assets/logo.png'
 import CalendarImage from '@/assets/friends-calendar.png'
-import { Mouse, MousePointer } from 'lucide-react'
+import { MousePointer } from 'lucide-react'
 
 export const Works = () => {
 

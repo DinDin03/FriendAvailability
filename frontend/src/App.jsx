@@ -2,6 +2,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home } from "./pages/Home";
 import { Dashboard } from './pages/Dashboard';
+import { ALTDashboard } from './pages/ALTDashboard';
 import { Toaster } from 'react-hot-toast';
 import './App.css'
 
@@ -13,7 +14,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />}></Route>
+            <Route path="/dashboard" element={<ALTDashboard />}></Route>
           </Routes>
         </BrowserRouter>
       </AuthProvider>

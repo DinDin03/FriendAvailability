@@ -33,6 +33,35 @@ class AuthService {
     }
   }
 
+  async googleLogin(credentialResponse) {
+    try {
+        const response = await fetch('/api/auth/google-signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                credential: credentialResponse.credential
+            })
+        });
+
+        if (response.ok) {
+          const userData = await response.json()
+          this.currentUser = userData;
+          this.isAuthenticated = true;
+          localStorage.setItem('user', JSON.stringify(userData));
+          localStorage.setItem('isAuthenticated', 'true');
+          return userData;
+        } else {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || "Google sign-in failed.");
+        }
+
+      } catch (error) {
+          console.error("Network error:", error);
+          throw error;
+      }
+  }
+
   // Register new user
   async register(userData) {
     try {
