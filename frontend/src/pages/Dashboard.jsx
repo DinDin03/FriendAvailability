@@ -6,7 +6,9 @@ import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { dashboardService } from '../services/dashboardService';
 import { friendService } from '../services/friendService';
+import { userStatusService } from '../services/userStatusService';
 import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
+import { UserStatusIndicator, UserStatusSelector } from '../components/UserStatusIndicator';
 
 export const Dashboard = () => {
     const { user, logout, isLoading } = useAuth();
@@ -32,12 +34,25 @@ export const Dashboard = () => {
     const [isLoadingRequests, setIsLoadingRequests] = useState(false);
     const [processingRequests, setProcessingRequests] = useState(new Set());
 
+    // User status state
+    const [userStatus, setUserStatus] = useState('OFFLINE');
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const [statusError, setStatusError] = useState(null);
+
     // Load dashboard data on component mount or user change
     useEffect(() => {
         if (user?.id) {
             loadDashboardData();
             loadPendingRequests();
+            loadUserStatus();
+            // Start heartbeat for online presence
+            userStatusService.startHeartbeat(user.id);
         }
+
+        // Cleanup heartbeat on component unmount
+        return () => {
+            userStatusService.stopHeartbeat();
+        };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]);
 
@@ -82,6 +97,42 @@ export const Dashboard = () => {
             toast.error('Failed to load pending requests');
         } finally {
             setIsLoadingRequests(false);
+        }
+    };
+
+    // Load current user status
+    const loadUserStatus = async () => {
+        try {
+            setStatusError(null);
+            const statusData = await userStatusService.getUserStatus(user.id);
+            setUserStatus(statusData.status || 'OFFLINE');
+        } catch (error) {
+            console.error('Failed to load user status:', error);
+            setStatusError('Failed to load status');
+            // Default to OFFLINE if we can't load status
+            setUserStatus('OFFLINE');
+        }
+    };
+
+    // Update user status
+    const handleStatusChange = async (newStatus) => {
+        if (newStatus === userStatus) return; // No change needed
+
+        try {
+            setIsUpdatingStatus(true);
+            setStatusError(null);
+
+            await userStatusService.updateUserStatus(user.id, newStatus);
+            setUserStatus(newStatus);
+
+            toast.success(`Status updated to ${newStatus.toLowerCase().replace('_', ' ')}`);
+
+        } catch (error) {
+            console.error('Failed to update status:', error);
+            setStatusError(error.message);
+            toast.error(error.message || 'Failed to update status');
+        } finally {
+            setIsUpdatingStatus(false);
         }
     };
 
@@ -360,11 +411,23 @@ export const Dashboard = () => {
 
     const handleLogout = async () => {
         try {
+            // Set user offline before logout
+            if (user?.id) {
+                await userStatusService.setUserOffline(user.id);
+            }
+
             await logout();
             toast.success("Logged out successfully!")
             navigate("/");
         } catch (error) {
             console.error('Logout failed:', error);
+            // Continue with logout even if status update fails
+            try {
+                await logout();
+                navigate("/");
+            } catch (logoutError) {
+                console.error('Final logout failed:', logoutError);
+            }
         }
     };
 
@@ -395,13 +458,42 @@ export const Dashboard = () => {
                                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
                                 <span className="hidden sm:inline">Refresh</span>
                             </button>
-                            <div className="flex items-center space-x-2">
-                                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-sm font-medium">
-                                        {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                    </span>
+                            <div className="flex items-center space-x-4">
+                                {/* User Status Selector */}
+                                <div className="flex items-center space-x-2">
+                                    <UserStatusIndicator
+                                        status={userStatus}
+                                        size="md"
+                                        showTooltip={true}
+                                    />
+                                    <div className="hidden sm:block min-w-0">
+                                        <select
+                                            value={userStatus}
+                                            onChange={(e) => handleStatusChange(e.target.value)}
+                                            disabled={isUpdatingStatus}
+                                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+                                        >
+                                            <option value="ONLINE">Online</option>
+                                            <option value="AWAY">Away</option>
+                                            <option value="BUSY">Busy</option>
+                                            <option value="DO_NOT_DISTURB">Do Not Disturb</option>
+                                            <option value="OFFLINE">Offline</option>
+                                        </select>
+                                    </div>
+                                    {isUpdatingStatus && (
+                                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                                    )}
                                 </div>
-                                <span className="text-gray-700 font-medium">{user?.name}</span>
+
+                                {/* User Info */}
+                                <div className="flex items-center space-x-2">
+                                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-sm font-medium">
+                                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                                        </span>
+                                    </div>
+                                    <span className="text-gray-700 font-medium">{user?.name}</span>
+                                </div>
                             </div>
                             <button
                                 onClick={handleLogout}

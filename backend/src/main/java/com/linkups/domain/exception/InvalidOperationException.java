@@ -1,5 +1,6 @@
 package com.linkups.domain.exception;
 
+import com.linkups.domain.entity.enums.UserStatusType;
 import org.springframework.http.HttpStatus;
 
 public class InvalidOperationException extends BusinessException {
@@ -144,9 +145,35 @@ public class InvalidOperationException extends BusinessException {
         return new InvalidOperationException("Failed to delete message");
     }
 
+    // User Status Related Exceptions
+    public static InvalidOperationException invalidStatusTransition(UserStatusType from, UserStatusType to) {
+        return (InvalidOperationException) new InvalidOperationException(
+                String.format("Cannot change status from %s to %s", from, to))
+                .withDetail("fromStatus", from)
+                .withDetail("toStatus", to)
+                .withDetail("suggestion", "Check valid status transitions");
+    }
 
+    public static InvalidOperationException statusNotChangedRecentlyEnough(Long userId, int minMinutes) {
+        return (InvalidOperationException) new InvalidOperationException(
+                String.format("Status was changed less than %d minutes ago", minMinutes))
+                .withDetail("userId", userId)
+                .withDetail("minimumWaitMinutes", minMinutes)
+                .withDetail("suggestion", "Wait before changing status again");
+    }
 
+    public static InvalidOperationException userNotFoundForStatusUpdate(Long userId) {
+        return (InvalidOperationException) new InvalidOperationException(
+                "Cannot update status for non-existent user")
+                .withDetail("userId", userId)
+                .withDetail("suggestion", "Verify the user exists before updating status");
+    }
 
-
+    public static InvalidOperationException cannotSetSameStatus(UserStatusType currentStatus) {
+        return (InvalidOperationException) new InvalidOperationException(
+                String.format("User status is already set to %s", currentStatus))
+                .withDetail("currentStatus", currentStatus)
+                .withDetail("suggestion", "Select a different status to change to");
+    }
 
 }
