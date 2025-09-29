@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import { dashboardService } from '../services/dashboardService';
 import { friendService } from '../services/friendService';
+import { ActivityFeed } from '../components/ActivityFeed/ActivityFeed';
 
 export const Dashboard = () => {
     const { user, logout, isLoading } = useAuth();
@@ -902,32 +903,21 @@ export const Dashboard = () => {
                     </div>
                 )}
 
-                {/* Recent Activity */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div className="bg-white rounded-lg shadow-sm p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                        <div className="space-y-4">
-                            {dashboardData?.recentActivity?.length > 0 ? (
-                                dashboardData.recentActivity.map((activity) => (
-                                    <div key={activity.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                        <div className={`w-2 h-2 rounded-full ${
-                                            activity.icon === 'blue' ? 'bg-blue-600' :
-                                            activity.icon === 'green' ? 'bg-green-600' :
-                                            activity.icon === 'purple' ? 'bg-purple-600' :
-                                            'bg-gray-600'
-                                        }`}></div>
-                                        <p className="text-sm text-gray-600">{activity.message}</p>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                    <p className="text-sm text-gray-600">No recent activity to display.</p>
-                                </div>
-                            )}
-                        </div>
+                {/* Activity Feed and Quick Stats */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Activity Feed - Takes 2/3 of the space */}
+                    <div className="lg:col-span-2">
+                        <ActivityFeed
+                            className="h-full"
+                            maxHeight="max-h-[600px]"
+                            showFilters={true}
+                            showGrouping={true}
+                            autoRefresh={true}
+                            pageSize={15}
+                        />
                     </div>
 
+                    {/* Quick Stats - Takes 1/3 of the space */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
                         <div className="space-y-4">

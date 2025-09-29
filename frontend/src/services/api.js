@@ -127,5 +127,11 @@ export const API_ENDPOINTS = {
     JOIN: (circleId) => `/circles/${circleId}/join`,
     LEAVE: (circleId) => `/circles/${circleId}/leave`,
     MEMBERS: (circleId) => `/circles/${circleId}/members`
+  },
+  ACTIVITIES: {
+    FEED: (userId) => `/activities/${userId}/feed`,
+    FRIENDS: (userId) => `/friends/${userId}/activities`,
+    MARK_READ: (activityId) => `/activities/${activityId}/read`,
+    STATS: (userId) => `/activities/${userId}/stats`
   }
 };

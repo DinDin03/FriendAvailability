@@ -210,6 +210,61 @@ public class FriendService {
         return mutualFriends;
     }
 
+    /**
+     * Get list of friend IDs for a user (for activity feed purposes)
+     *
+     * @param userId User ID
+     * @return List of friend user IDs
+     */
+    public List<Long> getFriendIds(Long userId) {
+        log.debug("Getting friend IDs for user {}", userId);
+
+        userService.findUserById(userId);
+
+        List<Friend> acceptedFriendships = friendRepository.findAcceptedFriendshipsForUser(userId);
+
+        List<Long> friendIds = acceptedFriendships.stream()
+                .map(friendship -> {
+                    if (friendship.getUserId().equals(userId)) {
+                        return friendship.getFriendId();
+                    } else {
+                        return friendship.getUserId();
+                    }
+                })
+                .toList();
+
+        log.debug("Found {} friend IDs for user {}", friendIds.size(), userId);
+        return friendIds;
+    }
+
+    /**
+     * Get verified friend IDs from a provided list (security check)
+     * Only returns IDs that are actually friends of the requesting user
+     *
+     * @param userId User ID requesting the verification
+     * @param candidateFriendIds List of friend IDs to verify
+     * @return List of verified friend IDs
+     */
+    public List<Long> getVerifiedFriendIds(Long userId, List<Long> candidateFriendIds) {
+        log.debug("Verifying friend IDs {} for user {}", candidateFriendIds, userId);
+
+        if (candidateFriendIds == null || candidateFriendIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        userService.findUserById(userId);
+
+        List<Long> actualFriendIds = getFriendIds(userId);
+
+        List<Long> verifiedIds = candidateFriendIds.stream()
+                .filter(actualFriendIds::contains)
+                .toList();
+
+        log.debug("Verified {} out of {} friend IDs for user {}",
+                  verifiedIds.size(), candidateFriendIds.size(), userId);
+        return verifiedIds;
+    }
+
     private Friend findFriendRequestById(Long friendshipId) {
         return friendRepository.findById(friendshipId)
                 .orElseThrow(() -> {
