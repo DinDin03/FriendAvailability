@@ -9,8 +9,8 @@ This folder contains scripts for testing the backend Chat APIs and WebSocket fun
 **Purpose:** Test all REST API endpoints for chat functionality
 
 ```bash
-# Run from project root or scripts folder
-cd scripts
+# Run from project root
+cd backend/testing
 ./test_chat_api.sh
 ```
 
@@ -26,8 +26,8 @@ cd scripts
 **Purpose:** Test real-time messaging via WebSocket/STOMP
 
 ```bash
-# Run from scripts folder
-cd scripts
+# Run from backend testing folder
+cd backend/testing
 node websocket_test.js
 ```
 
