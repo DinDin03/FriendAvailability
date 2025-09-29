@@ -1,6 +1,8 @@
 package com.linkups.domain.service;
 
 import com.linkups.domain.entity.Activity;
+import com.linkups.domain.exception.ResourceNotFoundException;
+import com.linkups.domain.exception.ValidationException;
 import com.linkups.domain.repository.ActivityRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -55,59 +57,49 @@ public class ActivityService {
         log.debug("Getting activity feed for user {} with page={}, size={}, types={}, dateRange={}, sort={}",
                   userId, page, size, activityTypes, dateRange, sort);
 
-        try {
-            // Get user's friends
-            List<Long> friendIds = friendService.getFriendIds(userId);
+        // Get user's friends (throws ResourceNotFoundException if user doesn't exist)
+        List<Long> friendIds = friendService.getFriendIds(userId);
 
-            if (friendIds.isEmpty()) {
-                log.debug("User {} has no friends, returning empty feed", userId);
-                return Page.empty();
-            }
-
-            // Create pagination
-            Sort sortOrder = createSortOrder(sort);
-            Pageable pageable = PageRequest.of(page, size, sortOrder);
-
-            // Determine date range
-            LocalDateTime startDate = null;
-            LocalDateTime endDate = LocalDateTime.now();
-
-            if (dateRange != null) {
-                startDate = calculateStartDate(dateRange, endDate);
-            }
-
-            // Query activities based on filters
-            Page<Activity> activities;
-
-            if (activityTypes != null && !activityTypes.isEmpty() && startDate != null) {
-                // Both type and date filtering
-                activities = activityRepository.findActivitiesByFriendsTypesAndDateRange(
-                    friendIds, activityTypes, startDate, endDate, true, DEFAULT_VISIBILITY, pageable
-                );
-            } else if (activityTypes != null && !activityTypes.isEmpty()) {
-                // Type filtering only
-                activities = activityRepository.findActivitiesByFriendsAndTypes(
-                    friendIds, activityTypes, true, DEFAULT_VISIBILITY, pageable
-                );
-            } else if (startDate != null) {
-                // Date filtering only
-                activities = activityRepository.findActivitiesByFriendsAndDateRange(
-                    friendIds, startDate, endDate, true, DEFAULT_VISIBILITY, pageable
-                );
-            } else {
-                // No filtering
-                activities = activityRepository.findActivitiesByFriends(
-                    friendIds, true, DEFAULT_VISIBILITY, pageable
-                );
-            }
-
-            log.debug("Retrieved {} activities for user {}", activities.getContent().size(), userId);
-            return activities;
-
-        } catch (Exception e) {
-            log.error("Failed to get activity feed for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve activity feed", e);
+        if (friendIds.isEmpty()) {
+            log.debug("User {} has no friends, returning empty feed", userId);
+            return Page.empty();
         }
+
+        // Create pagination
+        Sort sortOrder = createSortOrder(sort);
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+
+        // Determine date range
+        LocalDateTime startDate = null;
+        LocalDateTime endDate = LocalDateTime.now();
+
+        if (dateRange != null) {
+            startDate = calculateStartDate(dateRange, endDate);
+        }
+
+        // Query activities based on filters
+        Page<Activity> activities;
+
+        if (activityTypes != null && !activityTypes.isEmpty() && startDate != null) {
+            activities = activityRepository.findActivitiesByFriendsTypesAndDateRange(
+                friendIds, activityTypes, startDate, endDate, true, DEFAULT_VISIBILITY, pageable
+            );
+        } else if (activityTypes != null && !activityTypes.isEmpty()) {
+            activities = activityRepository.findActivitiesByFriendsAndTypes(
+                friendIds, activityTypes, true, DEFAULT_VISIBILITY, pageable
+            );
+        } else if (startDate != null) {
+            activities = activityRepository.findActivitiesByFriendsAndDateRange(
+                friendIds, startDate, endDate, true, DEFAULT_VISIBILITY, pageable
+            );
+        } else {
+            activities = activityRepository.findActivitiesByFriends(
+                friendIds, true, DEFAULT_VISIBILITY, pageable
+            );
+        }
+
+        log.debug("Retrieved {} activities for user {}", activities.getContent().size(), userId);
+        return activities;
     }
 
     /**
@@ -124,34 +116,28 @@ public class ActivityService {
     public Page<Activity> getFriendActivities(Long userId, List<Long> friendIds, int page, int size, List<String> activityTypes) {
         log.debug("Getting activities for friends {} requested by user {}", friendIds, userId);
 
-        try {
-            // Verify friendship relationships
-            List<Long> verifiedFriendIds = friendService.getVerifiedFriendIds(userId, friendIds);
+        // Verify friendship relationships (throws ResourceNotFoundException if user doesn't exist)
+        List<Long> verifiedFriendIds = friendService.getVerifiedFriendIds(userId, friendIds);
 
-            if (verifiedFriendIds.isEmpty()) {
-                return Page.empty();
-            }
-
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
-
-            Page<Activity> activities;
-            if (activityTypes != null && !activityTypes.isEmpty()) {
-                activities = activityRepository.findActivitiesByFriendsAndTypes(
-                    verifiedFriendIds, activityTypes, true, DEFAULT_VISIBILITY, pageable
-                );
-            } else {
-                activities = activityRepository.findActivitiesByFriends(
-                    verifiedFriendIds, true, DEFAULT_VISIBILITY, pageable
-                );
-            }
-
-            log.debug("Retrieved {} activities for friends of user {}", activities.getContent().size(), userId);
-            return activities;
-
-        } catch (Exception e) {
-            log.error("Failed to get friend activities for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve friend activities", e);
+        if (verifiedFriendIds.isEmpty()) {
+            return Page.empty();
         }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+
+        Page<Activity> activities;
+        if (activityTypes != null && !activityTypes.isEmpty()) {
+            activities = activityRepository.findActivitiesByFriendsAndTypes(
+                verifiedFriendIds, activityTypes, true, DEFAULT_VISIBILITY, pageable
+            );
+        } else {
+            activities = activityRepository.findActivitiesByFriends(
+                verifiedFriendIds, true, DEFAULT_VISIBILITY, pageable
+            );
+        }
+
+        log.debug("Retrieved {} activities for friends of user {}", activities.getContent().size(), userId);
+        return activities;
     }
 
     /**
@@ -170,28 +156,30 @@ public class ActivityService {
                                  String visibility, Long relatedEntityId, String relatedEntityType) {
         log.debug("Creating activity for user {} with type {}", userId, type);
 
-        try {
-            Activity activity = Activity.builder()
-                .userId(userId)
-                .type(type)
-                .data(data)
-                .priority(priority != null ? priority : 1)
-                .visibility(visibility != null ? visibility : "friends")
-                .relatedEntityId(relatedEntityId)
-                .relatedEntityType(relatedEntityType)
-                .timestamp(LocalDateTime.now())
-                .isActive(true)
-                .build();
-
-            Activity savedActivity = activityRepository.save(activity);
-            log.info("Created activity {} for user {} with type {}", savedActivity.getId(), userId, type);
-
-            return savedActivity;
-
-        } catch (Exception e) {
-            log.error("Failed to create activity for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to create activity", e);
+        // Validate required fields
+        if (userId == null || userId <= 0) {
+            throw ValidationException.invalidUserId(userId);
         }
+        if (type == null || type.trim().isEmpty()) {
+            throw ValidationException.invalidFieldValue("type", "Activity type cannot be empty");
+        }
+
+        Activity activity = Activity.builder()
+            .userId(userId)
+            .type(type)
+            .data(data)
+            .priority(priority != null ? priority : 1)
+            .visibility(visibility != null ? visibility : "friends")
+            .relatedEntityId(relatedEntityId)
+            .relatedEntityType(relatedEntityType)
+            .timestamp(LocalDateTime.now())
+            .isActive(true)
+            .build();
+
+        Activity savedActivity = activityRepository.save(activity);
+        log.info("Created activity {} for user {} with type {}", savedActivity.getId(), userId, type);
+
+        return savedActivity;
     }
 
     /**
@@ -202,29 +190,17 @@ public class ActivityService {
      * @param userId User who read the activity
      * @return Updated activity or empty if not found
      */
-    public Optional<Activity> markActivityAsRead(Long activityId, Long userId) {
+    public Activity markActivityAsRead(Long activityId, Long userId) {
         log.debug("Marking activity {} as read by user {}", activityId, userId);
 
-        try {
-            Optional<Activity> activityOpt = activityRepository.findById(activityId);
+        Activity activity = activityRepository.findById(activityId)
+            .orElseThrow(() -> ResourceNotFoundException.activityNotFound(activityId));
 
-            if (activityOpt.isPresent()) {
-                Activity activity = activityOpt.get();
+        // For now, we'll just log the read action
+        // In a full implementation, you'd track reads in a separate table
+        log.info("Activity {} marked as read by user {}", activityId, userId);
 
-                // For now, we'll just log the read action
-                // In a full implementation, you'd track reads in a separate table
-                log.info("Activity {} marked as read by user {}", activityId, userId);
-
-                return activityOpt;
-            } else {
-                log.warn("Activity {} not found when trying to mark as read by user {}", activityId, userId);
-                return Optional.empty();
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to mark activity {} as read by user {}: {}", activityId, userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to mark activity as read", e);
-        }
+        return activity;
     }
 
     /**
@@ -237,41 +213,36 @@ public class ActivityService {
     public ActivityStatistics getActivityStatistics(Long userId) {
         log.debug("Getting activity statistics for user {}", userId);
 
-        try {
-            List<Long> friendIds = friendService.getFriendIds(userId);
+        // Throws ResourceNotFoundException if user doesn't exist
+        List<Long> friendIds = friendService.getFriendIds(userId);
 
-            if (friendIds.isEmpty()) {
-                return new ActivityStatistics(0L, 0L, 0L, LocalDateTime.now());
-            }
-
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime todayStart = now.truncatedTo(ChronoUnit.DAYS);
-            LocalDateTime weekStart = now.minus(7, ChronoUnit.DAYS);
-
-            // Count total activities from friends
-            Long totalActivities = (long) activityRepository.findActivitiesByFriends(
-                friendIds, true, DEFAULT_VISIBILITY, Pageable.unpaged()
-            ).getContent().size();
-
-            // Count today's activities
-            Long todayActivities = activityRepository.countActivitiesByUserAndDateRange(
-                userId, todayStart, now, true
-            );
-
-            // Count this week's activities
-            Long weekActivities = activityRepository.countActivitiesByUserAndDateRange(
-                userId, weekStart, now, true
-            );
-
-            ActivityStatistics stats = new ActivityStatistics(totalActivities, todayActivities, weekActivities, now);
-            log.debug("Retrieved statistics for user {}: {}", userId, stats);
-
-            return stats;
-
-        } catch (Exception e) {
-            log.error("Failed to get activity statistics for user {}: {}", userId, e.getMessage(), e);
-            throw new RuntimeException("Failed to retrieve activity statistics", e);
+        if (friendIds.isEmpty()) {
+            return new ActivityStatistics(0L, 0L, 0L, LocalDateTime.now());
         }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime todayStart = now.truncatedTo(ChronoUnit.DAYS);
+        LocalDateTime weekStart = now.minus(7, ChronoUnit.DAYS);
+
+        // Count total activities from friends
+        Long totalActivities = (long) activityRepository.findActivitiesByFriends(
+            friendIds, true, DEFAULT_VISIBILITY, Pageable.unpaged()
+        ).getContent().size();
+
+        // Count today's activities
+        Long todayActivities = activityRepository.countActivitiesByUserAndDateRange(
+            userId, todayStart, now, true
+        );
+
+        // Count this week's activities
+        Long weekActivities = activityRepository.countActivitiesByUserAndDateRange(
+            userId, weekStart, now, true
+        );
+
+        ActivityStatistics stats = new ActivityStatistics(totalActivities, todayActivities, weekActivities, now);
+        log.debug("Retrieved statistics for user {}: {}", userId, stats);
+
+        return stats;
     }
 
     /**
@@ -283,15 +254,9 @@ public class ActivityService {
     public Long deactivateOldActivities(LocalDateTime cutoffDate) {
         log.info("Deactivating activities older than {}", cutoffDate);
 
-        try {
-            // This would require a custom query to update isActive flag
-            // For now, just return 0 as placeholder
-            return 0L;
-
-        } catch (Exception e) {
-            log.error("Failed to deactivate old activities: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to deactivate old activities", e);
-        }
+        // This would require a custom query to update isActive flag
+        // For now, just return 0 as placeholder
+        return 0L;
     }
 
     /**

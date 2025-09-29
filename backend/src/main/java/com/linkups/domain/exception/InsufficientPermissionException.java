@@ -110,4 +110,20 @@ public class InsufficientPermissionException extends BusinessException {
     public static InsufficientPermissionException notActiveParticipant(Long userId, Long roomId) {
         return new InsufficientPermissionException("User is not an active participant in this room");
     }
+
+    public static InsufficientPermissionException cannotModifyActivity(Long userId, Long activityId) {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "You don't have permission to modify this activity")
+                .withDetail("userId", userId)
+                .withDetail("activityId", activityId)
+                .withDetail("suggestion", "Only the activity owner can modify it");
+    }
+
+    public static InsufficientPermissionException cannotViewActivity(Long userId, Long activityId) {
+        return (InsufficientPermissionException) new InsufficientPermissionException(
+                "You don't have permission to view this activity")
+                .withDetail("userId", userId)
+                .withDetail("activityId", activityId)
+                .withDetail("suggestion", "This activity may be private or not visible to you");
+    }
 }

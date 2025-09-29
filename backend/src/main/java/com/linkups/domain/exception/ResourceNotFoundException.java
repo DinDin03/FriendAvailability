@@ -131,4 +131,9 @@ public class ResourceNotFoundException extends BusinessException {
                 .withDetail("suggestion", "A private chat will be created when you send the first message");
     }
 
+    public static ResourceNotFoundException activityNotFound(Long activityId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException("Activity", activityId)
+                .withDetail("suggestion", "The activity may have been deleted or is no longer available");
+    }
+
 }

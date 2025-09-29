@@ -176,4 +176,16 @@ public class InvalidOperationException extends BusinessException {
                 .withDetail("suggestion", "Select a different status to change to");
     }
 
+    public static InvalidOperationException activityAlreadyInactive(Long activityId) {
+        return (InvalidOperationException) new InvalidOperationException("Activity is already inactive")
+                .withDetail("activityId", activityId)
+                .withDetail("suggestion", "This activity has been deactivated");
+    }
+
+    public static InvalidOperationException invalidActivityType(String type) {
+        return (InvalidOperationException) new InvalidOperationException("Invalid activity type")
+                .withDetail("type", type)
+                .withDetail("suggestion", "Valid activity types include: status_update, friend_added, achievement_unlocked, etc.");
+    }
+
 }

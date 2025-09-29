@@ -1,6 +1,7 @@
 package com.linkups.api.controller.v1;
 
 import com.linkups.domain.entity.Activity;
+import com.linkups.domain.exception.ValidationException;
 import com.linkups.domain.service.ActivityService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Activity Controller - REST API endpoints for activity management
@@ -44,7 +44,7 @@ public class ActivityController {
      * @return Activity feed with pagination metadata
      */
     @GetMapping("/{userId}/feed")
-    public ResponseEntity<?> getActivityFeed(
+    public ResponseEntity<ActivityFeedResponse> getActivityFeed(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int limit,
@@ -55,41 +55,14 @@ public class ActivityController {
         log.info("Getting activity feed for user {} with page={}, limit={}, types={}, dateRange={}, sort={}",
                  userId, page, limit, types, dateRange, sort);
 
-        try {
-            // Parse activity types
-            List<String> activityTypes = null;
-            if (types != null && !types.trim().isEmpty()) {
-                activityTypes = Arrays.asList(types.split(","));
-            }
+        List<String> activityTypes = parseActivityTypes(types);
+        Page<Activity> activities = activityService.getActivityFeed(userId, page, limit, activityTypes, dateRange, sort);
+        ActivityFeedResponse response = buildActivityFeedResponse(activities);
 
-            // Get activity feed
-            Page<Activity> activities = activityService.getActivityFeed(
-                userId, page, limit, activityTypes, dateRange, sort
-            );
+        log.debug("Returning {} activities for user {} (page {}/{})",
+                 activities.getContent().size(), userId, page + 1, activities.getTotalPages());
 
-            // Build response
-            ActivityFeedResponse response = new ActivityFeedResponse(
-                activities.getContent(),
-                activities.hasNext(),
-                activities.getContent().isEmpty() ? null :
-                    activities.getContent().get(activities.getContent().size() - 1).getTimestamp().toString(),
-                activities.getTotalElements()
-            );
-
-            log.debug("Returning {} activities for user {} (page {}/{})",
-                     activities.getContent().size(), userId, page + 1, activities.getTotalPages());
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Failed to get activity feed for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "error", "Failed to retrieve activity feed",
-                    "message", e.getMessage(),
-                    "timestamp", java.time.LocalDateTime.now().toString()
-                ));
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -103,7 +76,7 @@ public class ActivityController {
      * @return Friend activities with pagination
      */
     @GetMapping("/friends/{userId}/activities")
-    public ResponseEntity<?> getFriendActivities(
+    public ResponseEntity<ActivityFeedResponse> getFriendActivities(
             @PathVariable Long userId,
             @RequestParam String friendIds,
             @RequestParam(defaultValue = "0") int page,
@@ -113,49 +86,12 @@ public class ActivityController {
         log.info("Getting friend activities for user {} with friendIds={}, page={}, limit={}",
                  userId, friendIds, page, limit);
 
-        try {
-            // Parse friend IDs
-            List<Long> friendIdList = Arrays.stream(friendIds.split(","))
-                .map(String::trim)
-                .map(Long::parseLong)
-                .toList();
+        List<Long> friendIdList = parseFriendIds(friendIds);
+        List<String> activityTypes = parseActivityTypes(types);
+        Page<Activity> activities = activityService.getFriendActivities(userId, friendIdList, page, limit, activityTypes);
+        ActivityFeedResponse response = buildActivityFeedResponse(activities);
 
-            // Parse activity types
-            List<String> activityTypes = null;
-            if (types != null && !types.trim().isEmpty()) {
-                activityTypes = Arrays.asList(types.split(","));
-            }
-
-            // Get friend activities
-            Page<Activity> activities = activityService.getFriendActivities(
-                userId, friendIdList, page, limit, activityTypes
-            );
-
-            // Build response
-            ActivityFeedResponse response = new ActivityFeedResponse(
-                activities.getContent(),
-                activities.hasNext(),
-                activities.getContent().isEmpty() ? null :
-                    activities.getContent().get(activities.getContent().size() - 1).getTimestamp().toString(),
-                activities.getTotalElements()
-            );
-
-            return ResponseEntity.ok(response);
-
-        } catch (NumberFormatException e) {
-            log.warn("Invalid friend IDs format for user {}: {}", userId, friendIds);
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "Invalid friend IDs format", "message", "Friend IDs must be comma-separated numbers"));
-
-        } catch (Exception e) {
-            log.error("Failed to get friend activities for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "error", "Failed to retrieve friend activities",
-                    "message", e.getMessage(),
-                    "timestamp", java.time.LocalDateTime.now().toString()
-                ));
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -166,60 +102,22 @@ public class ActivityController {
      * @return Success response
      */
     @PutMapping("/{activityId}/read")
-    public ResponseEntity<?> markActivityAsRead(
+    public ResponseEntity<Map<String, Object>> markActivityAsRead(
             @PathVariable Long activityId,
             @RequestBody Map<String, Object> request) {
 
         log.info("Marking activity {} as read", activityId);
 
-        try {
-            // Extract user ID from request
-            Long userId = null;
-            if (request.containsKey("userId")) {
-                Object userIdObj = request.get("userId");
-                if (userIdObj instanceof Number) {
-                    userId = ((Number) userIdObj).longValue();
-                } else if (userIdObj instanceof String) {
-                    userId = Long.parseLong((String) userIdObj);
-                }
-            }
+        Long userId = extractUserId(request);
+        Activity activity = activityService.markActivityAsRead(activityId, userId);
 
-            if (userId == null) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Missing userId in request body"));
-            }
-
-            // Mark activity as read
-            Optional<Activity> activity = activityService.markActivityAsRead(activityId, userId);
-
-            if (activity.isPresent()) {
-                log.info("Activity {} marked as read by user {}", activityId, userId);
-                return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Activity marked as read",
-                    "activityId", activityId,
-                    "userId", userId
-                ));
-            } else {
-                log.warn("Activity {} not found when marking as read by user {}", activityId, userId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Activity not found", "activityId", activityId));
-            }
-
-        } catch (NumberFormatException e) {
-            log.warn("Invalid userId format when marking activity {} as read", activityId);
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "Invalid userId format"));
-
-        } catch (Exception e) {
-            log.error("Failed to mark activity {} as read: {}", activityId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "error", "Failed to mark activity as read",
-                    "message", e.getMessage(),
-                    "timestamp", java.time.LocalDateTime.now().toString()
-                ));
-        }
+        log.info("Activity {} marked as read by user {}", activityId, userId);
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Activity marked as read",
+            "activityId", activityId,
+            "userId", userId
+        ));
     }
 
     /**
@@ -229,30 +127,19 @@ public class ActivityController {
      * @return Activity statistics
      */
     @GetMapping("/{userId}/stats")
-    public ResponseEntity<?> getActivityStatistics(@PathVariable Long userId) {
+    public ResponseEntity<Map<String, Object>> getActivityStatistics(@PathVariable Long userId) {
         log.info("Getting activity statistics for user {}", userId);
 
-        try {
-            ActivityService.ActivityStatistics stats = activityService.getActivityStatistics(userId);
+        ActivityService.ActivityStatistics stats = activityService.getActivityStatistics(userId);
 
-            Map<String, Object> response = Map.of(
-                "totalActivities", stats.totalActivities,
-                "todayActivities", stats.todayActivities,
-                "weekActivities", stats.weekActivities,
-                "lastUpdated", stats.lastUpdated.toString()
-            );
+        Map<String, Object> response = Map.of(
+            "totalActivities", stats.totalActivities,
+            "todayActivities", stats.todayActivities,
+            "weekActivities", stats.weekActivities,
+            "lastUpdated", stats.lastUpdated.toString()
+        );
 
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
-            log.error("Failed to get activity statistics for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "error", "Failed to retrieve activity statistics",
-                    "message", e.getMessage(),
-                    "timestamp", java.time.LocalDateTime.now().toString()
-                ));
-        }
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -262,36 +149,68 @@ public class ActivityController {
      * @return Created activity
      */
     @PostMapping
-    public ResponseEntity<?> createActivity(@RequestBody CreateActivityRequest request) {
+    public ResponseEntity<Activity> createActivity(@RequestBody CreateActivityRequest request) {
         log.info("Creating activity for user {} with type {}", request.userId, request.type);
 
-        try {
-            if (request.userId == null || request.type == null) {
-                return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Missing required fields: userId and type"));
-            }
+        Activity activity = activityService.createActivity(
+            request.userId,
+            request.type,
+            request.data,
+            request.priority,
+            request.visibility,
+            request.relatedEntityId,
+            request.relatedEntityType
+        );
 
-            Activity activity = activityService.createActivity(
-                request.userId,
-                request.type,
-                request.data,
-                request.priority,
-                request.visibility,
-                request.relatedEntityId,
-                request.relatedEntityType
-            );
+        return ResponseEntity.status(HttpStatus.CREATED).body(activity);
+    }
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(activity);
+    // Helper methods
 
-        } catch (Exception e) {
-            log.error("Failed to create activity for user {}: {}", request.userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                    "error", "Failed to create activity",
-                    "message", e.getMessage(),
-                    "timestamp", java.time.LocalDateTime.now().toString()
-                ));
+    private List<String> parseActivityTypes(String types) {
+        if (types == null || types.trim().isEmpty()) {
+            return null;
         }
+        return Arrays.asList(types.split(","));
+    }
+
+    private List<Long> parseFriendIds(String friendIds) {
+        try {
+            return Arrays.stream(friendIds.split(","))
+                .map(String::trim)
+                .map(Long::parseLong)
+                .toList();
+        } catch (NumberFormatException e) {
+            throw ValidationException.invalidFieldValue("friendIds", "Friend IDs must be comma-separated numbers");
+        }
+    }
+
+    private Long extractUserId(Map<String, Object> request) {
+        if (!request.containsKey("userId")) {
+            throw ValidationException.invalidFieldValue("userId", "Missing userId in request body");
+        }
+
+        Object userIdObj = request.get("userId");
+        try {
+            if (userIdObj instanceof Number) {
+                return ((Number) userIdObj).longValue();
+            } else if (userIdObj instanceof String) {
+                return Long.parseLong((String) userIdObj);
+            }
+            throw ValidationException.invalidFieldValue("userId", "Invalid userId format");
+        } catch (NumberFormatException e) {
+            throw ValidationException.invalidFieldValue("userId", "Invalid userId format");
+        }
+    }
+
+    private ActivityFeedResponse buildActivityFeedResponse(Page<Activity> activities) {
+        return new ActivityFeedResponse(
+            activities.getContent(),
+            activities.hasNext(),
+            activities.getContent().isEmpty() ? null :
+                activities.getContent().get(activities.getContent().size() - 1).getTimestamp().toString(),
+            activities.getTotalElements()
+        );
     }
 
     /**
