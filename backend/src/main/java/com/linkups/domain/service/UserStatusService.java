@@ -26,7 +26,7 @@ public class UserStatusService {
     private final UserStatusRepository userStatusRepository;
 
     // Business rules configuration
-    private static final int MIN_STATUS_CHANGE_INTERVAL_MINUTES = 1; // Prevent spam status changes
+    private static final int MIN_STATUS_CHANGE_INTERVAL_MINUTES = 0; // Prevent spam status changes
     private static final int INACTIVE_USER_THRESHOLD_DAYS = 30; // For cleanup operations
 
     /**
