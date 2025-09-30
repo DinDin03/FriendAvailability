@@ -1,6 +1,8 @@
 package com.linkups.api.controller.v1;
 
 import com.linkups.api.dto.request.circle.*;
+import com.linkups.api.dto.response.circle.*;
+import com.linkups.api.mapper.CircleMapper;
 import com.linkups.domain.entity.Circle;
 import com.linkups.domain.entity.CircleMember;
 import com.linkups.domain.entity.enums.CircleRole;
@@ -11,8 +13,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/circles")
@@ -28,25 +32,28 @@ public class CircleController {
     }
 
     @PostMapping
-    public ResponseEntity<Circle> createCircle(@Valid @RequestBody CreateCircleRequest request, @RequestParam Long userId) {
+    public ResponseEntity<CircleResponse> createCircle(@Valid @RequestBody CreateCircleRequest request, @RequestParam Long userId) {
         log.info("Creating circle '{}' for user {}", request.getName(), userId);
 
-        Circle circle = circleService.createCircle(userId, request.getName(), request.getDescription(), request.getMaxMembers());
+        Circle circle = circleService.createCircle(request, userId);
+        CircleMember userMembership = circleService.getUserMembershipInCircle(circle.getId(), userId);
 
         log.info("Circle '{}' created successfully with ID {}", request.getName(), circle.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(circle);
+        return ResponseEntity.status(HttpStatus.CREATED).body(CircleMapper.toResponse(circle, userMembership));
     }
 
     @PutMapping("/{circleId}")
-    public ResponseEntity<Circle> updateCircle(@PathVariable Long circleId,
-                                               @Valid @RequestBody UpdateCircleRequest request,
-                                               @RequestParam Long userId) {
+    public ResponseEntity<CircleResponse> updateCircle(@PathVariable Long circleId,
+                                                       @Valid @RequestBody UpdateCircleRequest request,
+                                                       @RequestParam Long userId) {
         log.info("Updating circle {} by user {}", circleId, userId);
 
-        Circle circle = circleService.updateCircle(circleId, request.getName(), request.getDescription(), userId);
+        Circle circle = circleService.updateCircle(circleId, request, userId);
+        CircleMember userMembership = circleService.getUserMembershipInCircle(circleId, userId);
+        long memberCount = circleService.getMemberCountForCircle(circleId);
 
         log.info("Circle {} updated successfully", circleId);
-        return ResponseEntity.ok(circle);
+        return ResponseEntity.ok(CircleMapper.toResponse(circle, userMembership, (int) memberCount));
     }
 
     @DeleteMapping("/{circleId}")
@@ -62,78 +69,60 @@ public class CircleController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<Map<String, Object>> getUserCircles(@PathVariable Long userId) {
+    public ResponseEntity<CircleListResponse> getUserCircles(@PathVariable Long userId) {
         log.info("Getting circles for user {}", userId);
 
         List<Circle> userCircles = circleService.getCirclesForUser(userId);
-        List<Circle> createdCircles = circleService.getCirclesCreatedByUser(userId);
 
-        Map<String, Object> response = Map.of(
-                "circles", userCircles,
-                "totalCircles", userCircles.size(),
-                "circlesAsOwner", createdCircles.size(),
-                "circlesAsMember", userCircles.size() - createdCircles.size()
-        );
+        // Build a map of circle ID to user's membership in that circle
+        Map<Long, CircleMember> userMemberships = userCircles.stream()
+                .collect(Collectors.toMap(
+                        Circle::getId,
+                        circle -> circleService.getUserMembershipInCircle(circle.getId(), userId)
+                ));
+
+        CircleListResponse response = CircleMapper.toCircleListResponse(userCircles, userMemberships);
 
         log.info("Retrieved {} circles for user {}", userCircles.size(), userId);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{circleId}")
-    public ResponseEntity<Map<String, Object>> getCircle(@PathVariable Long circleId, @RequestParam Long userId) {
+    public ResponseEntity<CircleResponse> getCircle(@PathVariable Long circleId, @RequestParam Long userId) {
         log.info("Getting circle {} for user {}", circleId, userId);
 
         Circle circle = circleService.getCircle(circleId);
-        long memberCount = circleService.getMemberCountForCircle(circleId);
         CircleMember userMembership = circleService.getUserMembershipInCircle(circleId, userId);
-
-        Map<String, Object> response = new java.util.HashMap<>();
-        response.put("id", circle.getId());
-        response.put("name", circle.getName());
-        response.put("description", circle.getDescription());
-        response.put("createdBy", circle.getCreatedBy());
-        response.put("maxMembers", circle.getMaxMembers());
-        response.put("currentMemberCount", memberCount);
-        response.put("circleColor", circle.getCircleColor());
-        response.put("createdAt", circle.getCreatedAt());
-        response.put("updatedAt", circle.getUpdatedAt());
-        response.put("userRole", userMembership.getRole().name());
-        response.put("canManageMembers", userMembership.canManageMembers());
-        response.put("canModifyCircle", userMembership.canModifyCircle());
-        response.put("isAtMaxCapacity", circle.isAtMaxCapacity());
+        long memberCount = circleService.getMemberCountForCircle(circleId);
 
         log.info("Retrieved circle {} details for user {}", circleId, userId);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(CircleMapper.toResponse(circle, userMembership, (int) memberCount));
     }
 
     @GetMapping("/{circleId}/members")
-    public ResponseEntity<Map<String, Object>> getCircleMembers(@PathVariable Long circleId, @RequestParam Long userId) {
+    public ResponseEntity<CircleMemberListResponse> getCircleMembers(@PathVariable Long circleId, @RequestParam Long userId) {
         log.info("Getting members of circle {} for user {}", circleId, userId);
 
         List<CircleMember> members = circleService.getCircleMembers(circleId, userId);
+        CircleMember requestingUserMembership = circleService.getUserMembershipInCircle(circleId, userId);
 
-        Map<String, Object> response = Map.of(
-                "members", members,
-                "totalMembers", members.size(),
-                "ownerCount", members.stream().filter(m -> m.getRole().name().equals("OWNER")).count(),
-                "adminCount", members.stream().filter(m -> m.getRole().name().equals("ADMIN")).count(),
-                "memberCount", members.stream().filter(m -> m.getRole().name().equals("MEMBER")).count()
-        );
+        CircleMemberListResponse response = CircleMapper.toMemberListResponse(members, requestingUserMembership);
 
         log.info("Retrieved {} members for circle {}", members.size(), circleId);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/{circleId}/members")
-    public ResponseEntity<CircleMember> addMemberToCircle(@PathVariable Long circleId,
-                                                          @RequestParam Long requestingUserId,
-                                                          @Valid @RequestBody AddMemberToCircleRequest request) {
+    public ResponseEntity<CircleMemberResponse> addMemberToCircle(@PathVariable Long circleId,
+                                                                  @RequestParam Long requestingUserId,
+                                                                  @Valid @RequestBody AddMemberToCircleRequest request) {
         log.info("Adding user {} to circle {} by user {}", request.getUserId(), circleId, requestingUserId);
 
         CircleMember membership = circleService.addMemberToCircle(circleId, request.getUserId(), requestingUserId);
+        CircleMember requestingUserMembership = circleService.getUserMembershipInCircle(circleId, requestingUserId);
 
         log.info("User {} added to circle {} successfully", request.getUserId(), circleId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(membership);
+        return ResponseEntity.status(HttpStatus.CREATED).body(CircleMapper.toMemberResponse(membership, requestingUserMembership));
     }
 
     @DeleteMapping("/{circleId}/members/{userId}")
@@ -151,17 +140,18 @@ public class CircleController {
     }
 
     @PutMapping("/{circleId}/members/{userId}/role")
-    public ResponseEntity<CircleMember> updateMemberRole(@PathVariable Long circleId,
-                                                         @PathVariable Long userId,
-                                                         @Valid @RequestBody UpdateMemberRoleRequest request,
-                                                         @RequestParam Long requestingUserId) {
+    public ResponseEntity<CircleMemberResponse> updateMemberRole(@PathVariable Long circleId,
+                                                                 @PathVariable Long userId,
+                                                                 @Valid @RequestBody UpdateMemberRoleRequest request,
+                                                                 @RequestParam Long requestingUserId) {
         log.info("Updating role of user {} in circle {} to {} by user {}", userId, circleId, request.getNewRole(), requestingUserId);
 
         CircleRole newRole = CircleRole.valueOf(request.getNewRole().toUpperCase());
         CircleMember updatedMember = circleService.updateMemberRole(circleId, userId, newRole, requestingUserId);
+        CircleMember requestingUserMembership = circleService.getUserMembershipInCircle(circleId, requestingUserId);
 
         log.info("Role of user {} in circle {} updated to {} successfully", userId, circleId, newRole);
-        return ResponseEntity.ok(updatedMember);
+        return ResponseEntity.ok(CircleMapper.toMemberResponse(updatedMember, requestingUserMembership));
     }
 
     @PostMapping("/{circleId}/transfer-ownership")
@@ -179,22 +169,26 @@ public class CircleController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> searchCircles(@RequestParam String searchTerm, @RequestParam Long userId) {
+    public ResponseEntity<CircleListResponse> searchCircles(@RequestParam String searchTerm, @RequestParam Long userId) {
         log.info("Searching circles with term '{}' for user {}", searchTerm, userId);
 
         List<Circle> allResults = circleService.searchCircles(searchTerm);
         List<Circle> userCircles = circleService.getCirclesForUser(userId);
 
+        // Filter to only circles the user is a member of
         List<Circle> filteredResults = allResults.stream()
                 .filter(circle -> userCircles.stream()
                         .anyMatch(userCircle -> userCircle.getId().equals(circle.getId())))
                 .toList();
 
-        Map<String, Object> response = Map.of(
-                "searchResults", filteredResults,
-                "totalResults", filteredResults.size(),
-                "searchTerm", searchTerm
-        );
+        // Build a map of circle ID to user's membership
+        Map<Long, CircleMember> userMemberships = filteredResults.stream()
+                .collect(Collectors.toMap(
+                        Circle::getId,
+                        circle -> circleService.getUserMembershipInCircle(circle.getId(), userId)
+                ));
+
+        CircleListResponse response = CircleMapper.toCircleListResponse(filteredResults, userMemberships);
 
         log.info("Found {} circles matching search term '{}' for user {}", filteredResults.size(), searchTerm, userId);
         return ResponseEntity.ok(response);

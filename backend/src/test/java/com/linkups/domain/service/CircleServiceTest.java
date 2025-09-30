@@ -1,5 +1,7 @@
 package com.linkups.domain.service;
 
+import com.linkups.api.dto.request.circle.CreateCircleRequest;
+import com.linkups.api.dto.request.circle.UpdateCircleRequest;
 import com.linkups.base.BaseUnitTest;
 import com.linkups.domain.entity.Circle;
 import com.linkups.domain.entity.CircleMember;
@@ -113,7 +115,13 @@ class CircleServiceTest extends BaseUnitTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         // ============== WHEN ==============
-        Circle result = circleService.createCircle(creatorId, circleName, description, maxMembers);
+        CreateCircleRequest request = CreateCircleRequest.builder()
+                .name(circleName)
+                .description(description)
+                .maxMembers(maxMembers)
+                .build();
+
+        Circle result = circleService.createCircle(request, creatorId);
 
         // ============== THEN ==============
         assertThat(result).isEqualTo(savedCircle);
@@ -146,15 +154,18 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(creatorId)).willReturn(creator);
 
         // Test null name
-        assertThatThrownBy(() -> circleService.createCircle(creatorId, null, null, null))
+        CreateCircleRequest nullNameRequest = CreateCircleRequest.builder().name(null).build();
+        assertThatThrownBy(() -> circleService.createCircle(nullNameRequest, creatorId))
                 .isInstanceOf(ValidationException.class);
-        
+
         // Test empty name
-        assertThatThrownBy(() -> circleService.createCircle(creatorId, "", null, null))
+        CreateCircleRequest emptyNameRequest = CreateCircleRequest.builder().name("").build();
+        assertThatThrownBy(() -> circleService.createCircle(emptyNameRequest, creatorId))
                 .isInstanceOf(ValidationException.class);
-        
+
         // Test whitespace name
-        assertThatThrownBy(() -> circleService.createCircle(creatorId, "   ", null, null))
+        CreateCircleRequest whitespaceNameRequest = CreateCircleRequest.builder().name("   ").build();
+        assertThatThrownBy(() -> circleService.createCircle(whitespaceNameRequest, creatorId))
                 .isInstanceOf(ValidationException.class);
         
         then(circleRepository).should(never()).save(any());
@@ -173,7 +184,11 @@ class CircleServiceTest extends BaseUnitTest {
                 .willReturn(true); // Circle name already exists
 
         // ============== WHEN & THEN ==============
-        assertThatThrownBy(() -> circleService.createCircle(creatorId, duplicateName, null, null))
+        CreateCircleRequest request = CreateCircleRequest.builder()
+                .name(duplicateName)
+                .build();
+
+        assertThatThrownBy(() -> circleService.createCircle(request, creatorId))
                 .isInstanceOf(DuplicateResourceException.class)
                 .hasMessageContaining("Circle with name 'Existing Circle' already exists");
         
@@ -192,7 +207,12 @@ class CircleServiceTest extends BaseUnitTest {
         given(userService.findUserById(creatorId)).willReturn(creator);
 
         // ============== WHEN & THEN ==============
-        assertThatThrownBy(() -> circleService.createCircle(creatorId, validName, tooLongDescription, null))
+        CreateCircleRequest request = CreateCircleRequest.builder()
+                .name(validName)
+                .description(tooLongDescription)
+                .build();
+
+        assertThatThrownBy(() -> circleService.createCircle(request, creatorId))
                 .isInstanceOf(ValidationException.class)
                 .hasMessageContaining("Circle description cannot exceed 500 characters");
         
@@ -230,7 +250,12 @@ class CircleServiceTest extends BaseUnitTest {
         given(circleRepository.save(any(Circle.class))).willReturn(updatedCircle);
 
         // ============== WHEN ==============
-        Circle result = circleService.updateCircle(circleId, newName, newDescription, ownerId);
+        UpdateCircleRequest request = UpdateCircleRequest.builder()
+                .name(newName)
+                .description(newDescription)
+                .build();
+
+        Circle result = circleService.updateCircle(circleId, request, ownerId);
 
         // ============== THEN ==============
         assertThat(result).isEqualTo(updatedCircle);
@@ -254,7 +279,11 @@ class CircleServiceTest extends BaseUnitTest {
                 .willReturn(false); // User lacks permission
 
         // ============== WHEN & THEN ==============
-        assertThatThrownBy(() -> circleService.updateCircle(circleId, "New Name", null, regularUserId))
+        UpdateCircleRequest request = UpdateCircleRequest.builder()
+                .name("New Name")
+                .build();
+
+        assertThatThrownBy(() -> circleService.updateCircle(circleId, request, regularUserId))
                 .isInstanceOf(InsufficientPermissionException.class)
                 .hasMessageContaining("admin");
         
@@ -1028,7 +1057,11 @@ class CircleServiceTest extends BaseUnitTest {
         given(circleRepository.findById(nonExistentCircleId)).willReturn(Optional.empty());
 
         // ============== WHEN & THEN ==============
-        assertThatThrownBy(() -> circleService.updateCircle(nonExistentCircleId, "New Name", null, userId))
+        UpdateCircleRequest request = UpdateCircleRequest.builder()
+                .name("New Name")
+                .build();
+
+        assertThatThrownBy(() -> circleService.updateCircle(nonExistentCircleId, request, userId))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("Circle");
         
@@ -1045,7 +1078,11 @@ class CircleServiceTest extends BaseUnitTest {
                 .willThrow(new ResourceNotFoundException("User not found"));
 
         // ============== WHEN & THEN ==============
-        assertThatThrownBy(() -> circleService.createCircle(nonExistentUserId, "Circle", null, null))
+        CreateCircleRequest request = CreateCircleRequest.builder()
+                .name("Circle")
+                .build();
+
+        assertThatThrownBy(() -> circleService.createCircle(request, nonExistentUserId))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("User");
         

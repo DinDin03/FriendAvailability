@@ -1,5 +1,7 @@
 package com.linkups.domain.service;
 
+import com.linkups.api.dto.request.circle.CreateCircleRequest;
+import com.linkups.api.dto.request.circle.UpdateCircleRequest;
 import com.linkups.domain.entity.Circle;
 import com.linkups.domain.entity.CircleMember;
 import com.linkups.domain.entity.enums.CircleRole;
@@ -34,37 +36,37 @@ public class CircleService {
         log.info("CircleService created");
     }
 
-    public Circle createCircle(Long creatorId, String name, String description, Integer maxMembers) {
-        log.debug("Creating circle '{}' for user {}", name, creatorId);
+    public Circle createCircle(CreateCircleRequest request, Long creatorId) {
+        log.debug("Creating circle '{}' for user {}", request.getName(), creatorId);
 
         User creator = userService.findUserById(creatorId);
-        validateCircleName(name);
+        validateCircleName(request.getName());
 
-        if (description != null && description.length() >= 500) {
-            log.warn("Circle description too long: {} characters", description.length());
+        if (request.getDescription() != null && request.getDescription().length() >= 500) {
+            log.warn("Circle description too long: {} characters", request.getDescription().length());
             throw ValidationException.circleDescriptionTooLong(500);
         }
 
-        if (circleRepository.existsActiveCircleWithNameForUser(creatorId, name)) {
-            log.warn("Duplicate circle name '{}' for user {}", name, creatorId);
-            throw DuplicateResourceException.duplicateCircleName(name);
+        if (circleRepository.existsActiveCircleWithNameForUser(creatorId, request.getName())) {
+            log.warn("Duplicate circle name '{}' for user {}", request.getName(), creatorId);
+            throw DuplicateResourceException.duplicateCircleName(request.getName());
         }
 
         Circle circle = Circle.builder()
-                .name(name.trim())
-                .description(description != null ? description.trim() : null)
+                .name(request.getName().trim())
+                .description(request.getDescription() != null ? request.getDescription().trim() : null)
                 .createdBy(creatorId)
-                .maxMembers(maxMembers)
+                .maxMembers(request.getMaxMembers())
                 .build();
 
         Circle savedCircle = circleRepository.save(circle);
         addMemberToCircleInternal(savedCircle.getId(), creatorId, CircleRole.OWNER, creatorId);
 
-        log.info("Circle '{}' created successfully with ID {}", name, savedCircle.getId());
+        log.info("Circle '{}' created successfully with ID {}", request.getName(), savedCircle.getId());
         return savedCircle;
     }
 
-    public Circle updateCircle(Long circleId, String newName, String description, Long requestingUserId) {
+    public Circle updateCircle(Long circleId, UpdateCircleRequest request, Long requestingUserId) {
         log.debug("Updating circle {} by user {}", circleId, requestingUserId);
 
         User requestingUser = userService.findUserById(requestingUserId);
@@ -75,25 +77,25 @@ public class CircleService {
             throw InsufficientPermissionException.onlyAdminCanUpdate();
         }
 
-        if (newName != null) {
-            validateCircleName(newName);
+        if (request.getName() != null) {
+            validateCircleName(request.getName());
 
-            Optional<Circle> existingCircle = circleRepository.findByNameAndCreatedByAndIsActiveTrue(newName.trim(),
+            Optional<Circle> existingCircle = circleRepository.findByNameAndCreatedByAndIsActiveTrue(request.getName().trim(),
                     circle.getCreatedBy());
             if (existingCircle.isPresent() && !existingCircle.get().getId().equals(circleId)) {
-                log.warn("Circle name '{}' already exists for user {}", newName, circle.getCreatedBy());
-                throw DuplicateResourceException.duplicateCircleName(newName);
+                log.warn("Circle name '{}' already exists for user {}", request.getName(), circle.getCreatedBy());
+                throw DuplicateResourceException.duplicateCircleName(request.getName());
             }
 
-            circle.setName(newName.trim());
+            circle.setName(request.getName().trim());
         }
 
-        if (description != null) {
-            if (description.length() > 500) {
-                log.warn("Circle description too long: {} characters", description.length());
+        if (request.getDescription() != null) {
+            if (request.getDescription().length() > 500) {
+                log.warn("Circle description too long: {} characters", request.getDescription().length());
                 throw ValidationException.circleDescriptionTooLong(500);
             }
-            circle.setDescription(description.trim());
+            circle.setDescription(request.getDescription().trim());
         }
 
         Circle updatedCircle = circleRepository.save(circle);
