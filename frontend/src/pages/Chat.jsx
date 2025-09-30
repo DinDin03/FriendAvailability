@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Users, User, RefreshCw, ArrowLeft, AlertCircle } from 'lucide-react';
+import { MessageCircle, Users, User, RefreshCw, ArrowLeft, AlertCircle, UserPlus, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { chatService } from '../services/chatService';
 import { formatRelativeTime } from '../lib/timeUtils';
+import { ChatRoom } from '../components/ChatRoom';
 import toast from 'react-hot-toast';
 
 /**
@@ -26,6 +27,10 @@ export const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Create new chat state
+  const [targetUserId, setTargetUserId] = useState('');
+  const [isCreatingChat, setIsCreatingChat] = useState(false);
 
   /**
    * Load chat rooms from the backend
@@ -83,14 +88,93 @@ export const Chat = () => {
 
   /**
    * Handle room selection
-   * TODO: Navigate to ChatRoom component when implemented
    */
   const handleRoomClick = (roomId) => {
     setSelectedRoomId(roomId);
     console.log('Room selected:', roomId);
-    toast('Chat room interface coming soon!', {
-      icon: '💬'
-    });
+  };
+
+  /**
+   * Handle back from chat room
+   */
+  const handleBackToRoomsList = () => {
+    setSelectedRoomId(null);
+    // Refresh rooms list to update unread counts
+    loadChatRooms();
+  };
+
+  /**
+   * Handle creating a new private chat
+   */
+  const handleCreatePrivateChat = async () => {
+    const userId = targetUserId.trim();
+
+    // Validation: Empty input
+    if (!userId) {
+      toast.error('Please enter a user ID');
+      return;
+    }
+
+    // Validation: Numeric check
+    const targetUserIdNum = parseInt(userId);
+    if (isNaN(targetUserIdNum)) {
+      toast.error('Please enter a valid numeric user ID');
+      return;
+    }
+
+    // Validation: Cannot create chat with self
+    if (targetUserIdNum === user?.id) {
+      toast.error('You cannot create a chat with yourself');
+      return;
+    }
+
+    try {
+      setIsCreatingChat(true);
+
+      console.log('Creating private chat with user:', targetUserIdNum);
+
+      // Create or get existing private chat
+      const chatRoom = await chatService.createPrivateChat(user.id, targetUserIdNum);
+
+      console.log('Chat created/retrieved:', chatRoom);
+
+      toast.success(`Chat with user ${targetUserIdNum} is ready!`);
+
+      // Clear input
+      setTargetUserId('');
+
+      // Refresh chat rooms list
+      await loadChatRooms();
+
+      // Auto-open the created/existing chat
+      setSelectedRoomId(chatRoom.id);
+
+    } catch (error) {
+      console.error('Failed to create chat:', error);
+
+      // Handle specific error messages
+      let errorMessage = error.message || 'Failed to create chat';
+
+      if (error.message?.includes('404') || error.message?.includes('not found')) {
+        errorMessage = `User ${targetUserIdNum} not found`;
+      } else if (error.message?.includes('403') || error.message?.includes('permission')) {
+        errorMessage = 'You do not have permission to create this chat';
+      }
+
+      toast.error(errorMessage);
+    } finally {
+      setIsCreatingChat(false);
+    }
+  };
+
+  /**
+   * Handle Enter key press in create chat input
+   */
+  const handleCreateChatKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleCreatePrivateChat();
+    }
   };
 
   // Load chat rooms on mount
@@ -99,6 +183,17 @@ export const Chat = () => {
       loadChatRooms();
     }
   }, [user?.id]);
+
+  // Show ChatRoom component if a room is selected
+  if (selectedRoomId) {
+    return (
+      <ChatRoom
+        roomId={selectedRoomId}
+        userId={user?.id}
+        onBack={handleBackToRoomsList}
+      />
+    );
+  }
 
   // Loading State
   if (isLoading) {
@@ -146,6 +241,58 @@ export const Chat = () => {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Create New Chat Section */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex items-center space-x-3 mb-4">
+            <UserPlus className="w-6 h-6 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Create New Chat</h3>
+              <p className="text-sm text-gray-600">Start a conversation with a user</p>
+            </div>
+          </div>
+
+          <div className="flex space-x-4">
+            <div className="flex-1">
+              <label htmlFor="targetUserId" className="block text-sm font-medium text-gray-700 mb-2">
+                User ID
+              </label>
+              <input
+                id="targetUserId"
+                type="text"
+                value={targetUserId}
+                onChange={(e) => setTargetUserId(e.target.value)}
+                onKeyPress={handleCreateChatKeyPress}
+                placeholder="Enter user ID (e.g., 2, 3, 4...)"
+                disabled={isCreatingChat}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                onClick={handleCreatePrivateChat}
+                disabled={isCreatingChat || !targetUserId.trim()}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {isCreatingChat ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4" />
+                    <span>Create</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <p className="text-sm text-gray-500 mt-3">
+            💡 Enter a user ID to create a private chat. Press Enter or click Create.
+          </p>
+        </div>
+
         {/* Error State */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
