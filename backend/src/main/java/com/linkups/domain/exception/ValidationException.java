@@ -2,6 +2,7 @@ package com.linkups.domain.exception;
 
 import org.springframework.http.HttpStatus;
 
+import java.util.List;
 
 public class ValidationException extends BusinessException {
 
@@ -223,6 +224,29 @@ public class ValidationException extends BusinessException {
                 String.format("Search term must be at least %d characters", minLength));
     }
 
+    // User Status validation methods
+    public static ValidationException userStatusRequired() {
+        return new ValidationException("status", "User status is required");
+    }
 
+    public static ValidationException invalidUserStatus(String status, List<String> validStatuses) {
+        return (ValidationException) new ValidationException("status",
+                String.format("Invalid user status: '%s'", status))
+                .withDetail("providedValue", status)
+                .withDetail("validStatuses", validStatuses.toString())
+                .withDetail("suggestion", "Valid statuses: " + String.join(", ", validStatuses));
+    }
+
+    public static ValidationException userIdsRequired() {
+        return new ValidationException("userIds", "User IDs list is required and cannot be empty");
+    }
+
+    public static ValidationException tooManyUserIdsRequested(int requested, int maxAllowed) {
+        return (ValidationException) new ValidationException("userIds",
+                String.format("Too many user IDs requested. Maximum allowed: %d", maxAllowed))
+                .withDetail("requestedCount", requested)
+                .withDetail("maxAllowed", maxAllowed)
+                .withDetail("suggestion", "Please reduce the number of user IDs in your request");
+    }
 
 }

@@ -4,6 +4,7 @@ import com.linkups.domain.entity.UserStatus;
 import com.linkups.domain.entity.enums.UserStatusType;
 import com.linkups.domain.exception.InvalidOperationException;
 import com.linkups.domain.exception.ResourceNotFoundException;
+import com.linkups.domain.exception.ValidationException;
 import com.linkups.domain.repository.UserStatusRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +30,7 @@ public class UserStatusService {
     // Business rules configuration
     private static final int MIN_STATUS_CHANGE_INTERVAL_MINUTES = 0; // Prevent spam status changes
     private static final int INACTIVE_USER_THRESHOLD_DAYS = 30; // For cleanup operations
+    private static final int MAX_BATCH_USER_IDS = 100; // Maximum user IDs for batch requests
 
     /**
      * Get user status by user ID
@@ -218,5 +221,141 @@ public class UserStatusService {
         // Example: Maybe OFFLINE -> BUSY is not allowed directly
 
         return from != to;
+    }
+
+    // ==================== NEW METHODS FOR CONTROLLER DELEGATION ====================
+
+    /**
+     * Parse user status type from string with validation
+     */
+    public UserStatusType parseUserStatusType(String statusString) {
+        if (statusString == null || statusString.trim().isEmpty()) {
+            throw ValidationException.userStatusRequired();
+        }
+
+        try {
+            return UserStatusType.valueOf(statusString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            List<String> validStatuses = Arrays.stream(UserStatusType.values())
+                    .map(Enum::name)
+                    .collect(Collectors.toList());
+            throw ValidationException.invalidUserStatus(statusString, validStatuses);
+        }
+    }
+
+    /**
+     * Validate batch user IDs request
+     */
+    public void validateBatchUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            throw ValidationException.userIdsRequired();
+        }
+
+        if (userIds.size() > MAX_BATCH_USER_IDS) {
+            throw ValidationException.tooManyUserIdsRequested(userIds.size(), MAX_BATCH_USER_IDS);
+        }
+    }
+
+    /**
+     * Get user status response (returns UserStatus or default)
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getUserStatusResponse(Long userId) {
+        log.info("Getting status response for user: {}", userId);
+
+        Optional<UserStatus> userStatus = userStatusRepository.findByUserId(userId);
+
+        if (userStatus.isPresent()) {
+            log.debug("Found status for user {}: {}", userId, userStatus.get().getStatus());
+            return Map.of("userStatus", userStatus.get());
+        } else {
+            log.info("No status found for user {}, returning default offline status", userId);
+            return Map.of(
+                "userId", userId,
+                "status", UserStatusType.OFFLINE,
+                "message", "No status record found, defaulting to OFFLINE"
+            );
+        }
+    }
+
+    /**
+     * Parse and update user status from request
+     */
+    public UserStatus parseAndUpdateUserStatus(Long userId, Map<String, String> request) {
+        log.info("Parsing and updating status for user {}", userId);
+
+        String statusString = request.get("status");
+        UserStatusType newStatus = parseUserStatusType(statusString);
+
+        return updateUserStatus(userId, newStatus);
+    }
+
+    /**
+     * Get batch statuses response with validation
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getBatchStatusesResponse(Map<String, List<Long>> request) {
+        log.info("Getting batch statuses response");
+
+        List<Long> userIds = request.get("userIds");
+        validateBatchUserIds(userIds);
+
+        Map<Long, UserStatus> statuses = getUserStatuses(userIds);
+        log.info("Retrieved {} statuses for {} requested users", statuses.size(), userIds.size());
+
+        return Map.of(
+            "statuses", statuses,
+            "requestedCount", userIds.size(),
+            "foundCount", statuses.size()
+        );
+    }
+
+    /**
+     * Get online users response
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getOnlineUsersResponse() {
+        log.info("Getting online users response");
+
+        List<UserStatus> onlineUsers = getOnlineUsers();
+        log.info("Found {} online users", onlineUsers.size());
+
+        return Map.of(
+            "onlineUsers", onlineUsers,
+            "count", onlineUsers.size()
+        );
+    }
+
+    /**
+     * Get formatted status statistics
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getFormattedStatusStatistics() {
+        log.info("Getting formatted status statistics");
+
+        Map<UserStatusType, Long> statistics = getStatusStatistics();
+        log.info("Retrieved status statistics: {}", statistics);
+
+        return Map.of(
+            "statistics", statistics,
+            "totalUsers", statistics.values().stream().mapToLong(Long::longValue).sum(),
+            "timestamp", LocalDateTime.now()
+        );
+    }
+
+    /**
+     * Update last seen and return response
+     */
+    public Map<String, Object> updateLastSeenResponse(Long userId) {
+        log.debug("Updating last seen for user {}", userId);
+
+        updateLastSeen(userId);
+        log.debug("Updated last seen for user {}", userId);
+
+        return Map.of(
+            "message", "Last seen updated successfully",
+            "userId", userId,
+            "timestamp", LocalDateTime.now()
+        );
     }
 }

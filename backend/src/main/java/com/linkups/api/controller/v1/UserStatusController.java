@@ -1,17 +1,14 @@
 package com.linkups.api.controller.v1;
 
 import com.linkups.domain.entity.UserStatus;
-import com.linkups.domain.entity.enums.UserStatusType;
 import com.linkups.domain.service.UserStatusService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,28 +25,8 @@ public class UserStatusController {
      */
     @GetMapping("/{userId}/status")
     public ResponseEntity<?> getUserStatus(@PathVariable Long userId) {
-        log.info("GET /api/users/{}/status - Getting status for user", userId);
-
-        try {
-            Optional<UserStatus> userStatus = userStatusService.getUserStatus(userId);
-
-            if (userStatus.isPresent()) {
-                log.debug("Found status for user {}: {}", userId, userStatus.get().getStatus());
-                return ResponseEntity.ok(userStatus.get());
-            } else {
-                log.info("No status found for user {}, returning default offline status", userId);
-                // Return default status instead of 404
-                return ResponseEntity.ok(Map.of(
-                    "userId", userId,
-                    "status", UserStatusType.OFFLINE,
-                    "message", "No status record found, defaulting to OFFLINE"
-                ));
-            }
-        } catch (Exception e) {
-            log.error("Error getting status for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to retrieve user status"));
-        }
+        log.info("GET /api/users/{}/status", userId);
+        return ResponseEntity.ok(userStatusService.getUserStatusResponse(userId));
     }
 
     /**
@@ -57,39 +34,11 @@ public class UserStatusController {
      * PUT /api/users/{userId}/status
      */
     @PutMapping("/{userId}/status")
-    public ResponseEntity<?> updateUserStatus(
+    public ResponseEntity<UserStatus> updateUserStatus(
             @PathVariable Long userId,
             @RequestBody Map<String, String> request) {
-
-        log.info("PUT /api/users/{}/status - Updating status", userId);
-
-        try {
-            String statusString = request.get("status");
-            if (statusString == null || statusString.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Status is required"));
-            }
-
-            UserStatusType newStatus;
-            try {
-                newStatus = UserStatusType.valueOf(statusString.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                log.warn("Invalid status provided: {}", statusString);
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Invalid status. Valid statuses: " +
-                                List.of(UserStatusType.values())));
-            }
-
-            UserStatus updatedStatus = userStatusService.updateUserStatus(userId, newStatus);
-            log.info("Successfully updated status for user {} to {}", userId, newStatus);
-
-            return ResponseEntity.ok(updatedStatus);
-
-        } catch (Exception e) {
-            log.error("Error updating status for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to update user status"));
-        }
+        log.info("PUT /api/users/{}/status", userId);
+        return ResponseEntity.ok(userStatusService.parseAndUpdateUserStatus(userId, request));
     }
 
     /**
@@ -98,23 +47,8 @@ public class UserStatusController {
      */
     @PostMapping("/{userId}/heartbeat")
     public ResponseEntity<?> updateLastSeen(@PathVariable Long userId) {
-        log.debug("POST /api/users/{}/heartbeat - Updating last seen", userId);
-
-        try {
-            userStatusService.updateLastSeen(userId);
-            log.debug("Updated last seen for user {}", userId);
-
-            return ResponseEntity.ok(Map.of(
-                "message", "Last seen updated successfully",
-                "userId", userId,
-                "timestamp", java.time.LocalDateTime.now()
-            ));
-
-        } catch (Exception e) {
-            log.error("Error updating last seen for user {}: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to update last seen"));
-        }
+        log.debug("POST /api/users/{}/heartbeat", userId);
+        return ResponseEntity.ok(userStatusService.updateLastSeenResponse(userId));
     }
 
     /**
@@ -123,34 +57,8 @@ public class UserStatusController {
      */
     @PostMapping("/statuses")
     public ResponseEntity<?> getUserStatuses(@RequestBody Map<String, List<Long>> request) {
-        log.info("POST /api/users/statuses - Getting batch statuses");
-
-        try {
-            List<Long> userIds = request.get("userIds");
-            if (userIds == null || userIds.isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "User IDs list is required"));
-            }
-
-            if (userIds.size() > 100) { // Reasonable limit
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Too many user IDs requested (max 100)"));
-            }
-
-            Map<Long, UserStatus> statuses = userStatusService.getUserStatuses(userIds);
-            log.info("Retrieved {} statuses for {} requested users", statuses.size(), userIds.size());
-
-            return ResponseEntity.ok(Map.of(
-                "statuses", statuses,
-                "requestedCount", userIds.size(),
-                "foundCount", statuses.size()
-            ));
-
-        } catch (Exception e) {
-            log.error("Error getting batch statuses: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to retrieve user statuses"));
-        }
+        log.info("POST /api/users/statuses");
+        return ResponseEntity.ok(userStatusService.getBatchStatusesResponse(request));
     }
 
     /**
@@ -159,22 +67,8 @@ public class UserStatusController {
      */
     @GetMapping("/online")
     public ResponseEntity<?> getOnlineUsers() {
-        log.info("GET /api/users/online - Getting all online users");
-
-        try {
-            List<UserStatus> onlineUsers = userStatusService.getOnlineUsers();
-            log.info("Found {} online users", onlineUsers.size());
-
-            return ResponseEntity.ok(Map.of(
-                "onlineUsers", onlineUsers,
-                "count", onlineUsers.size()
-            ));
-
-        } catch (Exception e) {
-            log.error("Error getting online users: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to retrieve online users"));
-        }
+        log.info("GET /api/users/online");
+        return ResponseEntity.ok(userStatusService.getOnlineUsersResponse());
     }
 
     /**
@@ -183,23 +77,8 @@ public class UserStatusController {
      */
     @GetMapping("/status-statistics")
     public ResponseEntity<?> getStatusStatistics() {
-        log.info("GET /api/users/status-statistics - Getting status statistics");
-
-        try {
-            Map<UserStatusType, Long> statistics = userStatusService.getStatusStatistics();
-            log.info("Retrieved status statistics: {}", statistics);
-
-            return ResponseEntity.ok(Map.of(
-                "statistics", statistics,
-                "totalUsers", statistics.values().stream().mapToLong(Long::longValue).sum(),
-                "timestamp", java.time.LocalDateTime.now()
-            ));
-
-        } catch (Exception e) {
-            log.error("Error getting status statistics: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to retrieve status statistics"));
-        }
+        log.info("GET /api/users/status-statistics");
+        return ResponseEntity.ok(userStatusService.getFormattedStatusStatistics());
     }
 
     /**
@@ -207,20 +86,9 @@ public class UserStatusController {
      * POST /api/users/{userId}/online
      */
     @PostMapping("/{userId}/online")
-    public ResponseEntity<?> setUserOnline(@PathVariable Long userId) {
-        log.info("POST /api/users/{}/online - Setting user online", userId);
-
-        try {
-            UserStatus updatedStatus = userStatusService.setUserOnline(userId);
-            log.info("Set user {} online successfully", userId);
-
-            return ResponseEntity.ok(updatedStatus);
-
-        } catch (Exception e) {
-            log.error("Error setting user {} online: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to set user online"));
-        }
+    public ResponseEntity<UserStatus> setUserOnline(@PathVariable Long userId) {
+        log.info("POST /api/users/{}/online", userId);
+        return ResponseEntity.ok(userStatusService.setUserOnline(userId));
     }
 
     /**
@@ -228,19 +96,8 @@ public class UserStatusController {
      * POST /api/users/{userId}/offline
      */
     @PostMapping("/{userId}/offline")
-    public ResponseEntity<?> setUserOffline(@PathVariable Long userId) {
-        log.info("POST /api/users/{}/offline - Setting user offline", userId);
-
-        try {
-            UserStatus updatedStatus = userStatusService.setUserOffline(userId);
-            log.info("Set user {} offline successfully", userId);
-
-            return ResponseEntity.ok(updatedStatus);
-
-        } catch (Exception e) {
-            log.error("Error setting user {} offline: {}", userId, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to set user offline"));
-        }
+    public ResponseEntity<UserStatus> setUserOffline(@PathVariable Long userId) {
+        log.info("POST /api/users/{}/offline", userId);
+        return ResponseEntity.ok(userStatusService.setUserOffline(userId));
     }
 }

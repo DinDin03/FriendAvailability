@@ -136,4 +136,9 @@ public class ResourceNotFoundException extends BusinessException {
                 .withDetail("suggestion", "The activity may have been deleted or is no longer available");
     }
 
+    public static ResourceNotFoundException userStatusNotFound(Long userId) {
+        return (ResourceNotFoundException) new ResourceNotFoundException("UserStatus", userId)
+                .withDetail("suggestion", "No status record found for this user");
+    }
+
 }
