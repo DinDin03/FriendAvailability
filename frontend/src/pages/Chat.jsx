@@ -1,0 +1,276 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { MessageCircle, Users, User, RefreshCw, ArrowLeft, AlertCircle } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { chatService } from '../services/chatService';
+import { formatRelativeTime } from '../lib/timeUtils';
+import toast from 'react-hot-toast';
+
+/**
+ * Chat - Main chat rooms list page
+ *
+ * Features:
+ * - Display user's chat rooms with room details
+ * - Show unread message counts
+ * - Room selection for navigation to chat interface
+ * - Loading, error, and empty states
+ * - Manual refresh capability
+ * - Real-time updates ready
+ */
+export const Chat = () => {
+  const { user } = useAuth();
+
+  // State management
+  const [chatRooms, setChatRooms] = useState([]);
+  const [selectedRoomId, setSelectedRoomId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  /**
+   * Load chat rooms from the backend
+   */
+  const loadChatRooms = async () => {
+    if (!user?.id) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await chatService.getUserChatRooms(user.id, {
+        page: 0,
+        size: 0 // Get all rooms
+      });
+
+      // Handle response structure (could be chatRooms or content array)
+      const rooms = response.chatRooms || response.content || [];
+      setChatRooms(rooms);
+
+      console.log('Chat rooms loaded:', rooms.length);
+
+    } catch (error) {
+      console.error('Failed to load chat rooms:', error);
+      setError(error.message || 'Failed to load chats');
+      toast.error(error.message || 'Failed to load chats');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Handle manual refresh
+   */
+  const handleRefresh = async () => {
+    try {
+      setIsRefreshing(true);
+
+      const response = await chatService.getUserChatRooms(user.id, {
+        page: 0,
+        size: 0
+      });
+
+      const rooms = response.chatRooms || response.content || [];
+      setChatRooms(rooms);
+
+      toast.success('Chats refreshed!');
+    } catch (error) {
+      console.error('Failed to refresh chats:', error);
+      toast.error(error.message || 'Failed to refresh chats');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  /**
+   * Handle room selection
+   * TODO: Navigate to ChatRoom component when implemented
+   */
+  const handleRoomClick = (roomId) => {
+    setSelectedRoomId(roomId);
+    console.log('Room selected:', roomId);
+    toast('Chat room interface coming soon!', {
+      icon: '💬'
+    });
+  };
+
+  // Load chat rooms on mount
+  useEffect(() => {
+    if (user?.id) {
+      loadChatRooms();
+    }
+  }, [user?.id]);
+
+  // Loading State
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your chats...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <Link
+                to="/dashboard"
+                className="text-gray-600 hover:text-gray-900 transition-colors flex items-center space-x-1"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+              <div className="flex items-center space-x-2">
+                <MessageCircle className="w-6 h-6 text-purple-600" />
+                <h1 className="text-2xl font-bold text-gray-900">My Chats</h1>
+              </div>
+            </div>
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center space-x-1 text-purple-600 hover:text-purple-700 transition-colors disabled:opacity-50"
+              title="Refresh chats"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <AlertCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800">Failed to load chats</h3>
+                <p className="text-sm text-red-700 mt-1">{error}</p>
+              </div>
+              <button
+                onClick={loadChatRooms}
+                className="text-sm text-red-600 hover:text-red-700 font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!error && chatRooms.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+            <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No chats yet</h3>
+            <p className="text-gray-600 mb-6">
+              Start a conversation with your friends to see your chats here.
+            </p>
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center space-x-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Dashboard</span>
+            </Link>
+          </div>
+        )}
+
+        {/* Chat Rooms List */}
+        {!error && chatRooms.length > 0 && (
+          <div className="space-y-3">
+            {chatRooms.map((room) => (
+              <RoomCard
+                key={room.id}
+                room={room}
+                isSelected={selectedRoomId === room.id}
+                onClick={() => handleRoomClick(room.id)}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+/**
+ * RoomCard - Individual chat room card component
+ */
+const RoomCard = ({ room, isSelected, onClick }) => {
+  const isGroupChat = room.type === 'GROUP';
+  const hasUnread = room.unreadCount > 0;
+
+  // Get avatar icon based on room type
+  const AvatarIcon = isGroupChat ? Users : User;
+  const avatarBgColor = isGroupChat ? 'bg-purple-100' : 'bg-blue-100';
+  const avatarIconColor = isGroupChat ? 'text-purple-600' : 'text-blue-600';
+
+  // Format timestamp
+  const formattedTime = room.lastMessageAt
+    ? formatRelativeTime(room.lastMessageAt)
+    : '';
+
+  return (
+    <div
+      onClick={onClick}
+      className={`bg-white rounded-lg border-2 p-4 cursor-pointer transition-all hover:shadow-md ${
+        isSelected
+          ? 'border-purple-500 shadow-md'
+          : 'border-gray-200 hover:border-purple-300'
+      }`}
+    >
+      <div className="flex items-start space-x-4">
+        {/* Avatar */}
+        <div className={`flex-shrink-0 w-12 h-12 rounded-full ${avatarBgColor} flex items-center justify-center`}>
+          <AvatarIcon className={`w-6 h-6 ${avatarIconColor}`} />
+        </div>
+
+        {/* Room Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="text-base font-semibold text-gray-900 truncate">
+              {room.name || `Chat ${room.id}`}
+            </h3>
+            {hasUnread && (
+              <span className="ml-2 flex-shrink-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+                {room.unreadCount > 99 ? '99+' : room.unreadCount}
+              </span>
+            )}
+          </div>
+
+          {/* Last Message Preview */}
+          {room.lastMessagePreview && (
+            <p className="text-sm text-gray-600 truncate mb-1">
+              {room.lastMessagePreview}
+            </p>
+          )}
+
+          {/* Metadata */}
+          <div className="flex items-center space-x-2 text-xs text-gray-500">
+            {formattedTime && (
+              <span>{formattedTime}</span>
+            )}
+            {isGroupChat && room.participantCount && (
+              <>
+                <span>•</span>
+                <span>{room.participantCount} members</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Chat;

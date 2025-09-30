@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home } from "./pages/Home";
 import { Dashboard } from './pages/Dashboard';
 import { ALTDashboard } from './pages/ALTDashboard';
+import { Chat } from './pages/Chat';
 import { Toaster } from 'react-hot-toast';
 import './App.css'
 
@@ -15,6 +16,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />}></Route>
+            <Route path="/chat" element={<Chat />}></Route>
           </Routes>
         </BrowserRouter>
       </AuthProvider>
