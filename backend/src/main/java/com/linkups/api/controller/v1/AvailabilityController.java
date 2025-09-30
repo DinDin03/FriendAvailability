@@ -2,6 +2,8 @@ package com.linkups.api.controller.v1;
 
 import com.linkups.api.dto.request.availability.CreateAvailabilityRequest;
 import com.linkups.api.dto.request.availability.UpdateAvailabilityRequest;
+import com.linkups.api.dto.response.availability.AvailabilityResponse;
+import com.linkups.api.mapper.AvailabilityMapper;
 import com.linkups.domain.entity.Availability;
 import com.linkups.domain.service.AvailabilityService;
 import jakarta.validation.Valid;
@@ -27,44 +29,24 @@ public class AvailabilityController {
     }
 
     @PostMapping
-    public ResponseEntity<Availability> createAvailability(@Valid @RequestBody CreateAvailabilityRequest request) {
+    public ResponseEntity<AvailabilityResponse> createAvailability(@Valid @RequestBody CreateAvailabilityRequest request) {
         log.info("Creating availability for user {}", request.getUserId());
 
-        Availability availability = availabilityService.createAvailability(
-                request.getUserId(),
-                request.getStartTime(),
-                request.getEndTime(),
-                request.getTitle(),
-                request.getDescription(),
-                request.getLocation(),
-                request.getIsBusy(),
-                request.getIsAllDay(),
-                request.getReminderMinutes()
-        );
+        Availability availability = availabilityService.createAvailability(request);
 
         log.info("Availability created successfully: {}", availability.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(availability);
+        return ResponseEntity.status(HttpStatus.CREATED).body(AvailabilityMapper.toResponse(availability));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Availability> updateAvailability(@PathVariable Long id,
-                                                           @Valid @RequestBody UpdateAvailabilityRequest request) {
+    public ResponseEntity<AvailabilityResponse> updateAvailability(@PathVariable Long id,
+                                                                    @Valid @RequestBody UpdateAvailabilityRequest request) {
         log.info("Updating availability {}", id);
 
-        Availability updatedAvailability = availabilityService.updateAvailability(
-                id,
-                request.getStartTime(),
-                request.getEndTime(),
-                request.getTitle(),
-                request.getDescription(),
-                request.getLocation(),
-                request.getIsBusy(),
-                request.getIsAllDay(),
-                request.getReminderMinutes()
-        );
+        Availability updatedAvailability = availabilityService.updateAvailability(id, request);
 
         log.info("Availability {} updated successfully", id);
-        return ResponseEntity.ok(updatedAvailability);
+        return ResponseEntity.ok(AvailabilityMapper.toResponse(updatedAvailability));
     }
 
     @DeleteMapping("/{id}")
@@ -80,89 +62,89 @@ public class AvailabilityController {
     }
 
     @GetMapping("/single/{id}")
-    public ResponseEntity<Availability> getAvailabilityById(@PathVariable Long id) {
+    public ResponseEntity<AvailabilityResponse> getAvailabilityById(@PathVariable Long id) {
         log.info("Getting availability by ID: {}", id);
 
         Availability availability = availabilityService.getAvailabilityById(id);
 
         log.info("Retrieved availability: {}", id);
-        return ResponseEntity.ok(availability);
+        return ResponseEntity.ok(AvailabilityMapper.toResponse(availability));
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<List<Availability>> getUserAvailability(@PathVariable Long userId,
-                                                                  @RequestParam LocalDateTime start,
-                                                                  @RequestParam LocalDateTime end) {
+    public ResponseEntity<List<AvailabilityResponse>> getUserAvailability(@PathVariable Long userId,
+                                                                           @RequestParam LocalDateTime start,
+                                                                           @RequestParam LocalDateTime end) {
         log.info("Getting availability for user {} from {} to {}", userId, start, end);
 
         List<Availability> availability = availabilityService.getCalendarView(userId, start, end);
 
         log.info("Retrieved {} availability records for user {}", availability.size(), userId);
-        return ResponseEntity.ok(availability);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(availability));
     }
 
     @GetMapping("/{userId}/complete")
-    public ResponseEntity<List<Availability>> getCompleteCalendarView(@PathVariable Long userId,
-                                                                      @RequestParam LocalDateTime start,
-                                                                      @RequestParam LocalDateTime end) {
+    public ResponseEntity<List<AvailabilityResponse>> getCompleteCalendarView(@PathVariable Long userId,
+                                                                               @RequestParam LocalDateTime start,
+                                                                               @RequestParam LocalDateTime end) {
         log.info("Getting complete calendar view for user {} from {} to {}", userId, start, end);
 
         List<Availability> completeView = availabilityService.getCompleteCalendarView(userId, start, end);
 
         log.info("Retrieved complete calendar view with {} total slots for user {}", completeView.size(), userId);
-        return ResponseEntity.ok(completeView);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(completeView));
     }
 
     @GetMapping("/{userId}/month")
-    public ResponseEntity<List<Availability>> getMonthView(@PathVariable Long userId,
-                                                           @RequestParam int year,
-                                                           @RequestParam int month) {
+    public ResponseEntity<List<AvailabilityResponse>> getMonthView(@PathVariable Long userId,
+                                                                    @RequestParam int year,
+                                                                    @RequestParam int month) {
         log.info("Getting month view for user {} - {}/{}", userId, year, month);
 
         List<Availability> monthView = availabilityService.getMonthView(userId, year, month);
 
         log.info("Retrieved month view with {} records for user {}", monthView.size(), userId);
-        return ResponseEntity.ok(monthView);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(monthView));
     }
 
     @GetMapping("/{userId}/today")
-    public ResponseEntity<List<Availability>> getTodayView(@PathVariable Long userId) {
+    public ResponseEntity<List<AvailabilityResponse>> getTodayView(@PathVariable Long userId) {
         log.info("Getting today's availability for user {}", userId);
 
         List<Availability> todayView = availabilityService.getTodayView(userId);
 
         log.info("Retrieved today's view with {} records for user {}", todayView.size(), userId);
-        return ResponseEntity.ok(todayView);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(todayView));
     }
 
     @GetMapping("/{userId}/all")
-    public ResponseEntity<List<Availability>> getAllUserAvailability(@PathVariable Long userId) {
+    public ResponseEntity<List<AvailabilityResponse>> getAllUserAvailability(@PathVariable Long userId) {
         log.info("Getting all availability for user {}", userId);
 
         List<Availability> allAvailability = availabilityService.getAllUserAvailability(userId);
 
         log.info("Retrieved {} total availability records for user {}", allAvailability.size(), userId);
-        return ResponseEntity.ok(allAvailability);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(allAvailability));
     }
 
     @GetMapping("/{userId}/upcoming")
-    public ResponseEntity<List<Availability>> getUpcomingEvents(@PathVariable Long userId) {
+    public ResponseEntity<List<AvailabilityResponse>> getUpcomingEvents(@PathVariable Long userId) {
         log.info("Getting upcoming events for user {}", userId);
 
         List<Availability> upcoming = availabilityService.getUpcomingEvents(userId);
 
         log.info("Retrieved {} upcoming events for user {}", upcoming.size(), userId);
-        return ResponseEntity.ok(upcoming);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(upcoming));
     }
 
     @GetMapping("/{userId}/current")
-    public ResponseEntity<List<Availability>> getCurrentEvents(@PathVariable Long userId) {
+    public ResponseEntity<List<AvailabilityResponse>> getCurrentEvents(@PathVariable Long userId) {
         log.info("Getting current events for user {}", userId);
 
         List<Availability> current = availabilityService.getCurrentEvents(userId);
 
         log.info("Retrieved {} current events for user {}", current.size(), userId);
-        return ResponseEntity.ok(current);
+        return ResponseEntity.ok(AvailabilityMapper.toResponseList(current));
     }
 
     @GetMapping("/{userId}/stats")

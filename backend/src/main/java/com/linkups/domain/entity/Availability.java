@@ -48,11 +48,13 @@ public class Availability {
     @Builder.Default
     private String timezone = "UTC";
 
+    @JsonIgnore
     @Enumerated(EnumType.STRING)
     @Column(name = "source", nullable = false, length = 20)
     @Builder.Default
     private AvailabilitySource source = AvailabilitySource.MANUAL;
 
+    @JsonIgnore
     @Column(name = "google_event_id", length = 255)
     private String googleEventId;
 
@@ -66,17 +68,21 @@ public class Availability {
     @Column(name = "description", length = 500)
     private String description;
 
+    @JsonIgnore
     @Column(name = "is_recurring", nullable = false)
     @Builder.Default
     private Boolean isRecurring = false;
 
+    @JsonIgnore
     @Column(name = "recurrence_rule", length = 255)
     private String recurrenceRule;
 
+    @JsonIgnore
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @JsonIgnore
     @Column(name = "updated_at", nullable = false)
     @Builder.Default
     private LocalDateTime updatedAt = LocalDateTime.now();

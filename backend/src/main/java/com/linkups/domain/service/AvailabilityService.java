@@ -1,5 +1,7 @@
 package com.linkups.domain.service;
 
+import com.linkups.api.dto.request.availability.CreateAvailabilityRequest;
+import com.linkups.api.dto.request.availability.UpdateAvailabilityRequest;
 import com.linkups.domain.entity.Availability;
 import com.linkups.domain.entity.enums.AvailabilitySource;
 import com.linkups.domain.entity.User;
@@ -28,30 +30,28 @@ public class AvailabilityService {
         log.info("AvailabilityService created");
     }
 
-    public Availability createAvailability(Long userId, LocalDateTime startTime, LocalDateTime endTime,
-                                           String title, String description, String location,
-                                           Boolean isBusy, Boolean isAllDay, Integer reminderMinutes) {
+    public Availability createAvailability(CreateAvailabilityRequest request) {
+        log.debug("Creating availability for user {} with title: {}", request.getUserId(), request.getTitle());
 
-        log.debug("Creating availability for user {} with title: {}", userId, title);
-
-        User user = userService.findUserById(userId);
+        User user = userService.findUserById(request.getUserId());
 
         Availability availability = Availability.builder()
                 .user(user)
-                .startTime(startTime)
-                .endTime(endTime)
-                .title(title)
-                .description(description)
-                .location(location)
-                .isBusy(isBusy != null ? isBusy : false)
-                .isAllDay(isAllDay != null ? isAllDay : false)
-                .reminderMinutes(reminderMinutes != null ? reminderMinutes : 30)
+                .startTime(request.getStartTime())
+                .endTime(request.getEndTime())
+                .timezone(request.getTimezone() != null ? request.getTimezone() : "UTC")
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .location(request.getLocation())
+                .isBusy(request.getIsBusy() != null ? request.getIsBusy() : false)
+                .isAllDay(request.getIsAllDay() != null ? request.getIsAllDay() : false)
+                .reminderMinutes(request.getReminderMinutes() != null ? request.getReminderMinutes() : 30)
                 .source(AvailabilitySource.MANUAL)
                 .build();
 
         validateAvailability(availability);
 
-        List<Availability> conflicts = checkConflicts(userId, startTime, endTime);
+        List<Availability> conflicts = checkConflicts(request.getUserId(), request.getStartTime(), request.getEndTime());
         if (!conflicts.isEmpty()) {
             log.warn("Found {} potential conflicts for new availability", conflicts.size());
             conflicts.forEach(c ->
@@ -59,26 +59,24 @@ public class AvailabilityService {
         }
 
         Availability savedAvailability = availabilityRepository.save(availability);
-        log.info("Created availability {} for user {}", savedAvailability.getId(), userId);
+        log.info("Created availability {} for user {}", savedAvailability.getId(), request.getUserId());
         return savedAvailability;
     }
 
-    public Availability updateAvailability(Long id, LocalDateTime startTime, LocalDateTime endTime,
-                                           String title, String description, String location,
-                                           Boolean isBusy, Boolean isAllDay, Integer reminderMinutes) {
-
+    public Availability updateAvailability(Long id, UpdateAvailabilityRequest request) {
         log.debug("Updating availability with id {}", id);
 
         Availability availability = findAvailabilityById(id);
 
-        if (startTime != null) availability.setStartTime(startTime);
-        if (endTime != null) availability.setEndTime(endTime);
-        if (title != null) availability.setTitle(title);
-        if (description != null) availability.setDescription(description);
-        if (location != null) availability.setLocation(location);
-        if (isBusy != null) availability.setIsBusy(isBusy);
-        if (isAllDay != null) availability.setIsAllDay(isAllDay);
-        if (reminderMinutes != null) availability.setReminderMinutes(reminderMinutes);
+        if (request.getStartTime() != null) availability.setStartTime(request.getStartTime());
+        if (request.getEndTime() != null) availability.setEndTime(request.getEndTime());
+        if (request.getTimezone() != null) availability.setTimezone(request.getTimezone());
+        if (request.getTitle() != null) availability.setTitle(request.getTitle());
+        if (request.getDescription() != null) availability.setDescription(request.getDescription());
+        if (request.getLocation() != null) availability.setLocation(request.getLocation());
+        if (request.getIsBusy() != null) availability.setIsBusy(request.getIsBusy());
+        if (request.getIsAllDay() != null) availability.setIsAllDay(request.getIsAllDay());
+        if (request.getReminderMinutes() != null) availability.setReminderMinutes(request.getReminderMinutes());
 
         validateAvailability(availability);
 

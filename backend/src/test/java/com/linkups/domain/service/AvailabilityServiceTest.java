@@ -1,5 +1,7 @@
 package com.linkups.domain.service;
 
+import com.linkups.api.dto.request.availability.CreateAvailabilityRequest;
+import com.linkups.api.dto.request.availability.UpdateAvailabilityRequest;
 import com.linkups.base.BaseUnitTest;
 import com.linkups.domain.entity.Availability;
 import com.linkups.domain.entity.User;
@@ -104,10 +106,19 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willReturn(savedAvailability);
 
         // ============== WHEN ==============
-        Availability result = availabilityService.createAvailability(
-                USER_ID, START_TIME, END_TIME, TITLE, DESCRIPTION, LOCATION,
-                false, false, 30
-        );
+        CreateAvailabilityRequest request = CreateAvailabilityRequest.builder()
+                .userId(USER_ID)
+                .startTime(START_TIME)
+                .endTime(END_TIME)
+                .title(TITLE)
+                .description(DESCRIPTION)
+                .location(LOCATION)
+                .isBusy(false)
+                .isAllDay(false)
+                .reminderMinutes(30)
+                .build();
+
+        Availability result = availabilityService.createAvailability(request);
 
         // ============== THEN ==============
         assertThat(result).isEqualTo(savedAvailability);
@@ -144,10 +155,14 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         // ============== WHEN ==============
-        availabilityService.createAvailability(
-                USER_ID, START_TIME, END_TIME, TITLE, null, null,
-                null, null, null // All optional parameters as null
-        );
+        CreateAvailabilityRequest request = CreateAvailabilityRequest.builder()
+                .userId(USER_ID)
+                .startTime(START_TIME)
+                .endTime(END_TIME)
+                .title(TITLE)
+                .build(); // All optional parameters as null
+
+        availabilityService.createAvailability(request);
 
         // ============== THEN ==============
         ArgumentCaptor<Availability> availabilityCaptor = ArgumentCaptor.forClass(Availability.class);
@@ -181,9 +196,17 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         // ============== WHEN ==============
-        Availability result = availabilityService.createAvailability(
-                USER_ID, START_TIME, END_TIME, TITLE, null, null, false, false, 30
-        );
+        CreateAvailabilityRequest request = CreateAvailabilityRequest.builder()
+                .userId(USER_ID)
+                .startTime(START_TIME)
+                .endTime(END_TIME)
+                .title(TITLE)
+                .isBusy(false)
+                .isAllDay(false)
+                .reminderMinutes(30)
+                .build();
+
+        Availability result = availabilityService.createAvailability(request);
 
         // ============== THEN ==============
         assertThat(result).isNotNull(); // Should still create despite conflicts
@@ -232,9 +255,13 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willReturn(updatedAvailability);
 
         // ============== WHEN ==============
-        Availability result = availabilityService.updateAvailability(
-                availabilityId, newStartTime, newEndTime, newTitle, null, null, null, null, null
-        );
+        UpdateAvailabilityRequest request = UpdateAvailabilityRequest.builder()
+                .startTime(newStartTime)
+                .endTime(newEndTime)
+                .title(newTitle)
+                .build();
+
+        Availability result = availabilityService.updateAvailability(availabilityId, request);
 
         // ============== THEN ==============
         assertThat(result).isEqualTo(updatedAvailability);
@@ -275,9 +302,11 @@ class AvailabilityServiceTest extends BaseUnitTest {
 
         // ============== WHEN ==============
         // Only update title, leave other fields as null (shouldn't change them)
-        availabilityService.updateAvailability(
-                availabilityId, null, null, newTitle, null, null, null, null, null
-        );
+        UpdateAvailabilityRequest request = UpdateAvailabilityRequest.builder()
+                .title(newTitle)
+                .build();
+
+        availabilityService.updateAvailability(availabilityId, request);
 
         // ============== THEN ==============
         ArgumentCaptor<Availability> availabilityCaptor = ArgumentCaptor.forClass(Availability.class);
@@ -319,8 +348,14 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willThrow(new ResourceNotFoundException("User not found"));
 
         // ============== WHEN & THEN ==============
-        assertThatThrownBy(() -> availabilityService.createAvailability(
-                nonExistentUserId, START_TIME, END_TIME, TITLE, null, null, null, null, null))
+        CreateAvailabilityRequest request = CreateAvailabilityRequest.builder()
+                .userId(nonExistentUserId)
+                .startTime(START_TIME)
+                .endTime(END_TIME)
+                .title(TITLE)
+                .build();
+
+        assertThatThrownBy(() -> availabilityService.createAvailability(request))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("User");
 
@@ -440,10 +475,17 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         // ============== WHEN ==============
-        availabilityService.createAvailability(
-                USER_ID, allDayStart, allDayEnd, "All Day Event", null, null,
-                true, true, 0 // isBusy=true, isAllDay=true, no reminder
-        );
+        CreateAvailabilityRequest request = CreateAvailabilityRequest.builder()
+                .userId(USER_ID)
+                .startTime(allDayStart)
+                .endTime(allDayEnd)
+                .title("All Day Event")
+                .isBusy(true)
+                .isAllDay(true)
+                .reminderMinutes(0)
+                .build();
+
+        availabilityService.createAvailability(request);
 
         // ============== THEN ==============
         ArgumentCaptor<Availability> availabilityCaptor = ArgumentCaptor.forClass(Availability.class);
@@ -597,9 +639,17 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         // ============== WHEN ==============
-        Availability result = availabilityService.createAvailability(
-                USER_ID, START_TIME, END_TIME, "New Meeting", null, null, true, false, 15
-        );
+        CreateAvailabilityRequest request = CreateAvailabilityRequest.builder()
+                .userId(USER_ID)
+                .startTime(START_TIME)
+                .endTime(END_TIME)
+                .title("New Meeting")
+                .isBusy(true)
+                .isAllDay(false)
+                .reminderMinutes(15)
+                .build();
+
+        Availability result = availabilityService.createAvailability(request);
 
         // ============== THEN ==============
         assertThat(result).isNotNull();
@@ -645,9 +695,12 @@ class AvailabilityServiceTest extends BaseUnitTest {
                 .willAnswer(invocation -> invocation.getArgument(0));
 
         // ============== WHEN ==============
-        Availability result = availabilityService.updateAvailability(
-                availabilityId, newStartTime, newEndTime, null, null, null, null, null, null
-        );
+        UpdateAvailabilityRequest request = UpdateAvailabilityRequest.builder()
+                .startTime(newStartTime)
+                .endTime(newEndTime)
+                .build();
+
+        Availability result = availabilityService.updateAvailability(availabilityId, request);
 
         // ============== THEN ==============
         assertThat(result).isNotNull();
