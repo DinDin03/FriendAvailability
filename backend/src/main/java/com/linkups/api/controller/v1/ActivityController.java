@@ -1,8 +1,16 @@
 package com.linkups.api.controller.v1;
 
+import com.linkups.api.dto.request.activity.CreateActivityRequestDTO;
+import com.linkups.api.dto.request.activity.MarkActivityReadRequestDTO;
+import com.linkups.api.dto.response.activity.ActivityFeedResponseDTO;
+import com.linkups.api.dto.response.activity.ActivityResponseDTO;
+import com.linkups.api.dto.response.activity.ActivityStatisticsDTO;
+import com.linkups.api.dto.response.common.SuccessResponseDTO;
+import com.linkups.api.mapper.ActivityMapper;
 import com.linkups.domain.entity.Activity;
 import com.linkups.domain.exception.ValidationException;
 import com.linkups.domain.service.ActivityService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -44,7 +52,7 @@ public class ActivityController {
      * @return Activity feed with pagination metadata
      */
     @GetMapping("/{userId}/feed")
-    public ResponseEntity<ActivityFeedResponse> getActivityFeed(
+    public ResponseEntity<ActivityFeedResponseDTO> getActivityFeed(
             @PathVariable Long userId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int limit,
@@ -57,7 +65,7 @@ public class ActivityController {
 
         List<String> activityTypes = parseActivityTypes(types);
         Page<Activity> activities = activityService.getActivityFeed(userId, page, limit, activityTypes, dateRange, sort);
-        ActivityFeedResponse response = buildActivityFeedResponse(activities);
+        ActivityFeedResponseDTO response = ActivityMapper.toActivityFeedResponse(activities);
 
         log.debug("Returning {} activities for user {} (page {}/{})",
                  activities.getContent().size(), userId, page + 1, activities.getTotalPages());
@@ -76,7 +84,7 @@ public class ActivityController {
      * @return Friend activities with pagination
      */
     @GetMapping("/friends/{userId}/activities")
-    public ResponseEntity<ActivityFeedResponse> getFriendActivities(
+    public ResponseEntity<ActivityFeedResponseDTO> getFriendActivities(
             @PathVariable Long userId,
             @RequestParam String friendIds,
             @RequestParam(defaultValue = "0") int page,
@@ -89,7 +97,7 @@ public class ActivityController {
         List<Long> friendIdList = parseFriendIds(friendIds);
         List<String> activityTypes = parseActivityTypes(types);
         Page<Activity> activities = activityService.getFriendActivities(userId, friendIdList, page, limit, activityTypes);
-        ActivityFeedResponse response = buildActivityFeedResponse(activities);
+        ActivityFeedResponseDTO response = ActivityMapper.toActivityFeedResponse(activities);
 
         return ResponseEntity.ok(response);
     }
@@ -102,22 +110,18 @@ public class ActivityController {
      * @return Success response
      */
     @PutMapping("/{activityId}/read")
-    public ResponseEntity<Map<String, Object>> markActivityAsRead(
+    public ResponseEntity<SuccessResponseDTO> markActivityAsRead(
             @PathVariable Long activityId,
-            @RequestBody Map<String, Object> request) {
+            @Valid @RequestBody MarkActivityReadRequestDTO request) {
 
         log.info("Marking activity {} as read", activityId);
 
-        Long userId = extractUserId(request);
-        Activity activity = activityService.markActivityAsRead(activityId, userId);
+        Activity activity = activityService.markActivityAsRead(activityId, request.getUserId());
 
-        log.info("Activity {} marked as read by user {}", activityId, userId);
-        return ResponseEntity.ok(Map.of(
-            "success", true,
-            "message", "Activity marked as read",
-            "activityId", activityId,
-            "userId", userId
-        ));
+        SuccessResponseDTO response = SuccessResponseDTO.of("Activity marked as read");
+
+        log.info("Activity {} marked as read by user {}", activityId, request.getUserId());
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -127,17 +131,11 @@ public class ActivityController {
      * @return Activity statistics
      */
     @GetMapping("/{userId}/stats")
-    public ResponseEntity<Map<String, Object>> getActivityStatistics(@PathVariable Long userId) {
+    public ResponseEntity<ActivityStatisticsDTO> getActivityStatistics(@PathVariable Long userId) {
         log.info("Getting activity statistics for user {}", userId);
 
         ActivityService.ActivityStatistics stats = activityService.getActivityStatistics(userId);
-
-        Map<String, Object> response = Map.of(
-            "totalActivities", stats.totalActivities,
-            "todayActivities", stats.todayActivities,
-            "weekActivities", stats.weekActivities,
-            "lastUpdated", stats.lastUpdated.toString()
-        );
+        ActivityStatisticsDTO response = ActivityMapper.toActivityStatistics(stats);
 
         return ResponseEntity.ok(response);
     }
@@ -149,20 +147,22 @@ public class ActivityController {
      * @return Created activity
      */
     @PostMapping
-    public ResponseEntity<Activity> createActivity(@RequestBody CreateActivityRequest request) {
-        log.info("Creating activity for user {} with type {}", request.userId, request.type);
+    public ResponseEntity<ActivityResponseDTO> createActivity(@Valid @RequestBody CreateActivityRequestDTO request) {
+        log.info("Creating activity for user {} with type {}", request.getUserId(), request.getType());
 
         Activity activity = activityService.createActivity(
-            request.userId,
-            request.type,
-            request.data,
-            request.priority,
-            request.visibility,
-            request.relatedEntityId,
-            request.relatedEntityType
+            request.getUserId(),
+            request.getType(),
+            request.getData(),
+            request.getPriority(),
+            request.getVisibility(),
+            request.getRelatedEntityId(),
+            request.getRelatedEntityType()
         );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(activity);
+        ActivityResponseDTO response = ActivityMapper.toActivityResponse(activity);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // Helper methods
@@ -185,61 +185,4 @@ public class ActivityController {
         }
     }
 
-    private Long extractUserId(Map<String, Object> request) {
-        if (!request.containsKey("userId")) {
-            throw ValidationException.invalidFieldValue("userId", "Missing userId in request body");
-        }
-
-        Object userIdObj = request.get("userId");
-        try {
-            if (userIdObj instanceof Number) {
-                return ((Number) userIdObj).longValue();
-            } else if (userIdObj instanceof String) {
-                return Long.parseLong((String) userIdObj);
-            }
-            throw ValidationException.invalidFieldValue("userId", "Invalid userId format");
-        } catch (NumberFormatException e) {
-            throw ValidationException.invalidFieldValue("userId", "Invalid userId format");
-        }
-    }
-
-    private ActivityFeedResponse buildActivityFeedResponse(Page<Activity> activities) {
-        return new ActivityFeedResponse(
-            activities.getContent(),
-            activities.hasNext(),
-            activities.getContent().isEmpty() ? null :
-                activities.getContent().get(activities.getContent().size() - 1).getTimestamp().toString(),
-            activities.getTotalElements()
-        );
-    }
-
-    /**
-     * Activity Feed Response DTO
-     */
-    public static class ActivityFeedResponse {
-        public final List<Activity> activities;
-        public final boolean hasMore;
-        public final String nextCursor;
-        public final Long totalCount;
-
-        public ActivityFeedResponse(List<Activity> activities, boolean hasMore, String nextCursor, Long totalCount) {
-            this.activities = activities;
-            this.hasMore = hasMore;
-            this.nextCursor = nextCursor;
-            this.totalCount = totalCount;
-        }
-    }
-
-    /**
-     * Create Activity Request DTO
-     */
-    public static class CreateActivityRequest {
-        public Long userId;
-        public String type;
-        public String data;
-        public Integer priority;
-        public String visibility;
-        public Long relatedEntityId;
-        public String relatedEntityType;
-    }
 }

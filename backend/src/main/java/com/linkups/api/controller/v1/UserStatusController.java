@@ -1,7 +1,15 @@
 package com.linkups.api.controller.v1;
 
+import com.linkups.api.dto.request.userstatus.BatchStatusRequestDTO;
+import com.linkups.api.dto.request.userstatus.UpdateUserStatusRequestDTO;
+import com.linkups.api.dto.response.common.SuccessResponseDTO;
+import com.linkups.api.dto.response.userstatus.BatchUserStatusResponseDTO;
+import com.linkups.api.dto.response.userstatus.StatusStatisticsDTO;
+import com.linkups.api.dto.response.userstatus.UserStatusResponseDTO;
+import com.linkups.api.mapper.UserStatusMapper;
 import com.linkups.domain.entity.UserStatus;
 import com.linkups.domain.service.UserStatusService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +32,14 @@ public class UserStatusController {
      * GET /api/users/{userId}/status
      */
     @GetMapping("/{userId}/status")
-    public ResponseEntity<?> getUserStatus(@PathVariable Long userId) {
+    public ResponseEntity<UserStatusResponseDTO> getUserStatus(@PathVariable Long userId) {
         log.info("GET /api/users/{}/status", userId);
-        return ResponseEntity.ok(userStatusService.getUserStatusResponse(userId));
+
+        UserStatus userStatus = userStatusService.getUserStatus(userId)
+                .orElseThrow(() -> new com.linkups.domain.exception.ResourceNotFoundException("User status not found for user ID: " + userId));
+        UserStatusResponseDTO response = UserStatusMapper.toUserStatusResponse(userStatus);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -34,11 +47,20 @@ public class UserStatusController {
      * PUT /api/users/{userId}/status
      */
     @PutMapping("/{userId}/status")
-    public ResponseEntity<UserStatus> updateUserStatus(
+    public ResponseEntity<UserStatusResponseDTO> updateUserStatus(
             @PathVariable Long userId,
-            @RequestBody Map<String, String> request) {
+            @Valid @RequestBody UpdateUserStatusRequestDTO request) {
         log.info("PUT /api/users/{}/status", userId);
-        return ResponseEntity.ok(userStatusService.parseAndUpdateUserStatus(userId, request));
+
+        Map<String, String> statusMap = Map.of(
+                "status", request.getStatus(),
+                "currentActivity", request.getCurrentActivity() != null ? request.getCurrentActivity() : ""
+        );
+
+        UserStatus userStatus = userStatusService.parseAndUpdateUserStatus(userId, statusMap);
+        UserStatusResponseDTO response = UserStatusMapper.toUserStatusResponse(userStatus);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -46,9 +68,13 @@ public class UserStatusController {
      * POST /api/users/{userId}/heartbeat
      */
     @PostMapping("/{userId}/heartbeat")
-    public ResponseEntity<?> updateLastSeen(@PathVariable Long userId) {
+    public ResponseEntity<SuccessResponseDTO> updateLastSeen(@PathVariable Long userId) {
         log.debug("POST /api/users/{}/heartbeat", userId);
-        return ResponseEntity.ok(userStatusService.updateLastSeenResponse(userId));
+
+        userStatusService.updateLastSeen(userId);
+        SuccessResponseDTO response = SuccessResponseDTO.of("Last seen updated");
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -56,9 +82,16 @@ public class UserStatusController {
      * POST /api/users/statuses (using POST to send user ID list in body)
      */
     @PostMapping("/statuses")
-    public ResponseEntity<?> getUserStatuses(@RequestBody Map<String, List<Long>> request) {
+    public ResponseEntity<BatchUserStatusResponseDTO> getUserStatuses(@Valid @RequestBody Map<String, List<Long>> request) {
         log.info("POST /api/users/statuses");
-        return ResponseEntity.ok(userStatusService.getBatchStatusesResponse(request));
+
+        List<Long> userIds = request.get("userIds");
+        userStatusService.validateBatchUserIds(userIds);
+        Map<Long, UserStatus> statusMap = userStatusService.getUserStatuses(userIds);
+        List<UserStatus> statuses = new java.util.ArrayList<>(statusMap.values());
+        BatchUserStatusResponseDTO response = UserStatusMapper.toBatchUserStatusResponse(statuses);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -66,9 +99,13 @@ public class UserStatusController {
      * GET /api/users/online
      */
     @GetMapping("/online")
-    public ResponseEntity<?> getOnlineUsers() {
+    public ResponseEntity<BatchUserStatusResponseDTO> getOnlineUsers() {
         log.info("GET /api/users/online");
-        return ResponseEntity.ok(userStatusService.getOnlineUsersResponse());
+
+        List<UserStatus> onlineStatuses = userStatusService.getOnlineUsers();
+        BatchUserStatusResponseDTO response = UserStatusMapper.toBatchUserStatusResponse(onlineStatuses);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -76,9 +113,15 @@ public class UserStatusController {
      * GET /api/users/status-statistics
      */
     @GetMapping("/status-statistics")
-    public ResponseEntity<?> getStatusStatistics() {
+    public ResponseEntity<StatusStatisticsDTO> getStatusStatistics() {
         log.info("GET /api/users/status-statistics");
-        return ResponseEntity.ok(userStatusService.getFormattedStatusStatistics());
+
+        Map<com.linkups.domain.entity.enums.UserStatusType, Long> rawStats = userStatusService.getStatusStatistics();
+        Map<String, Long> stats = new java.util.HashMap<>();
+        rawStats.forEach((key, value) -> stats.put(key.toString(), value));
+        StatusStatisticsDTO response = UserStatusMapper.toStatusStatistics(stats);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -86,9 +129,13 @@ public class UserStatusController {
      * POST /api/users/{userId}/online
      */
     @PostMapping("/{userId}/online")
-    public ResponseEntity<UserStatus> setUserOnline(@PathVariable Long userId) {
+    public ResponseEntity<UserStatusResponseDTO> setUserOnline(@PathVariable Long userId) {
         log.info("POST /api/users/{}/online", userId);
-        return ResponseEntity.ok(userStatusService.setUserOnline(userId));
+
+        UserStatus userStatus = userStatusService.setUserOnline(userId);
+        UserStatusResponseDTO response = UserStatusMapper.toUserStatusResponse(userStatus);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -96,8 +143,12 @@ public class UserStatusController {
      * POST /api/users/{userId}/offline
      */
     @PostMapping("/{userId}/offline")
-    public ResponseEntity<UserStatus> setUserOffline(@PathVariable Long userId) {
+    public ResponseEntity<UserStatusResponseDTO> setUserOffline(@PathVariable Long userId) {
         log.info("POST /api/users/{}/offline", userId);
-        return ResponseEntity.ok(userStatusService.setUserOffline(userId));
+
+        UserStatus userStatus = userStatusService.setUserOffline(userId);
+        UserStatusResponseDTO response = UserStatusMapper.toUserStatusResponse(userStatus);
+
+        return ResponseEntity.ok(response);
     }
 }
