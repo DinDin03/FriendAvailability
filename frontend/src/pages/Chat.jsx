@@ -262,7 +262,7 @@ export const Chat = () => {
                 value={targetUserId}
                 onChange={(e) => setTargetUserId(e.target.value)}
                 onKeyPress={handleCreateChatKeyPress}
-                placeholder="Enter user ID (e.g., 2, 3, 4...)"
+                placeholder="Enter user ID"
                 disabled={isCreatingChat}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               />
@@ -289,7 +289,7 @@ export const Chat = () => {
           </div>
 
           <p className="text-sm text-gray-500 mt-3">
-            💡 Enter a user ID to create a private chat. Press Enter or click Create.
+            Enter a user ID to create a private chat. Press Enter or click Create.
           </p>
         </div>
 
