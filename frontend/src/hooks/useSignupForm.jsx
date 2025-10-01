@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/authService.js";
 import toast from "react-hot-toast";
 
 export const useSignupForm = () => {
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
     fullName: '',
@@ -64,24 +66,24 @@ export const useSignupForm = () => {
                 },
                 {
                     success: {
-                        icon: '🔥',
                         duration: 5000
                     }
                 }
             )
 
-            // Success - close modal and show success message
+            // Success - store email and redirect to check email page
             console.log('Signup successful:', result);
-            
-            // Reset form
-            setFormData({
-                fullName: '',
-                email: '',
-                password: '',
-                confirmPassword: ''
-            });
-            
-            // You could show a success message here
+
+            // Store email in localStorage for the CheckEmail page
+            localStorage.setItem('pendingVerificationEmail', formData.email);
+
+            // Set expiry time (24 hours from now)
+            const expiryTime = new Date();
+            expiryTime.setHours(expiryTime.getHours() + 24);
+            localStorage.setItem('verificationExpiryTime', expiryTime.toISOString());
+
+            // Navigate to check-email page
+            navigate(`/check-email?email=${encodeURIComponent(formData.email)}`)
             
             } catch (error) {
                 // Handle error

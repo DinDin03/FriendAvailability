@@ -1,5 +1,6 @@
 package com.linkups.infrastructure.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@Slf4j
 public class SecurityConfig {
 
         @Bean
@@ -24,7 +26,7 @@ public class SecurityConfig {
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-                System.out.println("Configuring SecurityFilterChain for JWT-based OAuth");
+                log.info("Configuring SecurityFilterChain for JWT-based authentication");
 
                 http
                         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -42,9 +44,6 @@ public class SecurityConfig {
                                 // Friends and users endpoints (you may want to secure these later)
                                 .requestMatchers("/api/friends/**", "/api/users/**").permitAll()
                                 .requestMatchers("/api/circles/**").permitAll()
-
-                                // Email verification endpoints
-                                .requestMatchers("/api/email/**").permitAll()
 
                                 // Health check and actuator endpoints
                                 .requestMatchers("/actuator/**").permitAll()

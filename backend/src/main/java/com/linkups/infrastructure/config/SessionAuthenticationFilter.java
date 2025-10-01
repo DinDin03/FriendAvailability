@@ -1,5 +1,6 @@
 package com.linkups.infrastructure.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,6 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 public class SessionAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
@@ -38,7 +40,7 @@ public class SessionAuthenticationFilter extends OncePerRequestFilter {
 
             SecurityContextHolder.getContext().setAuthentication(auth);
 
-            System.out.println("Session authenticated for user: " + userEmail);
+            log.debug("Session authenticated for user: {}", userEmail);
         }
 
         filterChain.doFilter(request, response);

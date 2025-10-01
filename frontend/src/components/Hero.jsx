@@ -1,9 +1,11 @@
 import {cn} from '@/lib/utils'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { SignupForm } from '@/components/SignupForm.jsx';
 import { authService } from '@/services/authService';
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "@/contexts/AuthContext";
+import toast from "react-hot-toast";
 
 import avatar1 from "@/assets/3D-avatars/1.png"
 import avatar2 from "@/assets/3D-avatars/9.png"
@@ -14,21 +16,36 @@ import herobackground from "@/assets/herobackground.png"
 
 export const Hero = () => {
     const navigate = useNavigate();
-
-    const handleGoogleLogin = () => {
-        window.location.href = authService.getGoogleLoginUrl();
-    }
-
-    const googleLogin = useGoogleLogin({    
-        onSuccess: (credentialResponse) => {
-            console.log(credentialResponse);
-            // send token to backend
-            navigate("/dashboard");
-        },
-        onError: () => console.log("Login Failed"),
-    });
-
+    const { updateUser } = useAuth();
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+    const googleButtonRef = useRef(null);
+
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const userData = await authService.googleLogin(credentialResponse);
+            if (userData) {
+                updateUser(userData);
+                const userFirstName = userData.name.split(' ')[0];
+                toast.success(`Welcome back, ${userFirstName || "User"}!`);
+                navigate("/dashboard");
+            }
+        } catch (error) {
+            toast.error(error.message || "Google sign-in failed.");
+        }
+    };
+
+    const handleGoogleError = (error) => {
+        console.error("Google login failed:", error);
+        toast.error("Google sign-in failed. Please try again.");
+    };
+
+    const handleCustomGoogleButtonClick = () => {
+        // Trigger the hidden Google button
+        const googleButton = googleButtonRef.current?.querySelector('div[role="button"]');
+        if (googleButton) {
+            googleButton.click();
+        }
+    };
     const avatars = [
         { 
             id: 1, 
@@ -103,14 +120,22 @@ export const Hero = () => {
                     </p>
                 </div>
                 
+                {/* Hidden Google Login Button */}
+                <div ref={googleButtonRef} className="hidden">
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                    />
+                </div>
+
                 <div className='flex lg:flex-row flex-col items-center justify-center gap-4 mt-10'>
-                    <button 
+                    <button
                         className='border-2 border-primary button'
-                        onClick={() => googleLogin()}
+                        onClick={handleCustomGoogleButtonClick}
                     >
                         Login with Google
                     </button>
-                    <button 
+                    <button
                         className='border-2 border-primary bg-white text-primary button w-60'
                         onClick={() => setIsSignUpOpen((prev) => !prev)}
                     >

@@ -39,6 +39,25 @@ public class FriendMapper {
                 .build();
     }
 
+    /**
+     * Convert Friend entity to FriendResponseDTO for pending requests
+     * For pending requests, the sender is in the userId field
+     */
+    public static FriendResponseDTO toPendingRequestResponse(Friend friend) {
+        if (friend == null) return null;
+
+        return FriendResponseDTO.builder()
+                .id(friend.getId())
+                .userId(friend.getUserId())
+                .friendId(friend.getFriendId())
+                .friendName(friend.getUser() != null ? friend.getUser().getName() : null)
+                .friendEmail(friend.getUser() != null ? friend.getUser().getEmail() : null)
+                .status(friend.getStatus())
+                .createdAt(friend.getCreatedAt())
+                .updatedAt(friend.getUpdatedAt())
+                .build();
+    }
+
     public static FriendResponseDTO toFriendResponse(User user, Long currentUserId) {
         if (user == null) return null;
 
@@ -58,6 +77,16 @@ public class FriendMapper {
 
         return friends.stream()
                 .map(FriendMapper::toFriendResponse)
+                .collect(Collectors.toList());
+    }
+
+    public static List<FriendResponseDTO> toPendingRequestResponseList(List<Friend> friends) {
+        if (friends == null || friends.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return friends.stream()
+                .map(FriendMapper::toPendingRequestResponse)
                 .collect(Collectors.toList());
     }
 

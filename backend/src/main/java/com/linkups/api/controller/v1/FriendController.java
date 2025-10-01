@@ -105,7 +105,7 @@ public class FriendController {
         log.info("Getting pending requests for user {}", userId);
 
         List<Friend> pendingRequests = friendService.getPendingRequests(userId);
-        List<FriendResponseDTO> response = FriendMapper.toFriendResponseList(pendingRequests);
+        List<FriendResponseDTO> response = FriendMapper.toPendingRequestResponseList(pendingRequests);
 
         log.info("Retrieved {} pending requests for user {}", pendingRequests.size(), userId);
         return ResponseEntity.ok(response);

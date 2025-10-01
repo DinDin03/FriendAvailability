@@ -6,10 +6,7 @@ import com.linkups.domain.exception.*;
 import com.linkups.domain.repository.UserRepository;
 import com.linkups.api.dto.response.auth.GoogleUserInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,9 +14,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
-@Transactional
 @Slf4j
 public class AuthService {
 
@@ -36,6 +33,7 @@ public class AuthService {
         this.googleJwtVerificationService = googleJwtVerificationService;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User authenticateAndLogin(AuthRequest loginRequest, HttpServletRequest httpRequest){
         log.info("Processing login attempt for email: {}", loginRequest.getEmail());
 
@@ -88,6 +86,7 @@ public class AuthService {
         return user;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User registerUser(AuthRequest registerRequest){
         String name = registerRequest.getName();
         String email = registerRequest.getEmail();
@@ -99,12 +98,9 @@ public class AuthService {
 
         String normalisedEmail = email.trim().toLowerCase();
 
-        try {
-            userService.findUserByEmail(normalisedEmail);
+        if (userRepository.existsByEmail(normalisedEmail)) {
             log.warn("Registration attempt for existing email: {}", normalisedEmail);
             throw DuplicateResourceException.duplicateEmail(normalisedEmail);
-        } catch (ResourceNotFoundException e) {
-            // Expected - email is available
         }
 
         String hashedPassword = passwordEncoder.encode(password);
@@ -135,19 +131,6 @@ public class AuthService {
             if (userId != null) {
                 User user = userService.findUserById(userId);
                 log.debug("Found session authenticated user: {}", user.getId());
-                return user;
-            }
-        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-
-            if (principal instanceof OidcUser oidcUser) {
-                String googleId = oidcUser.getSubject();
-
-                User user = userService.findUserByGoogleId(googleId);
-                log.debug("Found OAuth-authenticated user: {}", user.getId());
                 return user;
             }
         }
@@ -189,6 +172,7 @@ public class AuthService {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
         log.info("Processing password change for user: {}", userId);
 
@@ -236,6 +220,7 @@ public class AuthService {
         return password != null && password.length() >= 8;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User authenticateWithGoogleJwt(String credential, HttpServletRequest request) {
         GoogleUserInfo userInfo = googleJwtVerificationService.verifyToken(credential);
 
@@ -247,23 +232,23 @@ public class AuthService {
     }
 
     private User processGoogleUser(String googleId, String email, String name) {
-        try {
-            User userByGoogleId = userService.findUserByGoogleId(googleId);
-            return userByGoogleId;
-        } catch (ResourceNotFoundException e) {
-            // No user with this Google ID
+        // Check if user exists by Google ID
+        Optional<User> userByGoogleIdOpt = userService.findUserByGoogleIdOptional(googleId);
+        if (userByGoogleIdOpt.isPresent()) {
+            return userByGoogleIdOpt.get();
         }
 
-        try {
-            User userByEmail = userService.findUserByEmail(email);
-            if (userByEmail.getGoogleId() == null) {
-                return userService.linkGoogleAccount(userByEmail.getId(), googleId);
+        // Check if user exists by email
+        Optional<User> userByEmailOpt = userService.findUserByEmailOptional(email);
+        if (userByEmailOpt.isPresent()) {
+            User existingUser = userByEmailOpt.get();
+            if (existingUser.getGoogleId() == null) {
+                return userService.linkGoogleAccount(existingUser.getId(), googleId);
             }
-            return userByEmail;
-        } catch (ResourceNotFoundException e) {
-            // No user with this email
+            return existingUser;
         }
 
+        // Create new user with Google
         return userService.createUserWithGoogle(name, email, googleId);
     }
 

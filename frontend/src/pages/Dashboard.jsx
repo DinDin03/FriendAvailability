@@ -608,7 +608,7 @@ export const Dashboard = () => {
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-900">
-                                                Friend request from User {request.userId}
+                                                Friend request from {request.friendName || `User ${request.userId}`}
                                             </p>
                                             <p className="text-sm text-gray-500">
                                                 {new Date(request.createdAt).toLocaleDateString()} at {new Date(request.createdAt).toLocaleTimeString()}

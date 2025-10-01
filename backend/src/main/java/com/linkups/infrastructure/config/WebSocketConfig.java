@@ -1,5 +1,6 @@
 package com.linkups.infrastructure.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -8,24 +9,23 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        System.out.println("Configuring web sockets STOMP endpoints");
+        log.info("Configuring WebSocket STOMP endpoints");
 
         // Native WebSocket endpoint (no SockJS)
         registry.addEndpoint("/ws").setAllowedOriginPatterns("*");
-
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        System.out.println("Configuring message broker");
+        log.info("Configuring message broker");
 
         registry.enableSimpleBroker("/topic", "/queue");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
     }
-
 }
