@@ -75,9 +75,17 @@ public class AuthController {
 
         log.info("Registration attempt for email: {}", registerRequest.getEmail());
 
+        // Register user first (commits immediately)
         User newUser = authService.registerUser(registerRequest);
 
-        boolean emailSent = emailVerificationService.setupAndSendVerification(newUser);
+        // Send verification email after user is committed (separate operation)
+        boolean emailSent = false;
+        try {
+            emailSent = emailVerificationService.setupAndSendVerification(newUser);
+        } catch (Exception e) {
+            log.error("Failed to send verification email for user {}: {}", newUser.getId(), e.getMessage());
+            // Continue even if email fails - user is already created
+        }
 
         String message = emailSent
                 ? "Account created successfully! Please check your email and click the verification link to activate your account."
@@ -100,6 +108,28 @@ public class AuthController {
 
         log.debug("Current user found: {}", currentUser.getId());
         return ResponseEntity.ok(userDto);
+    }
+
+    @GetMapping("/verify-email")
+    public ResponseEntity<Void> verifyEmail(@RequestParam("token") String token,
+                                            @RequestParam(value = "redirect", defaultValue = "http://localhost:5173") String frontendUrl) {
+        log.info("Email verification attempt with token");
+
+        var result = emailVerificationService.verifyEmail(token);
+
+        String redirectUrl;
+        if (result.isSuccess()) {
+            log.info("Email verification successful");
+            redirectUrl = frontendUrl + "/email-verified";
+        } else {
+            log.warn("Email verification failed: {}", result.getMessage());
+            redirectUrl = frontendUrl + "/email-verification-failed?error=" +
+                         java.net.URLEncoder.encode(result.getMessage(), java.nio.charset.StandardCharsets.UTF_8);
+        }
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", redirectUrl)
+                .build();
     }
 
     @PostMapping("/logout")

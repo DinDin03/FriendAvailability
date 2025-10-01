@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
 @Slf4j
 public class UserService {
 
@@ -29,6 +28,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
+    @Transactional
     public User createUser(String name, String email) {
         System.out.println("Creating user: name=" + name + ", email=" + email);
 
@@ -48,6 +48,7 @@ public class UserService {
         return savedUser;
     }
 
+    @Transactional
     public User createUserWithPassword(String name, String email, String password){
         System.out.println("Creating user with password: name = " + name + " email = " + email);
 
@@ -72,6 +73,7 @@ public class UserService {
         return savedUser;
     }
 
+    @Transactional
     public User createUserWithGoogle(String name, String email, String googleId) {
         System.out.println("Creating user with Google OAuth: name=" + name + ", email=" + email + ", googleId=" + googleId);
 
@@ -94,6 +96,7 @@ public class UserService {
         return savedUser;
     }
 
+    @Transactional(readOnly = true)
     public List<User> findAllUsers(){
         System.out.println("Finding all users");
         List<User> users = userRepository.findAll();
@@ -101,6 +104,7 @@ public class UserService {
         return users;
     }
 
+    @Transactional(readOnly = true)
     public User findUserById(Long id){
         log.debug("Finding user with ID: {}", id);
 
@@ -119,6 +123,7 @@ public class UserService {
         return userOpt.get();
     }
 
+    @Transactional(readOnly = true)
     public User findUserByEmail(String email){
         log.debug("Finding user with email: {}", email);
 
@@ -139,6 +144,7 @@ public class UserService {
         return userOpt.get();
     }
 
+    @Transactional(readOnly = true)
     public User findUserByGoogleId(String googleId) {
         log.debug("Finding user with google id: {}", googleId);
 
@@ -148,7 +154,7 @@ public class UserService {
         }
 
         Optional<User> userOpt = userRepository.findByGoogleId(googleId);
-        
+
         if(userOpt.isEmpty()){
             log.warn("User not found with google ID: {}", googleId);
             throw ResourceNotFoundException.userGoogleIdNotFound(googleId);
@@ -157,6 +163,7 @@ public class UserService {
         return userOpt.get();
     }
 
+    @Transactional
     public User updateUser(Long id, String name, String email){
         log.info("Updating user with ID: {}", id);
 
@@ -170,7 +177,7 @@ public class UserService {
         boolean hasChanges = false;
 
         if(email != null && !email.trim().isEmpty()){
-            String normalisedEmail = email.trim().toLowerCase(); 
+            String normalisedEmail = email.trim().toLowerCase();
             if(!user.getEmail().equals(normalisedEmail)){
                 if(userRepository.existsByEmail(normalisedEmail)){
                     log.warn("Attempt to update email to an existing email {}", normalisedEmail);
@@ -219,31 +226,33 @@ public class UserService {
         return EMAIL_PATTERN.matcher(email).matches();
     }
 
+    @Transactional
     public User linkGoogleAccount(Long userId, String googleId) {
         log.info("Linking Google account {} to user: {}", googleId, userId);
-        
+
         if (googleId == null || googleId.trim().isEmpty()) {
             throw ValidationException.invalidFieldValue("googleId", "Google ID cannot be empty");
         }
-        
+
         if (userRepository.existsByGoogleId(googleId)) {
             log.warn("Google account {} is already linked to another user", googleId);
             throw DuplicateResourceException.duplicateGoogleId(googleId);
         }
-        
+
         User user = findUserById(userId);
-        
+
         user.setGoogleId(googleId);
-        user.setEmailVerified(true); 
+        user.setEmailVerified(true);
         user.setUpdatedAt(LocalDateTime.now());
-        
+
         User updatedUser = userRepository.save(user);
-        
-        log.info("Google account linked successfully for user: {} ({})", 
+
+        log.info("Google account linked successfully for user: {} ({})",
                 updatedUser.getName(), updatedUser.getEmail());
         return updatedUser;
     }
 
+    @Transactional
     public void deleteUserById(Long id){
         log.info("Deleting user with ID: {}", id);
         User user = findUserById(id);
@@ -251,6 +260,7 @@ public class UserService {
         log.info("Deleted user with ID: {}", id);
     }
 
+    @Transactional(readOnly = true)
     public boolean validatePassword(User user, String password){
          if(user.getPasswordHash() == null){
              System.out.println("User " + user.getEmail() + " has no password (OAuth user)");
@@ -261,6 +271,7 @@ public class UserService {
          return matches;
     }
 
+    @Transactional(readOnly = true)
     public List<User> getActiveUsers(){
         System.out.println("Getting active users");
         List<User> activeUsers = userRepository.findByIsActiveTrue();
@@ -268,6 +279,7 @@ public class UserService {
         return activeUsers;
     }
 
+    @Transactional(readOnly = true)
     public List<User> searchUsersByName(String searchTerm){
         System.out.println("Searching users by name: " + searchTerm);
         List<User> users = userRepository.findByNameContainingIgnoreCase(searchTerm);
@@ -275,6 +287,7 @@ public class UserService {
         return users;
     }
 
+    @Transactional(readOnly = true)
     public Object[] getUserStatistics(){
         System.out.println("Getting user statistics");
         Object[] stats = userRepository.getUserStatistics();
@@ -282,6 +295,7 @@ public class UserService {
         return stats;
     }
 
+    @Transactional(readOnly = true)
     public boolean isEmailAvailable(String email){
         boolean available = !userRepository.existsByEmail(email);
         System.out.println(email + (available ? " available" : " not available"));

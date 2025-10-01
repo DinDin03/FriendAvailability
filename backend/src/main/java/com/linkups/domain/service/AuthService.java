@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
 @Service
-@Transactional
 @Slf4j
 public class AuthService {
 
@@ -33,6 +32,7 @@ public class AuthService {
         this.googleJwtVerificationService = googleJwtVerificationService;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User authenticateAndLogin(AuthRequest loginRequest, HttpServletRequest httpRequest){
         log.info("Processing login attempt for email: {}", loginRequest.getEmail());
 
@@ -85,6 +85,7 @@ public class AuthService {
         return user;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User registerUser(AuthRequest registerRequest){
         String name = registerRequest.getName();
         String email = registerRequest.getEmail();
@@ -96,12 +97,9 @@ public class AuthService {
 
         String normalisedEmail = email.trim().toLowerCase();
 
-        try {
-            userService.findUserByEmail(normalisedEmail);
+        if (userRepository.existsByEmail(normalisedEmail)) {
             log.warn("Registration attempt for existing email: {}", normalisedEmail);
             throw DuplicateResourceException.duplicateEmail(normalisedEmail);
-        } catch (ResourceNotFoundException e) {
-            // Expected - email is available
         }
 
         String hashedPassword = passwordEncoder.encode(password);
@@ -173,6 +171,7 @@ public class AuthService {
         }
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
         log.info("Processing password change for user: {}", userId);
 
@@ -220,6 +219,7 @@ public class AuthService {
         return password != null && password.length() >= 8;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public User authenticateWithGoogleJwt(String credential, HttpServletRequest request) {
         GoogleUserInfo userInfo = googleJwtVerificationService.verifyToken(credential);
 

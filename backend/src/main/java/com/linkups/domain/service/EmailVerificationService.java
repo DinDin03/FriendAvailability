@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Transactional
 @Slf4j
 public class EmailVerificationService {
 
@@ -31,6 +30,7 @@ public class EmailVerificationService {
         this.emailService = emailService;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public boolean setupAndSendVerification(User user) {
         log.info("Setting up email verification for user: {}", user.getEmail());
 
@@ -56,6 +56,7 @@ public class EmailVerificationService {
     }
 
 
+    @org.springframework.transaction.annotation.Transactional
     public String createVerificationToken(User user) {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");
@@ -105,6 +106,7 @@ public class EmailVerificationService {
         return tokenValue;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public VerificationResult verifyEmail(String tokenValue) {
         if (tokenValue == null || tokenValue.trim().isEmpty()) {
             return VerificationResult.failure("Invalid verification token");
@@ -196,6 +198,7 @@ public class EmailVerificationService {
         return deletedCount;
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public String resendVerificationEmail(User user) {
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null");

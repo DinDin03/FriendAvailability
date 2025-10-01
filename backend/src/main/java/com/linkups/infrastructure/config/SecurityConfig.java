@@ -45,9 +45,6 @@ public class SecurityConfig {
                                 .requestMatchers("/api/friends/**", "/api/users/**").permitAll()
                                 .requestMatchers("/api/circles/**").permitAll()
 
-                                // Email verification endpoints
-                                .requestMatchers("/api/email/**").permitAll()
-
                                 // Health check and actuator endpoints
                                 .requestMatchers("/actuator/**").permitAll()
 
