@@ -430,21 +430,25 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
 
       {/* Messages Area - Scrollable */}
       <main className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="max-w-4xl mx-auto">
           {messages.length === 0 ? (
             <div className="text-center text-gray-500 mt-12">
               <p className="text-lg mb-2">No messages yet</p>
               <p className="text-sm">Start the conversation!</p>
             </div>
           ) : (
-            messages.map((message, index) => (
-              <MessageBubble
-                key={message.id || `msg-${index}`}
-                message={message}
-                userId={userId}
-                formatTimestamp={formatTimestamp}
-              />
-            ))
+            messages.map((message, index) => {
+              const prevMessage = index > 0 ? messages[index - 1] : null;
+              return (
+                <MessageBubble
+                  key={message.id || `msg-${index}`}
+                  message={message}
+                  prevMessage={prevMessage}
+                  userId={userId}
+                  formatTimestamp={formatTimestamp}
+                />
+              );
+            })
           )}
           {/* Auto-scroll anchor */}
           <div ref={messagesEndRef} />
@@ -495,10 +499,22 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
  * MessageBubble - Individual message component
  * Handles regular messages and system messages
  */
-const MessageBubble = ({ message, userId, formatTimestamp }) => {
+const MessageBubble = ({ message, prevMessage, userId, formatTimestamp }) => {
   // Determine message type
   const isSystemMessage = message.messageType === 'SYSTEM_MESSAGE' || !message.senderId;
   const isOwnMessage = message.senderId === userId;
+
+  // Calculate time gap (in minutes) between this message and previous
+  const getTimeGapMinutes = () => {
+    if (!prevMessage || !message.sentAt || !prevMessage.sentAt) return Infinity;
+    const currentTime = new Date(message.sentAt).getTime();
+    const prevTime = new Date(prevMessage.sentAt).getTime();
+    return (currentTime - prevTime) / (1000 * 60); // Convert to minutes
+  };
+
+  const timeGapMinutes = getTimeGapMinutes();
+  const showTimestamp = timeGapMinutes > 3; // Show timestamp if gap > 3 minutes
+  const marginTop = showTimestamp ? 'mt-4' : 'mt-1'; // Reduced gap between consecutive messages
 
   // System Message (join/leave notifications)
   if (isSystemMessage) {
@@ -513,11 +529,11 @@ const MessageBubble = ({ message, userId, formatTimestamp }) => {
 
   // Regular Message (own or other)
   return (
-    <div className={`flex items-end gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-      {/* Timestamp on the left */}
+    <div className={`flex items-end ${isOwnMessage ? 'justify-end' : 'justify-start'} ${marginTop}`}>
+      {/* Timestamp on the left for received messages */}
       {!isOwnMessage && (
-        <span className="text-xs text-gray-400 mb-1">
-          {formatTimestamp(message.sentAt || message.timestamp)}
+        <span className="text-xs text-gray-400 mb-1 mr-3 min-w-[3rem] text-right">
+          {showTimestamp ? formatTimestamp(message.sentAt || message.timestamp) : ''}
         </span>
       )}
 
@@ -533,10 +549,10 @@ const MessageBubble = ({ message, userId, formatTimestamp }) => {
         <p className="break-words whitespace-pre-wrap">{message.content}</p>
       </div>
 
-      {/* Timestamp on the left for own messages */}
+      {/* Timestamp on the right for sent messages */}
       {isOwnMessage && (
-        <span className="text-xs text-gray-400 mb-1">
-          {formatTimestamp(message.sentAt || message.timestamp)}
+        <span className="text-xs text-gray-400 mb-1 ml-3 min-w-[3rem] text-left">
+          {showTimestamp ? formatTimestamp(message.sentAt || message.timestamp) : ''}
         </span>
       )}
     </div>
