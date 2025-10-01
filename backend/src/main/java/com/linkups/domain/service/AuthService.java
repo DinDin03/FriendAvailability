@@ -6,10 +6,7 @@ import com.linkups.domain.exception.*;
 import com.linkups.domain.repository.UserRepository;
 import com.linkups.api.dto.response.auth.GoogleUserInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -135,19 +132,6 @@ public class AuthService {
             if (userId != null) {
                 User user = userService.findUserById(userId);
                 log.debug("Found session authenticated user: {}", user.getId());
-                return user;
-            }
-        }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            Object principal = authentication.getPrincipal();
-
-            if (principal instanceof OidcUser oidcUser) {
-                String googleId = oidcUser.getSubject();
-
-                User user = userService.findUserByGoogleId(googleId);
-                log.debug("Found OAuth-authenticated user: {}", user.getId());
                 return user;
             }
         }
