@@ -387,14 +387,10 @@ class ChatService {
 
         this.logApiCall('initializeWebSocket', { wsUrl });
 
-        // Create STOMP client
+        // Create STOMP client with native WebSocket
         this.stompClient = new Client({
+          // Use native WebSocket
           brokerURL: wsUrl,
-
-          // SockJS fallback for compatibility
-          webSocketFactory: () => {
-            return new WebSocket(wsUrl);
-          },
 
           // Connection timeout
           connectionTimeout: 10000,

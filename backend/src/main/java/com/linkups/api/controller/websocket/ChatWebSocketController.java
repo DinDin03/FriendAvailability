@@ -47,7 +47,7 @@ public class ChatWebSocketController {
             MessageResponseDto response = MessageResponseDto.builder()
                 .id(savedMessage.getId())
                 .senderId(savedMessage.getSenderId())
-                .senderName(savedMessage.getSenderName())
+                .senderName(getSenderName(savedMessage.getSenderId()))
                 .roomId(savedMessage.getChatRoomId())
                 .content(savedMessage.getContent())
                 .messageType(savedMessage.getMessageType().toString())

@@ -295,7 +295,12 @@ public class ChatService {
     }
 
     private void addUserToPrivateChat(Long roomId, Long userId) {
+        User user = userService.findUserById(userId);
+        ChatRoom chatRoom = findChatRoomById(roomId);
+
         ChatParticipant participant = ChatParticipant.builder()
+                .user(user)
+                .chatRoom(chatRoom)
                 .userId(userId)
                 .chatRoomId(roomId)
                 .role(ParticipantRole.MEMBER)
