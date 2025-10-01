@@ -55,7 +55,11 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
    * Auto-scroll to bottom when new messages arrive
    */
   useEffect(() => {
-    scrollToBottom();
+    // Small delay to ensure DOM is updated
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   /**
