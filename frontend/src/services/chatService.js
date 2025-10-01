@@ -275,7 +275,7 @@ class ChatService {
       this.logApiCall('getMessagesAfter', { roomId, userId, afterTime });
 
       // Backend endpoint: GET /api/chat/rooms/{roomId}/messages/after?userId={userId}&afterTime={afterTime}
-      const response = await api.get(`/api/chat/rooms/${roomId}/messages/after?userId=${userId}&afterTime=${encodeURIComponent(afterTime)}`);
+      const response = await api.get(`/chat/rooms/${roomId}/messages/after?userId=${userId}&afterTime=${encodeURIComponent(afterTime)}`);
 
       this.logApiCall('getMessagesAfter - success', { roomId, userId, count: response?.messages?.length || 0 });
       return response;
