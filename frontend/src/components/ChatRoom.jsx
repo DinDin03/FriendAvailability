@@ -513,7 +513,15 @@ const MessageBubble = ({ message, userId, formatTimestamp }) => {
 
   // Regular Message (own or other)
   return (
-    <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex items-end gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+      {/* Timestamp on the left */}
+      {!isOwnMessage && (
+        <span className="text-xs text-gray-400 mb-1">
+          {formatTimestamp(message.sentAt || message.timestamp)}
+        </span>
+      )}
+
+      {/* Message bubble */}
       <div
         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
           isOwnMessage
@@ -521,25 +529,16 @@ const MessageBubble = ({ message, userId, formatTimestamp }) => {
             : 'bg-white text-gray-900 shadow-sm border border-gray-200 rounded-bl-none'
         }`}
       >
-        {/* Sender Name (only for other's messages) */}
-        {!isOwnMessage && message.senderName && (
-          <p className="text-xs font-semibold text-blue-600 mb-1">
-            {message.senderName}
-          </p>
-        )}
-
         {/* Message Content */}
         <p className="break-words whitespace-pre-wrap">{message.content}</p>
-
-        {/* Timestamp */}
-        <p
-          className={`text-xs mt-1 ${
-            isOwnMessage ? 'text-blue-100' : 'text-gray-500'
-          }`}
-        >
-          {formatTimestamp(message.sentAt || message.timestamp)}
-        </p>
       </div>
+
+      {/* Timestamp on the left for own messages */}
+      {isOwnMessage && (
+        <span className="text-xs text-gray-400 mb-1">
+          {formatTimestamp(message.sentAt || message.timestamp)}
+        </span>
+      )}
     </div>
   );
 };
