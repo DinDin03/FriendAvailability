@@ -64,6 +64,10 @@ class MessageServiceTest extends BaseUnitTest {
         
         given(userRepository.existsById(senderId)).willReturn(true);
         given(chatRoomRepository.existsById(roomId)).willReturn(true);
+        given(userRepository.findById(senderId)).willReturn(Optional.of(
+                com.linkups.domain.entity.User.builder().id(senderId).build()));
+        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(
+                com.linkups.domain.entity.ChatRoom.builder().id(roomId).build()));
         given(chatParticipantRepository.isUserActiveInRoom(senderId, roomId)).willReturn(true);
         given(messageRepository.save(any(Message.class))).willReturn(savedMessage);
 
@@ -79,6 +83,8 @@ class MessageServiceTest extends BaseUnitTest {
 
         then(userRepository).should().existsById(senderId);
         then(chatRoomRepository).should().existsById(roomId);
+        then(userRepository).should().findById(senderId);
+        then(chatRoomRepository).should(times(2)).findById(roomId);
         then(chatParticipantRepository).should().isUserActiveInRoom(senderId, roomId);
         then(messageRepository).should().save(any(Message.class));
     }

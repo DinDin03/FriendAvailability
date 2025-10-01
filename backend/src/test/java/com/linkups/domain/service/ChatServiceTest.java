@@ -148,6 +148,7 @@ class ChatServiceTest extends BaseUnitTest {
         given(chatRoomRepository.findPrivateChatBetweenUsers(userId1, userId2))
                 .willReturn(Optional.empty());
         given(chatRoomRepository.save(any(ChatRoom.class))).willReturn(savedChatRoom);
+        given(chatRoomRepository.findById(20L)).willReturn(Optional.of(savedChatRoom));
 
         // When
         ChatRoom result = chatService.getOrCreatePrivateChat(userId1, userId2);
@@ -157,8 +158,8 @@ class ChatServiceTest extends BaseUnitTest {
         assertThat(result.getType()).isEqualTo(ChatType.PRIVATE);
         assertThat(result.getName()).isNull();
 
-        then(userService).should().findUserById(userId1);
-        then(userService).should().findUserById(userId2);
+        then(userService).should(times(2)).findUserById(userId1);
+        then(userService).should(times(2)).findUserById(userId2);
         then(chatRoomRepository).should().findPrivateChatBetweenUsers(userId1, userId2);
         then(chatRoomRepository).should().save(any(ChatRoom.class));
         then(chatParticipantRepository).should(times(2)).save(any(ChatParticipant.class));

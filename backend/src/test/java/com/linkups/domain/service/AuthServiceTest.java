@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -218,7 +220,7 @@ class AuthServiceTest extends BaseUnitTest {
                 .build();
         
         given(googleJwtVerificationService.verifyToken(jwtToken)).willReturn(googleUserInfo);
-        given(userService.findUserByGoogleId(googleId)).willReturn(existingUser);
+        given(userService.findUserByGoogleIdOptional(googleId)).willReturn(Optional.of(existingUser));
         given(httpRequest.getSession(true)).willReturn(httpSession);
 
         // When
@@ -227,7 +229,7 @@ class AuthServiceTest extends BaseUnitTest {
         // Then
         assertThat(authenticatedUser).isEqualTo(existingUser);
         then(googleJwtVerificationService).should().verifyToken(jwtToken);
-        then(userService).should().findUserByGoogleId(googleId);
+        then(userService).should().findUserByGoogleIdOptional(googleId);
         then(httpSession).should().setAttribute("authenticated", true);
     }
 
@@ -251,8 +253,8 @@ class AuthServiceTest extends BaseUnitTest {
                 .build();
         
         given(googleJwtVerificationService.verifyToken(jwtToken)).willReturn(googleUserInfo);
-        given(userService.findUserByGoogleId(googleId)).willThrow(new ResourceNotFoundException("User not found"));
-        given(userService.findUserByEmail(email)).willThrow(new ResourceNotFoundException("User not found"));
+        given(userService.findUserByGoogleIdOptional(googleId)).willReturn(Optional.empty());
+        given(userService.findUserByEmailOptional(email)).willReturn(Optional.empty());
         given(userService.createUserWithGoogle(name, email, googleId)).willReturn(newUser);
         given(httpRequest.getSession(true)).willReturn(httpSession);
 
@@ -262,8 +264,8 @@ class AuthServiceTest extends BaseUnitTest {
         // Then
         assertThat(authenticatedUser).isEqualTo(newUser);
         then(googleJwtVerificationService).should().verifyToken(jwtToken);
-        then(userService).should().findUserByGoogleId(googleId);
-        then(userService).should().findUserByEmail(email);
+        then(userService).should().findUserByGoogleIdOptional(googleId);
+        then(userService).should().findUserByEmailOptional(email);
         then(userService).should().createUserWithGoogle(name, email, googleId);
         then(httpSession).should().setAttribute("authenticated", true);
     }
@@ -306,7 +308,7 @@ class AuthServiceTest extends BaseUnitTest {
                 .emailVerified(false)
                 .build();
 
-        given(userService.findUserByEmail(email.toLowerCase())).willThrow(new ResourceNotFoundException("User not found"));
+        given(userRepository.existsByEmail(email.toLowerCase())).willReturn(false);
         given(passwordEncoder.encode(password)).willReturn("hashedPassword");
         given(userRepository.save(any(User.class))).willReturn(newUser);
 
@@ -317,7 +319,7 @@ class AuthServiceTest extends BaseUnitTest {
         assertThat(registeredUser).isNotNull();
         assertThat(registeredUser.getEmail()).isEqualTo(email.toLowerCase());
         assertThat(registeredUser.getName()).isEqualTo(name.trim());
-        then(userService).should().findUserByEmail(email.toLowerCase());
+        then(userRepository).should().existsByEmail(email.toLowerCase());
         then(passwordEncoder).should().encode(password);
         then(userRepository).should().save(any(User.class));
     }
