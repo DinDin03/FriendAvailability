@@ -145,6 +145,27 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<User> findUserByEmailOptional(String email){
+        log.debug("Finding user by email (optional): {}", email);
+
+        if(email == null || email.trim().isEmpty()){
+            log.debug("Empty email provided, returning empty Optional");
+            return Optional.empty();
+        }
+
+        String normalisedEmail = email.trim().toLowerCase();
+        Optional<User> userOpt = userRepository.findByEmail(normalisedEmail);
+
+        if(userOpt.isPresent()){
+            log.debug("Found user: {} ({})", userOpt.get().getName(), userOpt.get().getEmail());
+        } else {
+            log.debug("No user found with email: {}", normalisedEmail);
+        }
+
+        return userOpt;
+    }
+
+    @Transactional(readOnly = true)
     public User findUserByGoogleId(String googleId) {
         log.debug("Finding user with google id: {}", googleId);
 
@@ -161,6 +182,26 @@ public class UserService {
         }
         log.debug("Found OAuth user: {} with email {}", userOpt.get().getName(), userOpt.get().getEmail());
         return userOpt.get();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findUserByGoogleIdOptional(String googleId) {
+        log.debug("Finding user by Google ID (optional): {}", googleId);
+
+        if(googleId == null || googleId.trim().isEmpty()){
+            log.debug("Empty Google ID provided, returning empty Optional");
+            return Optional.empty();
+        }
+
+        Optional<User> userOpt = userRepository.findByGoogleId(googleId);
+
+        if(userOpt.isPresent()){
+            log.debug("Found OAuth user: {} with email {}", userOpt.get().getName(), userOpt.get().getEmail());
+        } else {
+            log.debug("No user found with Google ID: {}", googleId);
+        }
+
+        return userOpt;
     }
 
     @Transactional

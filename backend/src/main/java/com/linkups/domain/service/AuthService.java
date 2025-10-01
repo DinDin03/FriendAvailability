@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -231,23 +232,23 @@ public class AuthService {
     }
 
     private User processGoogleUser(String googleId, String email, String name) {
-        try {
-            User userByGoogleId = userService.findUserByGoogleId(googleId);
-            return userByGoogleId;
-        } catch (ResourceNotFoundException e) {
-            // No user with this Google ID
+        // Check if user exists by Google ID
+        Optional<User> userByGoogleIdOpt = userService.findUserByGoogleIdOptional(googleId);
+        if (userByGoogleIdOpt.isPresent()) {
+            return userByGoogleIdOpt.get();
         }
 
-        try {
-            User userByEmail = userService.findUserByEmail(email);
-            if (userByEmail.getGoogleId() == null) {
-                return userService.linkGoogleAccount(userByEmail.getId(), googleId);
+        // Check if user exists by email
+        Optional<User> userByEmailOpt = userService.findUserByEmailOptional(email);
+        if (userByEmailOpt.isPresent()) {
+            User existingUser = userByEmailOpt.get();
+            if (existingUser.getGoogleId() == null) {
+                return userService.linkGoogleAccount(existingUser.getId(), googleId);
             }
-            return userByEmail;
-        } catch (ResourceNotFoundException e) {
-            // No user with this email
+            return existingUser;
         }
 
+        // Create new user with Google
         return userService.createUserWithGoogle(name, email, googleId);
     }
 
