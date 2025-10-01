@@ -71,5 +71,7 @@ export const AuthProvider = ({ children }) => {
         updateUser
     };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return <AuthContext.Provider value={value}>
+                {isLoading ? <div className="p-8">Loading auth...</div> : children}
+            </AuthContext.Provider>;
     };
