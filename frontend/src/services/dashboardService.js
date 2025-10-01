@@ -134,7 +134,7 @@ class DashboardService {
       const [friends, events, messages] = await Promise.allSettled([
         api.get(API_ENDPOINTS.FRIENDS.BASE(userId)),
         api.get(API_ENDPOINTS.CALENDAR.EVENTS(userId)),
-        api.get(API_ENDPOINTS.CHAT.ROOMS)
+        api.get(API_ENDPOINTS.CHAT.USER_ROOMS(userId))
       ]);
 
       const stats = {

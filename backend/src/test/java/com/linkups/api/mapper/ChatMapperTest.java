@@ -61,7 +61,7 @@ class ChatMapperTest extends BaseUnitTest {
         Long unreadCount = 3L;
 
         // When
-        ChatRoomSummaryDTO result = ChatMapper.toChatRoomSummary(chatRoom, unreadCount);
+        ChatRoomSummaryDTO result = ChatMapper.toChatRoomSummary(chatRoom, 1L, unreadCount);
 
         // Then
         assertThat(result).isNotNull();
@@ -82,7 +82,7 @@ class ChatMapperTest extends BaseUnitTest {
         chatRoom.setMessages(Collections.singletonList(lastMessage));
 
         // When
-        ChatRoomSummaryDTO result = ChatMapper.toChatRoomSummary(chatRoom, 0L);
+        ChatRoomSummaryDTO result = ChatMapper.toChatRoomSummary(chatRoom, 1L, 0L);
 
         // Then
         assertThat(result.getLastMessagePreview()).hasSize(50);
@@ -133,7 +133,7 @@ class ChatMapperTest extends BaseUnitTest {
         );
 
         // When
-        ChatRoomListResponseDTO result = ChatMapper.toChatRoomListResponse(rooms);
+        ChatRoomListResponseDTO result = ChatMapper.toChatRoomListResponse(rooms, 1L);
 
         // Then
         assertThat(result).isNotNull();

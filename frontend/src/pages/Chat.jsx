@@ -386,7 +386,7 @@ const RoomCard = ({ room, isSelected, onClick }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-base font-semibold text-gray-900 truncate">
-              {room.name || `Chat ${room.id}`}
+              {room.displayName || room.name || `Chat ${room.id}`}
             </h3>
             {hasUnread && (
               <span className="ml-2 flex-shrink-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">

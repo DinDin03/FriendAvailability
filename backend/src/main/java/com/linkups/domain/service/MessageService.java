@@ -66,7 +66,15 @@ public class MessageService {
         validateUserCanAccessRoom(senderId, roomId);
         validateMessageContent(content);
 
+        // Fetch User and ChatRoom entities to ensure proper relationships
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> ResourceNotFoundException.userNotFound(senderId));
+        ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> ResourceNotFoundException.chatRoomNotFound(roomId));
+
         Message message = Message.builder()
+                .sender(sender)
+                .chatRoom(chatRoom)
                 .senderId(senderId)
                 .chatRoomId(roomId)
                 .content(content.trim())

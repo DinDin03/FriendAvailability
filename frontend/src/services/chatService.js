@@ -40,6 +40,7 @@ class ChatService {
     // Room subscriptions tracking
     this.activeSubscriptions = new Map(); // roomId -> subscription object
     this.messageCallbacks = new Map(); // roomId -> callback function
+    this.roomSyncData = new Map(); // roomId -> { userId, lastMessageTime }
 
     // Connection event handlers
     this.onConnectCallbacks = [];
@@ -261,6 +262,62 @@ class ChatService {
   }
 
   /**
+   * Get messages sent after a specific timestamp
+   * Used for syncing missed messages when offline
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {string|number} userId - Current user ID
+   * @param {string} afterTime - ISO timestamp to get messages after
+   * @returns {Promise<Object>} Messages list
+   */
+  async getMessagesAfter(roomId, userId, afterTime) {
+    try {
+      this.logApiCall('getMessagesAfter', { roomId, userId, afterTime });
+
+      // Backend endpoint: GET /api/chat/rooms/{roomId}/messages/after?userId={userId}&afterTime={afterTime}
+      const response = await api.get(`/api/chat/rooms/${roomId}/messages/after?userId=${userId}&afterTime=${encodeURIComponent(afterTime)}`);
+
+      this.logApiCall('getMessagesAfter - success', { roomId, userId, count: response?.messages?.length || 0 });
+      return response;
+
+    } catch (error) {
+      this.logApiCall('getMessagesAfter - error', { roomId, userId, afterTime, error: error.message });
+      // Return empty array on error to not break the app
+      return { messages: [] };
+    }
+  }
+
+  /**
+   * Sync missed messages when reconnecting or returning to chat
+   * Fetches messages sent after the last known message
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {string|number} userId - Current user ID
+   * @param {string} lastMessageTime - Timestamp of last known message
+   * @returns {Promise<Array>} Array of new messages
+   */
+  async syncMissedMessages(roomId, userId, lastMessageTime) {
+    try {
+      if (!lastMessageTime) {
+        console.log('No last message time provided, skipping sync');
+        return [];
+      }
+
+      this.logApiCall('syncMissedMessages', { roomId, userId, lastMessageTime });
+
+      const response = await this.getMessagesAfter(roomId, userId, lastMessageTime);
+      const newMessages = response?.messages || [];
+
+      this.logApiCall('syncMissedMessages - success', { roomId, userId, count: newMessages.length });
+      return newMessages;
+
+    } catch (error) {
+      this.logApiCall('syncMissedMessages - error', { roomId, userId, error: error.message });
+      return [];
+    }
+  }
+
+  /**
    * Create or get existing private chat between two users
    *
    * @param {string|number} userId1 - First user ID
@@ -411,10 +468,17 @@ class ChatService {
           onConnect: (frame) => {
             this.isConnected = true;
             this.isConnecting = false;
+            const wasReconnecting = this.reconnectAttempts > 0;
             this.reconnectAttempts = 0;
             this.reconnectDelay = 1000;
 
-            this.logApiCall('WebSocket connected', { frame });
+            this.logApiCall('WebSocket connected', { frame, wasReconnecting });
+
+            // If this was a reconnection, trigger missed message sync for all subscribed rooms
+            if (wasReconnecting) {
+              console.log('WebSocket reconnected - syncing missed messages for subscribed rooms');
+              this.syncAllSubscribedRooms();
+            }
 
             // Trigger connect callbacks
             this.onConnectCallbacks.forEach(callback => {
@@ -521,6 +585,74 @@ class ChatService {
   }
 
   /**
+   * Sync missed messages for all subscribed rooms after reconnection
+   * Called automatically when WebSocket reconnects
+   *
+   * @private
+   */
+  async syncAllSubscribedRooms() {
+    try {
+      console.log('Syncing missed messages for', this.activeSubscriptions.size, 'subscribed rooms');
+
+      // Get all subscribed rooms
+      const roomIds = Array.from(this.activeSubscriptions.keys());
+
+      // Sync each room
+      for (const roomId of roomIds) {
+        const roomData = this.roomSyncData?.get(roomId);
+        if (roomData && roomData.lastMessageTime && roomData.userId) {
+          console.log(`Syncing room ${roomId} from ${roomData.lastMessageTime}`);
+
+          const newMessages = await this.syncMissedMessages(
+            roomId,
+            roomData.userId,
+            roomData.lastMessageTime
+          );
+
+          // Deliver new messages via the callback
+          const callback = this.messageCallbacks.get(roomId);
+          if (callback && newMessages.length > 0) {
+            console.log(`Delivering ${newMessages.length} missed messages to room ${roomId}`);
+            newMessages.forEach(message => {
+              try {
+                callback(message);
+              } catch (error) {
+                console.error('Error delivering missed message:', error);
+              }
+            });
+
+            // Update last message time
+            const latestMessage = newMessages[newMessages.length - 1];
+            if (latestMessage?.sentAt) {
+              roomData.lastMessageTime = latestMessage.sentAt;
+            }
+          }
+        }
+      }
+
+      console.log('Finished syncing missed messages');
+    } catch (error) {
+      console.error('Error syncing missed messages:', error);
+    }
+  }
+
+  /**
+   * Set room sync data for tracking last message time
+   * Should be called before subscribing to a room
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {string|number} userId - User ID
+   * @param {string} lastMessageTime - ISO timestamp of last message
+   */
+  setRoomSyncData(roomId, userId, lastMessageTime) {
+    this.roomSyncData.set(roomId, {
+      userId,
+      lastMessageTime
+    });
+    console.log(`Room sync data set for room ${roomId}:`, { userId, lastMessageTime });
+  }
+
+  /**
    * Subscribe to chat room messages
    *
    * @param {string|number} roomId - Room ID to subscribe to
@@ -550,6 +682,12 @@ class ChatService {
         try {
           const messageData = JSON.parse(message.body);
           this.logApiCall('Message received', { roomId, messageId: messageData.id });
+
+          // Update last message time for sync tracking
+          const roomData = this.roomSyncData.get(roomId);
+          if (roomData && messageData.sentAt) {
+            roomData.lastMessageTime = messageData.sentAt;
+          }
 
           // Invalidate message cache for this room
           this.invalidateRoomCache(roomId);

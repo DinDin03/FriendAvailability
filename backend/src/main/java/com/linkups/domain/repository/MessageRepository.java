@@ -20,12 +20,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     Page<Message> findByChatRoomIdOrderBySentAtDesc(Long chatRoomId, Pageable pageable);
 
-    @Query("SELECT m FROM Message m " +
-            "WHERE m.chatRoomId = :chatRoomId " +
-            "ORDER BY m.sentAt DESC " +
-            "LIMIT :limit")
-    List<Message> findRecentMessagesInRoom(@Param("chatRoomId") Long chatRoomId,
+    @Query(value = "SELECT * FROM messages WHERE chat_room_id = :chatRoomId " +
+            "ORDER BY sent_at DESC LIMIT :limit", nativeQuery = true)
+    List<Message> findRecentMessagesInRoomDesc(@Param("chatRoomId") Long chatRoomId,
             @Param("limit") int limit);
+
+    default List<Message> findRecentMessagesInRoom(Long chatRoomId, int limit) {
+        List<Message> messages = findRecentMessagesInRoomDesc(chatRoomId, limit);
+        // Reverse to get chronological order (oldest first)
+        java.util.Collections.reverse(messages);
+        return messages;
+    }
 
     @Query("SELECT m FROM Message m " +
             "WHERE m.chatRoomId = :chatRoomId " +

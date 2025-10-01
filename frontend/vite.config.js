@@ -35,6 +35,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         ws: true,
         changeOrigin: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('WebSocket proxy error:', err.message);
+          });
+        },
       }
     }
   }

@@ -25,6 +25,8 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
   // Refs
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const lastMessageTimeRef = useRef(null);
 
   // State management
   const [messages, setMessages] = useState([]);
@@ -57,6 +59,45 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
   }, [messages]);
 
   /**
+   * Sync missed messages when tab becomes visible
+   */
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && roomId && userId) {
+        console.log('Tab became visible - syncing missed messages');
+        await syncMissedMessages();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [roomId, userId]);
+
+  /**
+   * Periodic polling for missed messages (fallback)
+   * Polls every 30 seconds when chat is active
+   */
+  useEffect(() => {
+    if (!roomId || !userId) return;
+
+    // Start polling interval
+    pollingIntervalRef.current = setInterval(async () => {
+      console.log('Polling for new messages...');
+      await syncMissedMessages();
+    }, 30000); // 30 seconds
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+    };
+  }, [roomId, userId]);
+
+  /**
    * Initialize chat room with full setup
    */
   const initializeChatRoom = async () => {
@@ -77,13 +118,23 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
       setMessages(loadedMessages);
       console.log('Messages loaded:', loadedMessages.length);
 
+      // Track last message time for sync
+      if (loadedMessages.length > 0) {
+        const lastMsg = loadedMessages[loadedMessages.length - 1];
+        lastMessageTimeRef.current = lastMsg.sentAt;
+        console.log('Last message time set:', lastMsg.sentAt);
+      }
+
       // 3. Initialize WebSocket if not connected
       if (!chatService.isWebSocketConnected()) {
         console.log('Initializing WebSocket...');
         await chatService.initializeWebSocket();
       }
 
-      // 4. Subscribe to room messages
+      // 4. Set room sync data for reconnection handling
+      chatService.setRoomSyncData(roomId, userId, lastMessageTimeRef.current);
+
+      // 5. Subscribe to room messages
       console.log('Subscribing to room:', roomId);
       await chatService.subscribeToRoom(roomId, handleNewMessage);
       setWsConnected(true);
@@ -113,6 +164,12 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
     if (roomId && userId) {
       console.log('Cleaning up chat room:', roomId);
 
+      // Clear polling interval
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+
       // Unsubscribe from room messages
       chatService.unsubscribeFromRoom(roomId);
 
@@ -124,24 +181,76 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
   };
 
   /**
+   * Sync missed messages
+   * Fetches messages sent after the last known message
+   */
+  const syncMissedMessages = async () => {
+    if (!lastMessageTimeRef.current) {
+      console.log('No last message time, skipping sync');
+      return;
+    }
+
+    try {
+      console.log('Syncing missed messages since:', lastMessageTimeRef.current);
+
+      const newMessages = await chatService.syncMissedMessages(
+        roomId,
+        userId,
+        lastMessageTimeRef.current
+      );
+
+      if (newMessages.length > 0) {
+        console.log(`Found ${newMessages.length} missed messages`);
+
+        // Add new messages with deduplication
+        setMessages(prev => {
+          const existingIds = new Set(prev.map(m => m.id));
+          const uniqueNewMessages = newMessages.filter(m => !existingIds.has(m.id));
+
+          if (uniqueNewMessages.length > 0) {
+            console.log(`Adding ${uniqueNewMessages.length} unique messages`);
+            // Update last message time
+            const latestMsg = uniqueNewMessages[uniqueNewMessages.length - 1];
+            if (latestMsg.sentAt) {
+              lastMessageTimeRef.current = latestMsg.sentAt;
+            }
+            return [...prev, ...uniqueNewMessages];
+          }
+
+          return prev;
+        });
+      } else {
+        console.log('No new messages found');
+      }
+    } catch (error) {
+      console.error('Failed to sync missed messages:', error);
+      // Don't show error to user - this is a background operation
+    }
+  };
+
+  /**
    * Handle new message from WebSocket
    * Handles both MessageResponseDto and SystemMessageDto
+   * Includes deduplication to prevent duplicate messages
    */
   const handleNewMessage = (message) => {
     console.log('Received new message:', message);
 
-    // Add message to array
-    setMessages(prev => [...prev, message]);
-
-    // Mark messages as read if chat is active
-    if (document.hasFocus()) {
-      // Small delay to ensure message is saved on backend
-      setTimeout(() => {
-        chatService.markMessagesAsRead(roomId, userId).catch(err => {
-          console.warn('Failed to mark messages as read:', err);
-        });
-      }, 500);
+    // Update last message time
+    if (message.sentAt) {
+      lastMessageTimeRef.current = message.sentAt;
     }
+
+    // Add message with deduplication
+    setMessages(prev => {
+      // Check if message already exists (by ID)
+      const messageExists = prev.some(m => m.id === message.id);
+      if (messageExists) {
+        console.log('Duplicate message detected, skipping:', message.id);
+        return prev;
+      }
+      return [...prev, message];
+    });
   };
 
   /**
@@ -287,9 +396,9 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
               </button>
               <div className="min-w-0">
                 <h2 className="font-semibold text-gray-900 truncate">
-                  {roomDetails?.name || roomDetails?.chatName || 'Chat'}
+                  {roomDetails?.displayName || roomDetails?.name || 'Chat'}
                 </h2>
-                {roomDetails?.participantCount && (
+                {roomDetails?.type === 'GROUP' && roomDetails?.participantCount && (
                   <p className="text-sm text-gray-600">
                     {roomDetails.participantCount} {roomDetails.participantCount === 1 ? 'participant' : 'participants'}
                   </p>

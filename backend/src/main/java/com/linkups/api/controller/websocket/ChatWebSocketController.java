@@ -66,45 +66,22 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.connectToChat")
     public void connectToChat(@Payload UserJoinDto userJoin) {
         try {
+            // Validate user can access room
             chatService.getChatRoom(userJoin.getRoomId(), userJoin.getUserId());
-
-            String userName = getSenderName(userJoin.getUserId());
-            String systemContent = userName + " joined the chat";
-
-            SystemMessageDto systemMessage = SystemMessageDto.builder()
-                .roomId(userJoin.getRoomId())
-                .content(systemContent)
-                .messageType("SYSTEM_MESSAGE")
-                .timestamp(LocalDateTime.now())
-                .build();
-            
-            String destination = "/topic/chat/" + userJoin.getRoomId();
-            messagingTemplate.convertAndSend(destination, systemMessage);
-            
+            // No system message sent - silent join
         } catch (Exception e) {
-            sendErrorToUser(userJoin.getUserId(), "USER_JOIN_FAILED", 
+            sendErrorToUser(userJoin.getUserId(), "USER_JOIN_FAILED",
                           "Failed to join chat: " + e.getMessage());
         }
     }
 
     @MessageMapping("/chat.disconnectFromChat")
-    public void disconnectFromChat(@Payload UserLeaveDto userLeave) {        
+    public void disconnectFromChat(@Payload UserLeaveDto userLeave) {
         try {
-            String userName = getSenderName(userLeave.getUserId());
-            String systemContent = userName + " left the chat";
-            
-            SystemMessageDto systemMessage = SystemMessageDto.builder()
-                .roomId(userLeave.getRoomId())
-                .content(systemContent)
-                .messageType("SYSTEM_MESSAGE")
-                .timestamp(LocalDateTime.now())
-                .build();
-            
-            String destination = "/topic/chat/" + userLeave.getRoomId();
-            messagingTemplate.convertAndSend(destination, systemMessage);
-            
+            // Silent leave - no system message sent
+            // User is just closing the chat view, not leaving the room
         } catch (Exception e) {
-            System.err.println("Error handling user temporary leave: " + e.getMessage());
+            System.err.println("Error handling user disconnect: " + e.getMessage());
         }
     }
 

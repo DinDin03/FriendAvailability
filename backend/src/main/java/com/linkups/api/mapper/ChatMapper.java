@@ -33,10 +33,20 @@ public class ChatMapper {
     public static ChatRoomResponseDTO toChatRoomResponse(ChatRoom chatRoom, Long userId, Long unreadCount) {
         if (chatRoom == null) return null;
 
+        // For private chats, get the other participant's name
+        String displayName = chatRoom.getDisplayName();
+        if (chatRoom.isPrivateChat() && chatRoom.getParticipants() != null) {
+            displayName = chatRoom.getParticipants().stream()
+                    .filter(p -> !p.getUserId().equals(userId))
+                    .findFirst()
+                    .map(ChatParticipant::getUserName)
+                    .orElse("Private Chat");
+        }
+
         return ChatRoomResponseDTO.builder()
                 .id(chatRoom.getId())
                 .name(chatRoom.getName())
-                .displayName(chatRoom.getDisplayName())
+                .displayName(displayName)
                 .type(chatRoom.getType() != null ? chatRoom.getType().toString() : "PRIVATE")
                 .createdBy(chatRoom.getCreatedBy())
                 .createdAt(chatRoom.getCreatedAt())
@@ -46,7 +56,7 @@ public class ChatMapper {
                 .build();
     }
 
-    public static ChatRoomSummaryDTO toChatRoomSummary(ChatRoom chatRoom, Long unreadCount) {
+    public static ChatRoomSummaryDTO toChatRoomSummary(ChatRoom chatRoom, Long userId, Long unreadCount) {
         if (chatRoom == null) return null;
 
         // Get last message if available
@@ -57,9 +67,19 @@ public class ChatMapper {
                     .orElse(null);
         }
 
+        // For private chats, get the other participant's name
+        String displayName = chatRoom.getDisplayName();
+        if (chatRoom.isPrivateChat() && chatRoom.getParticipants() != null) {
+            displayName = chatRoom.getParticipants().stream()
+                    .filter(p -> !p.getUserId().equals(userId))
+                    .findFirst()
+                    .map(ChatParticipant::getUserName)
+                    .orElse("Private Chat");
+        }
+
         return ChatRoomSummaryDTO.builder()
                 .id(chatRoom.getId())
-                .displayName(chatRoom.getDisplayName())
+                .displayName(displayName)
                 .type(chatRoom.getType() != null ? chatRoom.getType().toString() : "PRIVATE")
                 .participantCount(chatRoom.getParticipants() != null ? chatRoom.getParticipants().size() : 0)
                 .lastMessageAt(lastMessage != null ? lastMessage.getSentAt() : null)
@@ -82,7 +102,7 @@ public class ChatMapper {
         }
 
         List<ChatRoomSummaryDTO> summaries = page.getContent().stream()
-                .map(room -> toChatRoomSummary(room, 0L))
+                .map(room -> toChatRoomSummary(room, userId, 0L))
                 .collect(Collectors.toList());
 
         return ChatRoomListResponseDTO.builder()
@@ -95,7 +115,7 @@ public class ChatMapper {
                 .build();
     }
 
-    public static ChatRoomListResponseDTO toChatRoomListResponse(List<ChatRoom> rooms) {
+    public static ChatRoomListResponseDTO toChatRoomListResponse(List<ChatRoom> rooms, Long userId) {
         if (rooms == null || rooms.isEmpty()) {
             return ChatRoomListResponseDTO.builder()
                     .chatRooms(Collections.emptyList())
@@ -104,7 +124,7 @@ public class ChatMapper {
         }
 
         List<ChatRoomSummaryDTO> summaries = rooms.stream()
-                .map(room -> toChatRoomSummary(room, 0L))
+                .map(room -> toChatRoomSummary(room, userId, 0L))
                 .collect(Collectors.toList());
 
         return ChatRoomListResponseDTO.builder()

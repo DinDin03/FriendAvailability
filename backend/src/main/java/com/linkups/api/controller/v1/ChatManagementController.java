@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -46,7 +47,7 @@ public class ChatManagementController {
             log.info("Retrieved {} chat rooms (paginated) for user {}", chatRoomsPage.getContent().size(), userId);
         } else {
             List<ChatRoom> chatRooms = chatService.getUserChatRooms(userId);
-            response = ChatMapper.toChatRoomListResponse(chatRooms);
+            response = ChatMapper.toChatRoomListResponse(chatRooms, userId);
             log.info("Retrieved {} chat rooms for user {}", chatRooms.size(), userId);
         }
         return ResponseEntity.ok(response);
@@ -153,6 +154,24 @@ public class ChatManagementController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/rooms/{roomId}/messages/after")
+    public ResponseEntity<MessageListResponseDTO> getMessagesAfter(@PathVariable Long roomId,
+                                                                     @RequestParam Long userId,
+                                                                     @RequestParam String afterTime) {
+        log.info("Getting messages after {} from room {} for user {}", afterTime, roomId, userId);
+
+        try {
+            LocalDateTime afterDateTime = LocalDateTime.parse(afterTime);
+            List<Message> messages = messageService.getMessagesAfterTime(userId, roomId, afterDateTime);
+            MessageListResponseDTO response = MessageMapper.toMessageListResponse(messages);
+
+            log.info("Retrieved {} messages after {} from room {}", messages.size(), afterTime, roomId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error parsing afterTime parameter: {}", afterTime, e);
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
     @GetMapping("/rooms/{roomId}/messages/unread")
     public ResponseEntity<MessageListResponseDTO> getUnreadMessages(@PathVariable Long roomId, @RequestParam Long userId) {
