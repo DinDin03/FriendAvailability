@@ -409,21 +409,6 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
                 )}
               </div>
             </div>
-
-            {/* Connection Status */}
-            <div className="flex items-center space-x-2">
-              {wsConnected ? (
-                <>
-                  <Wifi className="w-4 h-4 text-green-600" />
-                  <span className="text-xs text-green-600 hidden sm:inline">Connected</span>
-                </>
-              ) : (
-                <>
-                  <WifiOff className="w-4 h-4 text-red-600" />
-                  <span className="text-xs text-red-600 hidden sm:inline">Disconnected</span>
-                </>
-              )}
-            </div>
           </div>
         </div>
       </header>
