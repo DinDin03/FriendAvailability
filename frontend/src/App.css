@@ -37,6 +37,18 @@
   --color-primary-foreground: hsl(var(--primary-foreground));
 
   --color-card: hsl(var(--card));
+  
+    @keyframes bounce {
+        0%,
+        100% {
+            transform: translateY(0px);
+            animation-timing-function: ease-in-out;
+        }
+        50% {
+            transform: translateY(-10px);
+            animation-timing-function: ease-in-out;
+        }
+    }
 }
 
 @layer base {

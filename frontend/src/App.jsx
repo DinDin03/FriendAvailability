@@ -1,12 +1,14 @@
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Home } from "./pages/Home";
-import { Dashboard } from './pages/Dashboard';
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { ALTDashboard } from './pages/ALTDashboard';
 import { Toaster } from 'react-hot-toast';
 import './App.css'
+
+{ /* Pages */ }
+import { Home } from "./pages/Home";
 import { NotFound } from "@/pages/NotFound";
+import { ALTDashboard } from './pages/ALTDashboard';
+import { Dashboard } from './pages/Dashboard';
 
 function App() {
   return (

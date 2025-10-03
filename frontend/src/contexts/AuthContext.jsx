@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authService } from '../services/authService';
+import { authService } from '@/services/authService';
+import { LoadingScreen } from '@/pages/LoadingScreen';
 
 const AuthContext = createContext();
 
@@ -73,6 +74,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     return <AuthContext.Provider value={value}>
-                {children}
+                {isLoading ? <LoadingScreen/> : children}
             </AuthContext.Provider>;
     };

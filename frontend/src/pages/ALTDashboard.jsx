@@ -33,10 +33,10 @@ export const ALTDashboard = () => {
         <>
             <DashboardNav />
             <main className="h-screen flex bg-gray-50/75 divide-x-2 divide-solid divide-gray-300/30">
-                <div className='w-[28%]'>
+                <div className='w-[25%]'>
                     <Circles/>
                 </div>
-                <div className='w-[44%] flex flex-col h-full divide-y-2 divide-gray-300/30'>
+                <div className='w-[50%] flex flex-col h-full divide-y-2 divide-gray-300/30'>
                     <div className='flex-[8.5]'>
                         <FriendsCalendar/>
                     </div>
@@ -45,7 +45,7 @@ export const ALTDashboard = () => {
                         <Availability/>
                     </div>
                 </div>
-                <div className='w-[28%]'>
+                <div className='w-[25%]'>
                     <Profile/>
                 </div>
             </main>
