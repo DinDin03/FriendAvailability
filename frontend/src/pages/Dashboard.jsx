@@ -2,21 +2,25 @@ import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, MessageCircle, Settings, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 export const Dashboard = () => {
-    const { user, logout, isAuthenticated, isLoading } = useAuth();
+    const { user, logout, isLoading } = useAuth();
     const navigate = useNavigate();
 
     if (isLoading) {
         return <div className='p-8'>Loading...</div>;
     }
 
+    useEffect(() => {
+        if (!user) navigate("/");
+    }, [user, navigate]);
+
     const handleLogout = async () => {
         try {
             await logout();
             toast.success("Logged out successfully!")
-            navigate("/");
         } catch (error) {
             console.error('Logout failed:', error);
         }

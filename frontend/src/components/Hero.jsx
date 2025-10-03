@@ -15,10 +15,6 @@ import herobackground from "@/assets/herobackground.png"
 export const Hero = () => {
     const navigate = useNavigate();
 
-    const handleGoogleLogin = () => {
-        window.location.href = authService.getGoogleLoginUrl();
-    }
-
     const googleLogin = useGoogleLogin({    
         onSuccess: (credentialResponse) => {
             console.log(credentialResponse);

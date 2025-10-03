@@ -20,6 +20,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const initializeAuth = async () => {
         try {
+            setIsLoading(true);
             // Ask authService to restore state from localStorage
             authService.initializeAuth();
 
@@ -72,6 +73,6 @@ export const AuthProvider = ({ children }) => {
     };
 
     return <AuthContext.Provider value={value}>
-                {isLoading ? <div className="p-8">Loading auth...</div> : children}
+                {children}
             </AuthContext.Provider>;
     };

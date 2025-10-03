@@ -81,7 +81,6 @@ export const useSignupForm = () => {
                 confirmPassword: ''
             });
             
-            // You could show a success message here
             
             } catch (error) {
                 // Handle error

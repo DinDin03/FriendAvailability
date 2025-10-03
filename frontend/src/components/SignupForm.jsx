@@ -22,6 +22,7 @@ export const SignupForm = ({ onClose }) => {
                 navigate("/dashboard");
             }
         } catch (error) {
+            console.log('Google sign-in failed, ', error)
             toast.error(error.message || "Google sign-in failed.")
         }
     } 
