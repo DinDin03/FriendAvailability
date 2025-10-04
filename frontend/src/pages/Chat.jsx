@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MessageCircle, Users, User, RefreshCw, ArrowLeft, AlertCircle, UserPlus, Loader } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { chatService } from '../services/chatService';
@@ -20,6 +20,7 @@ import toast from 'react-hot-toast';
  */
 export const Chat = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
 
   // State management
   const [chatRooms, setChatRooms] = useState([]);
@@ -31,6 +32,14 @@ export const Chat = () => {
   // Create new chat state
   const [targetUserId, setTargetUserId] = useState('');
   const [isCreatingChat, setIsCreatingChat] = useState(false);
+
+  // Check for roomId in URL params (when navigating from friends list)
+  useEffect(() => {
+    const roomIdFromUrl = searchParams.get('roomId');
+    if (roomIdFromUrl) {
+      setSelectedRoomId(Number(roomIdFromUrl));
+    }
+  }, [searchParams]);
 
   /**
    * Load chat rooms from the backend
