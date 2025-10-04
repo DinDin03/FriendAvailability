@@ -14,16 +14,16 @@ class AuthService {
         password
       });
 
-      if (response.success) {
-        this.currentUser = response.user;
+      if (response.success && response.userDto) {
+        this.currentUser = response.userDto;
         this.isAuthenticated = true;
 
         // Store user data in localStorage for persistence
-        localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('user', JSON.stringify(response.userDto));
         localStorage.setItem('isAuthenticated', 'true');
 
-        console.log('Login successful:', response.user);
-        return response;
+        console.log('Login successful:', response.userDto);
+        return response.userDto;
       }
 
       throw new Error(response.message || 'Login failed');

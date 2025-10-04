@@ -6,8 +6,8 @@ import { SignupForm } from '@/components/SignupForm.jsx';
 import { LoginForm } from '@/components/LoginForm.jsx'
 
 const navItems = [
-    {name: "Log In", href: "/login"},
-    {name: "Sign Up", href: "/signup"},
+    {name: "Log In", action: "login"},
+    {name: "Sign Up", action: "signup"},
 ];
 
 export const Navbar = () => {
@@ -26,7 +26,7 @@ export const Navbar = () => {
     }, []);
 
     useEffect(() => {
-        if (isSignUpOpen) {
+        if (isSignUpOpen || isLoginOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
@@ -35,7 +35,7 @@ export const Navbar = () => {
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isSignUpOpen]);
+    }, [isSignUpOpen, isLoginOpen]);
 
     return (
         <>
@@ -112,25 +112,31 @@ export const Navbar = () => {
                         {isMenuOpen ? <X size={24} className="text-primary"/> : <Menu size={24} className="text-primary"/>}
                     </button>
 
-                    <div 
+                    <div
                         className={cn(
                             "fixed inset-0 bg-background/95 backdrop-blur-md z-40 flex flex-col items-center justify-center",
                             "transition-all duration-300 md:hidden",
-                            isMenuOpen 
-                                ? "opacity-100 pointer-events-auto" 
+                            isMenuOpen
+                                ? "opacity-100 pointer-events-auto"
                                 : "opacity-0 pointer-events-none"
                         )}
                     >
                         <div className="flex flex-col space-y-8 text-xl">
                             {navItems.map((item, key) => (
-                                <a 
-                                    key={key} 
-                                    href={item.href} 
+                                <button
+                                    key={key}
                                     className="text-foreground text-2xl hover:text-primary transition-colors duration-300"
-                                    onClick={() => setIsMenuOpen(false)}
+                                    onClick={() => {
+                                        setIsMenuOpen(false);
+                                        if (item.action === "login") {
+                                            setIsLoginOpen(true);
+                                        } else if (item.action === "signup") {
+                                            setIsSignUpOpen(true);
+                                        }
+                                    }}
                                 >
                                     {item.name}
-                                </a>
+                                </button>
                             ))}
                         </div>
                     </div>

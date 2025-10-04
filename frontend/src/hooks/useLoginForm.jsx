@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/authService.js";
 import toast from "react-hot-toast";
 
 export const useLoginForm = () => {
-    
+
     const navigate = useNavigate();
+    const { updateUser } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -20,7 +22,7 @@ export const useLoginForm = () => {
         }));
 
         if (errors[field]) {
-            setFormData(prev => ({
+            setErrors(prev => ({
                 ...prev,
                 [field]: null
             }));
@@ -44,11 +46,11 @@ export const useLoginForm = () => {
         setIsSubmitting(true);
 
         try {
-            const result = await toast.promise(
+            const userData = await toast.promise(
                 authService.login(formData.email, formData.password),
                 {
                     loading: "Logging in...",
-                    success: "Welcome back!",
+                    success: (data) => `Welcome back, ${data.name.split(' ')[0]}!`,
                     error: "Login failed",
                 },
                 {
@@ -59,9 +61,14 @@ export const useLoginForm = () => {
                 }
             );
 
-            console.log("Login success", result);
+            console.log("Login success", userData);
+
+            // Update AuthContext with the logged-in user
+            updateUser(userData);
+
+            // Navigate to dashboard
             navigate("/dashboard", { replace: true });
-                        
+
         } catch (error) {
             console.error("Login error:", error);
             setErrors({ submit: error.message });

@@ -99,7 +99,10 @@ export const API_ENDPOINTS = {
     ACCEPT: (requestId, userId) => `/friends/${requestId}/accept?userId=${userId}`,
     REJECT: (requestId, userId) => `/friends/${requestId}/reject?userId=${userId}`,
     REMOVE: '/friends/remove',
-    REMOVE_ALL: (userId) => `/friends/${userId}/all`
+    REMOVE_ALL: (userId) => `/friends/${userId}/all`,
+    MUTUAL: (userId1, userId2) => `/friends/mutual/${userId1}/${userId2}`,
+    CHECK: '/friends/check',
+    STATS: (userId) => `/friends/${userId}/stats`
   },
   CALENDAR: {
     AVAILABILITY: (userId) => `/calendar/${userId}/availability`,
@@ -110,12 +113,22 @@ export const API_ENDPOINTS = {
     SYNC_GOOGLE: '/calendar/sync/google'
   },
   CHAT: {
+    // Chat Room Management
     ROOMS: '/chat/rooms',
-    CREATE_ROOM: '/chat/rooms',
-    JOIN_ROOM: (roomId) => `/chat/rooms/${roomId}/join`,
-    LEAVE_ROOM: (roomId) => `/chat/rooms/${roomId}/leave`,
-    MESSAGES: (roomId) => `/chat/rooms/${roomId}/messages`,
-    SEND_MESSAGE: (roomId) => `/chat/rooms/${roomId}/messages`
+    USER_ROOMS: (userId) => `/chat/rooms?userId=${userId}`,
+    ROOM_DETAILS: (roomId, userId) => `/chat/rooms/${roomId}?userId=${userId}`,
+    CREATE_PRIVATE_CHAT: '/chat/rooms/private',
+    CREATE_GROUP_CHAT: '/chat/rooms/group',
+    ROOM_PARTICIPANTS: (roomId, userId) => `/chat/rooms/${roomId}/participants?userId=${userId}`,
+    ADD_PARTICIPANT: (roomId) => `/chat/rooms/${roomId}/participants`,
+    REMOVE_PARTICIPANT: (roomId, userId) => `/chat/rooms/${roomId}/participants/${userId}`,
+
+    // Message Management
+    MESSAGES: (roomId, userId) => `/chat/rooms/${roomId}/messages?userId=${userId}`,
+    RECENT_MESSAGES: (roomId, userId, limit = 50) => `/chat/rooms/${roomId}/messages/recent?userId=${userId}&limit=${limit}`,
+    UNREAD_MESSAGES: (roomId, userId) => `/chat/rooms/${roomId}/messages/unread?userId=${userId}`,
+    MARK_READ: (roomId, userId) => `/chat/rooms/${roomId}/messages/mark-read?userId=${userId}`,
+    SEARCH_MESSAGES: (roomId, userId, searchTerm) => `/chat/messages/search?roomId=${roomId}&userId=${userId}&searchTerm=${encodeURIComponent(searchTerm)}`
   },
   CIRCLES: {
     BASE: '/circles',
@@ -124,5 +137,11 @@ export const API_ENDPOINTS = {
     JOIN: (circleId) => `/circles/${circleId}/join`,
     LEAVE: (circleId) => `/circles/${circleId}/leave`,
     MEMBERS: (circleId) => `/circles/${circleId}/members`
+  },
+  ACTIVITIES: {
+    FEED: (userId) => `/activities/${userId}/feed`,
+    FRIENDS: (userId) => `/friends/${userId}/activities`,
+    MARK_READ: (activityId) => `/activities/${activityId}/read`,
+    STATS: (userId) => `/activities/${userId}/stats`
   }
 };
