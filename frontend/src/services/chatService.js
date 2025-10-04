@@ -1,5 +1,6 @@
 import { api, API_ENDPOINTS } from './api.js';
 import { Client } from '@stomp/stompjs';
+import '../types/chatTypes.js';
 
 /**
  * Chat Service - Comprehensive chat and real-time messaging management
@@ -11,9 +12,10 @@ import { Client } from '@stomp/stompjs';
  * Features:
  * - Chat room management (create, list, get details)
  * - Message operations (send, receive, history, unread counts)
- * - Real-time WebSocket messaging via STOMP over SockJS
+ * - Real-time WebSocket messaging via STOMP over native WebSocket
  * - Automatic reconnection with exponential backoff
  * - Room subscription management
+ * - Typing indicators and read receipts
  * - Performance optimization with caching
  * - Comprehensive error handling and logging
  *
@@ -42,6 +44,18 @@ class ChatService {
     this.messageCallbacks = new Map(); // roomId -> callback function
     this.roomSyncData = new Map(); // roomId -> { userId, lastMessageTime }
 
+    // Typing indicator subscriptions
+    this.typingSubscriptions = new Map(); // roomId -> subscription object
+    this.typingCallbacks = new Map(); // roomId -> callback function
+
+    // Read receipt subscriptions
+    this.readReceiptSubscriptions = new Map(); // roomId -> subscription object
+    this.readReceiptCallbacks = new Map(); // roomId -> callback function
+
+    // Error message subscription
+    this.errorSubscription = null;
+    this.errorCallback = null;
+
     // Connection event handlers
     this.onConnectCallbacks = [];
     this.onDisconnectCallbacks = [];
@@ -59,7 +73,7 @@ class ChatService {
    * @param {Object} options - Pagination options
    * @param {number} options.page - Page number (default: 0)
    * @param {number} options.size - Page size (default: 10, 0 for all)
-   * @returns {Promise<Object>} Chat rooms list with metadata
+   * @returns {Promise<ChatRoomListResponseDTO>} Chat rooms list with metadata
    */
   async getUserChatRooms(userId, options = {}) {
     try {
@@ -105,7 +119,7 @@ class ChatService {
    *
    * @param {string|number} roomId - Room ID
    * @param {string|number} userId - Current user ID
-   * @returns {Promise<Object>} Chat room details
+   * @returns {Promise<ChatRoomResponseDTO>} Chat room details
    */
   async getChatRoomDetails(roomId, userId) {
     try {
@@ -137,7 +151,7 @@ class ChatService {
    * @param {string|number} userId - Current user ID
    * @param {number} page - Page number (default: 0)
    * @param {number} size - Page size (default: 20)
-   * @returns {Promise<Object>} Message history with pagination metadata
+   * @returns {Promise<MessageListResponseDTO>} Message history with pagination metadata
    */
   async getMessageHistory(roomId, userId, page = 0, size = 20) {
     try {
@@ -180,7 +194,7 @@ class ChatService {
    * @param {string|number} roomId - Room ID
    * @param {string|number} userId - Current user ID
    * @param {number} limit - Number of recent messages (default: 50)
-   * @returns {Promise<Object>} Recent messages
+   * @returns {Promise<MessageListResponseDTO>} Recent messages
    */
   async getRecentMessages(roomId, userId, limit = 50) {
     try {
@@ -274,8 +288,7 @@ class ChatService {
     try {
       this.logApiCall('getMessagesAfter', { roomId, userId, afterTime });
 
-      // Backend endpoint: GET /api/chat/rooms/{roomId}/messages/after?userId={userId}&afterTime={afterTime}
-      const response = await api.get(`/chat/rooms/${roomId}/messages/after?userId=${userId}&afterTime=${encodeURIComponent(afterTime)}`);
+      const response = await api.get(API_ENDPOINTS.CHAT.MESSAGES_AFTER(roomId, userId, afterTime));
 
       this.logApiCall('getMessagesAfter - success', { roomId, userId, count: response?.messages?.length || 0 });
       return response;
@@ -683,6 +696,11 @@ class ChatService {
           const messageData = JSON.parse(message.body);
           this.logApiCall('Message received', { roomId, messageId: messageData.id });
 
+          // Normalize timestamp field: backend sends 'sentAt' for messages and 'timestamp' for system messages
+          if (messageData.timestamp && !messageData.sentAt) {
+            messageData.sentAt = messageData.timestamp;
+          }
+
           // Update last message time for sync tracking
           const roomData = this.roomSyncData.get(roomId);
           if (roomData && messageData.sentAt) {
@@ -847,6 +865,267 @@ class ChatService {
   }
 
   /**
+   * Subscribe to typing indicators for a room
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {Function} onTyping - Callback for typing events
+   * @returns {Promise<void>}
+   */
+  async subscribeToTypingIndicators(roomId, onTyping) {
+    try {
+      if (!this.isConnected) {
+        await this.initializeWebSocket();
+      }
+
+      if (this.typingSubscriptions.has(roomId)) {
+        this.typingCallbacks.set(roomId, onTyping);
+        return;
+      }
+
+      this.logApiCall('subscribeToTypingIndicators', { roomId });
+
+      const destination = `/topic/chat/${roomId}/typing`;
+
+      const subscription = this.stompClient.subscribe(destination, (message) => {
+        try {
+          const typingData = JSON.parse(message.body);
+          this.logApiCall('Typing indicator received', { roomId, userId: typingData.userId });
+
+          const callback = this.typingCallbacks.get(roomId);
+          if (callback) {
+            callback(typingData);
+          }
+        } catch (error) {
+          console.error('Error processing typing indicator:', error);
+        }
+      });
+
+      this.typingSubscriptions.set(roomId, subscription);
+      this.typingCallbacks.set(roomId, onTyping);
+
+      this.logApiCall('subscribeToTypingIndicators - success', { roomId });
+
+    } catch (error) {
+      this.logApiCall('subscribeToTypingIndicators - error', { roomId, error: error.message });
+      console.error('Failed to subscribe to typing indicators:', error);
+    }
+  }
+
+  /**
+   * Unsubscribe from typing indicators for a room
+   *
+   * @param {string|number} roomId - Room ID
+   */
+  unsubscribeFromTypingIndicators(roomId) {
+    try {
+      const subscription = this.typingSubscriptions.get(roomId);
+      if (subscription) {
+        subscription.unsubscribe();
+        this.typingSubscriptions.delete(roomId);
+        this.typingCallbacks.delete(roomId);
+        this.logApiCall('unsubscribeFromTypingIndicators - success', { roomId });
+      }
+    } catch (error) {
+      console.error('Error unsubscribing from typing indicators:', error);
+    }
+  }
+
+  /**
+   * Send typing indicator to a room
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {string|number} userId - User ID
+   * @param {boolean} isTyping - Whether user is typing
+   * @returns {boolean} Success status
+   */
+  sendTypingIndicator(roomId, userId, isTyping) {
+    try {
+      if (!this.isConnected) {
+        return false;
+      }
+
+      this.logApiCall('sendTypingIndicator', { roomId, userId, isTyping });
+
+      const payload = {
+        roomId,
+        userId,
+        isTyping
+      };
+
+      this.stompClient.publish({
+        destination: '/app/chat.typing',
+        body: JSON.stringify(payload)
+      });
+
+      return true;
+
+    } catch (error) {
+      console.error('Failed to send typing indicator:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Subscribe to read receipts for a room
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {Function} onReadReceipt - Callback for read receipt events
+   * @returns {Promise<void>}
+   */
+  async subscribeToReadReceipts(roomId, onReadReceipt) {
+    try {
+      if (!this.isConnected) {
+        await this.initializeWebSocket();
+      }
+
+      if (this.readReceiptSubscriptions.has(roomId)) {
+        this.readReceiptCallbacks.set(roomId, onReadReceipt);
+        return;
+      }
+
+      this.logApiCall('subscribeToReadReceipts', { roomId });
+
+      const destination = `/topic/chat/${roomId}/read`;
+
+      const subscription = this.stompClient.subscribe(destination, (message) => {
+        try {
+          const readData = JSON.parse(message.body);
+          this.logApiCall('Read receipt received', { roomId, userId: readData.userId });
+
+          const callback = this.readReceiptCallbacks.get(roomId);
+          if (callback) {
+            callback(readData);
+          }
+        } catch (error) {
+          console.error('Error processing read receipt:', error);
+        }
+      });
+
+      this.readReceiptSubscriptions.set(roomId, subscription);
+      this.readReceiptCallbacks.set(roomId, onReadReceipt);
+
+      this.logApiCall('subscribeToReadReceipts - success', { roomId });
+
+    } catch (error) {
+      this.logApiCall('subscribeToReadReceipts - error', { roomId, error: error.message });
+      console.error('Failed to subscribe to read receipts:', error);
+    }
+  }
+
+  /**
+   * Unsubscribe from read receipts for a room
+   *
+   * @param {string|number} roomId - Room ID
+   */
+  unsubscribeFromReadReceipts(roomId) {
+    try {
+      const subscription = this.readReceiptSubscriptions.get(roomId);
+      if (subscription) {
+        subscription.unsubscribe();
+        this.readReceiptSubscriptions.delete(roomId);
+        this.readReceiptCallbacks.delete(roomId);
+        this.logApiCall('unsubscribeFromReadReceipts - success', { roomId });
+      }
+    } catch (error) {
+      console.error('Error unsubscribing from read receipts:', error);
+    }
+  }
+
+  /**
+   * Send read receipt via WebSocket
+   *
+   * @param {string|number} roomId - Room ID
+   * @param {string|number} userId - User ID
+   * @returns {boolean} Success status
+   */
+  sendReadReceipt(roomId, userId) {
+    try {
+      if (!this.isConnected) {
+        return false;
+      }
+
+      this.logApiCall('sendReadReceipt', { roomId, userId });
+
+      const payload = {
+        roomId,
+        userId
+      };
+
+      this.stompClient.publish({
+        destination: '/app/chat.markAsRead',
+        body: JSON.stringify(payload)
+      });
+
+      return true;
+
+    } catch (error) {
+      console.error('Failed to send read receipt:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Subscribe to error messages for the current user
+   *
+   * @param {string|number} userId - User ID
+   * @param {Function} onError - Callback for error messages
+   * @returns {Promise<void>}
+   */
+  async subscribeToErrors(userId, onError) {
+    try {
+      if (!this.isConnected) {
+        await this.initializeWebSocket();
+      }
+
+      if (this.errorSubscription) {
+        this.errorCallback = onError;
+        return;
+      }
+
+      this.logApiCall('subscribeToErrors', { userId });
+
+      const destination = `/user/${userId}/queue/errors`;
+
+      this.errorSubscription = this.stompClient.subscribe(destination, (message) => {
+        try {
+          const errorData = JSON.parse(message.body);
+          this.logApiCall('Error message received', { errorCode: errorData.errorCode });
+
+          if (this.errorCallback) {
+            this.errorCallback(errorData);
+          }
+        } catch (error) {
+          console.error('Error processing error message:', error);
+        }
+      });
+
+      this.errorCallback = onError;
+
+      this.logApiCall('subscribeToErrors - success', { userId });
+
+    } catch (error) {
+      this.logApiCall('subscribeToErrors - error', { userId, error: error.message });
+      console.error('Failed to subscribe to errors:', error);
+    }
+  }
+
+  /**
+   * Unsubscribe from error messages
+   */
+  unsubscribeFromErrors() {
+    try {
+      if (this.errorSubscription) {
+        this.errorSubscription.unsubscribe();
+        this.errorSubscription = null;
+        this.errorCallback = null;
+        this.logApiCall('unsubscribeFromErrors - success');
+      }
+    } catch (error) {
+      console.error('Error unsubscribing from errors:', error);
+    }
+  }
+
+  /**
    * Disconnect WebSocket connection
    */
   async disconnectWebSocket() {
@@ -858,8 +1137,29 @@ class ChatService {
         subscription.unsubscribe();
       });
 
+      // Unsubscribe from typing indicators
+      this.typingSubscriptions.forEach((subscription, roomId) => {
+        subscription.unsubscribe();
+      });
+
+      // Unsubscribe from read receipts
+      this.readReceiptSubscriptions.forEach((subscription, roomId) => {
+        subscription.unsubscribe();
+      });
+
+      // Unsubscribe from errors
+      if (this.errorSubscription) {
+        this.errorSubscription.unsubscribe();
+      }
+
       this.activeSubscriptions.clear();
       this.messageCallbacks.clear();
+      this.typingSubscriptions.clear();
+      this.typingCallbacks.clear();
+      this.readReceiptSubscriptions.clear();
+      this.readReceiptCallbacks.clear();
+      this.errorSubscription = null;
+      this.errorCallback = null;
 
       // Deactivate STOMP client
       if (this.stompClient) {

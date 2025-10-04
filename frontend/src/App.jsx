@@ -9,6 +9,7 @@ import { Home } from "./pages/Home";
 import { NotFound } from "@/pages/NotFound";
 import { ALTDashboard } from './pages/ALTDashboard';
 import { Dashboard } from './pages/Dashboard';
+import { Chat } from './pages/Chat';
 
 function App() {
   return (
@@ -24,7 +25,7 @@ function App() {
             { /* protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard/*" element={<ALTDashboard/>}/>
-              
+              <Route path="/chat" element={<Chat/>}/>
             </Route>
           </Routes>
         </BrowserRouter>

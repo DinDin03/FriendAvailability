@@ -37,6 +37,12 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
   const [wsConnected, setWsConnected] = useState(false);
   const [error, setError] = useState(null);
 
+  // Typing indicators state
+  const [typingUsers, setTypingUsers] = useState(new Map()); // userId -> { userName, timestamp }
+  const typingTimeoutRef = useRef(new Map()); // userId -> timeout ID
+  const isTypingRef = useRef(false);
+  const typingDebounceRef = useRef(null);
+
   /**
    * Initialize chat room on mount
    */
@@ -143,11 +149,23 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
       await chatService.subscribeToRoom(roomId, handleNewMessage);
       setWsConnected(true);
 
-      // 5. Send join notification
+      // 6. Subscribe to typing indicators
+      console.log('Subscribing to typing indicators...');
+      await chatService.subscribeToTypingIndicators(roomId, handleTypingIndicator);
+
+      // 7. Subscribe to read receipts
+      console.log('Subscribing to read receipts...');
+      await chatService.subscribeToReadReceipts(roomId, handleReadReceipt);
+
+      // 8. Subscribe to error messages
+      console.log('Subscribing to error messages...');
+      await chatService.subscribeToErrors(userId, handleErrorMessage);
+
+      // 9. Send join notification
       console.log('Sending join notification...');
       chatService.joinRoom(roomId, userId);
 
-      // 6. Mark messages as read
+      // 10. Mark messages as read
       await chatService.markMessagesAsRead(roomId, userId);
 
       console.log('Chat room initialized successfully');
@@ -174,8 +192,27 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
         pollingIntervalRef.current = null;
       }
 
+      // Clear typing debounce timeout
+      if (typingDebounceRef.current) {
+        clearTimeout(typingDebounceRef.current);
+        typingDebounceRef.current = null;
+      }
+
+      // Clear all typing timeouts
+      typingTimeoutRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      typingTimeoutRef.current.clear();
+
       // Unsubscribe from room messages
       chatService.unsubscribeFromRoom(roomId);
+
+      // Unsubscribe from typing indicators
+      chatService.unsubscribeFromTypingIndicators(roomId);
+
+      // Unsubscribe from read receipts
+      chatService.unsubscribeFromReadReceipts(roomId);
+
+      // Unsubscribe from errors
+      chatService.unsubscribeFromErrors();
 
       // Send leave notification
       chatService.leaveRoom(roomId, userId);
@@ -258,6 +295,113 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
   };
 
   /**
+   * Handle typing indicator from WebSocket
+   */
+  const handleTypingIndicator = (typingData) => {
+    // Ignore own typing indicators
+    if (typingData.userId === userId) {
+      return;
+    }
+
+    console.log('Typing indicator received:', typingData);
+
+    if (typingData.isTyping) {
+      // User started typing
+      setTypingUsers(prev => {
+        const updated = new Map(prev);
+        updated.set(typingData.userId, {
+          userName: typingData.userName,
+          timestamp: Date.now()
+        });
+        return updated;
+      });
+
+      // Clear existing timeout for this user
+      const existingTimeout = typingTimeoutRef.current.get(typingData.userId);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+      }
+
+      // Set timeout to remove typing indicator after 3 seconds
+      const timeoutId = setTimeout(() => {
+        setTypingUsers(prev => {
+          const updated = new Map(prev);
+          updated.delete(typingData.userId);
+          return updated;
+        });
+        typingTimeoutRef.current.delete(typingData.userId);
+      }, 3000);
+
+      typingTimeoutRef.current.set(typingData.userId, timeoutId);
+    } else {
+      // User stopped typing
+      setTypingUsers(prev => {
+        const updated = new Map(prev);
+        updated.delete(typingData.userId);
+        return updated;
+      });
+
+      // Clear timeout
+      const existingTimeout = typingTimeoutRef.current.get(typingData.userId);
+      if (existingTimeout) {
+        clearTimeout(existingTimeout);
+        typingTimeoutRef.current.delete(typingData.userId);
+      }
+    }
+  };
+
+  /**
+   * Handle read receipt from WebSocket
+   */
+  const handleReadReceipt = (readData) => {
+    console.log('Read receipt received:', readData);
+    // You can use this to show read indicators on messages
+    // For now, we'll just log it
+  };
+
+  /**
+   * Handle error message from WebSocket
+   */
+  const handleErrorMessage = (errorData) => {
+    console.error('WebSocket error received:', errorData);
+    toast.error(errorData.error || 'An error occurred in chat');
+  };
+
+  /**
+   * Send typing indicator (debounced)
+   */
+  const sendTypingIndicator = (typing) => {
+    if (!wsConnected) return;
+
+    // Clear existing debounce timeout
+    if (typingDebounceRef.current) {
+      clearTimeout(typingDebounceRef.current);
+    }
+
+    if (typing) {
+      // Only send if not already typing
+      if (!isTypingRef.current) {
+        chatService.sendTypingIndicator(roomId, userId, true);
+        isTypingRef.current = true;
+      }
+
+      // Set timeout to send "stopped typing" after 2 seconds of inactivity
+      typingDebounceRef.current = setTimeout(() => {
+        if (isTypingRef.current) {
+          chatService.sendTypingIndicator(roomId, userId, false);
+          isTypingRef.current = false;
+        }
+      }, 2000);
+    } else {
+      // User stopped typing
+      if (isTypingRef.current) {
+        chatService.sendTypingIndicator(roomId, userId, false);
+        isTypingRef.current = false;
+      }
+    }
+  };
+
+  /**
    * Handle sending a message
    */
   const handleSendMessage = async () => {
@@ -281,6 +425,9 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
 
       // Send via WebSocket
       chatService.sendMessage(roomId, userId, messageContent);
+
+      // Stop typing indicator
+      sendTypingIndicator(false);
 
       // Clear input immediately
       setNewMessage('');
@@ -442,39 +589,58 @@ export const ChatRoom = ({ roomId, userId, onBack }) => {
 
       {/* Message Input - Fixed */}
       <footer className="bg-white border-t p-4">
-        <div className="max-w-4xl mx-auto flex items-end space-x-2">
-          <textarea
-            ref={messageInputRef}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            rows={1}
-            disabled={!wsConnected}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 resize-none disabled:opacity-50 disabled:cursor-not-allowed max-h-32"
-            style={{ minHeight: '42px' }}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim() || isSending || !wsConnected}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 h-[42px]"
-            title={!wsConnected ? 'Not connected' : 'Send message (Enter)'}
-          >
-            {isSending ? (
-              <Loader className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-            <span className="hidden sm:inline">Send</span>
-          </button>
-        </div>
-        {!wsConnected && (
-          <div className="max-w-4xl mx-auto mt-2">
-            <p className="text-xs text-red-600 text-center">
-              Disconnected from chat. Messages cannot be sent.
-            </p>
+        <div className="max-w-4xl mx-auto">
+          {/* Typing Indicators */}
+          {typingUsers.size > 0 && (
+            <div className="mb-2 text-sm text-gray-500 italic">
+              {Array.from(typingUsers.values()).map((user, index) => (
+                <span key={index}>
+                  {user.userName}
+                  {index < typingUsers.size - 1 && ', '}
+                </span>
+              ))}
+              {typingUsers.size === 1 ? ' is typing...' : ' are typing...'}
+            </div>
+          )}
+
+          <div className="flex items-end space-x-2">
+            <textarea
+              ref={messageInputRef}
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                sendTypingIndicator(e.target.value.length > 0);
+              }}
+              onKeyPress={handleKeyPress}
+              onBlur={() => sendTypingIndicator(false)}
+              placeholder="Type a message..."
+              rows={1}
+              disabled={!wsConnected}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 resize-none disabled:opacity-50 disabled:cursor-not-allowed max-h-32"
+              style={{ minHeight: '42px' }}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim() || isSending || !wsConnected}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2 h-[42px]"
+              title={!wsConnected ? 'Not connected' : 'Send message (Enter)'}
+            >
+              {isSending ? (
+                <Loader className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+              <span className="hidden sm:inline">Send</span>
+            </button>
           </div>
-        )}
+          {!wsConnected && (
+            <div className="mt-2">
+              <p className="text-xs text-red-600 text-center">
+                Disconnected from chat. Messages cannot be sent.
+              </p>
+            </div>
+          )}
+        </div>
       </footer>
     </div>
   );

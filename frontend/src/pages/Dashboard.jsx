@@ -44,6 +44,14 @@ export const Dashboard = () => {
                                 </div>
                                 <span className="text-gray-700 font-medium">{user?.name}</span>
                             </div>
+                            <Link
+                                to="/chat"
+                                className="flex items-center space-x-1 text-purple-600 hover:text-purple-700 transition-colors"
+                                title="Messages"
+                            >
+                                <MessageCircle className="w-5 h-5" />
+                                <span className="hidden sm:inline">Messages</span>
+                            </Link>
                             <button
                                 onClick={handleLogout}
                                 className="flex items-center space-x-1 text-gray-600 hover:text-gray-900 transition-colors"

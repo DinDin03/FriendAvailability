@@ -1,17 +1,20 @@
 import {cn} from '@/lib/utils'
 import Logo from '@/assets/logo.png'
-import { Menu, X, Search, LogOut } from 'lucide-react';
+import { Menu, X, Search, LogOut, MessageCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { chatService } from '@/services/chatService';
 
 const navItems = [
+    { name: "Messages", href: "/chat", icon: MessageCircle },
 ];
 
 export const DashboardNav = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -19,7 +22,7 @@ export const DashboardNav = () => {
     useEffect(() => {
         if (!user) navigate("/");
     }, [user, navigate]);
-    
+
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 10)
@@ -28,6 +31,28 @@ export const DashboardNav = () => {
         window.addEventListener("scroll", handleScroll)
         return () => window.removeEventListener("scroll", handleScroll)
     }, []);
+
+    // Load unread message count
+    useEffect(() => {
+        const loadUnreadCount = async () => {
+            if (!user?.id) return;
+
+            try {
+                const response = await chatService.getUserChatRooms(user.id, { page: 0, size: 0 });
+                const rooms = response.chatRooms || [];
+                const total = rooms.reduce((sum, room) => sum + (room.unreadCount || 0), 0);
+                setUnreadCount(total);
+            } catch (error) {
+                console.error('Failed to load unread count:', error);
+            }
+        };
+
+        loadUnreadCount();
+
+        // Refresh every 30 seconds
+        const interval = setInterval(loadUnreadCount, 30000);
+        return () => clearInterval(interval);
+    }, [user?.id]);
 
     const handleLogout = async () => {
         try {
@@ -58,13 +83,26 @@ export const DashboardNav = () => {
                     </a>
 
                     {/* desktop nav */}
-                    <div className="hidden md:flex space-x-18 items-center">
-                            <Search size={24}/>
+                    <div className="hidden md:flex space-x-6 items-center">
+                            <Search size={24} className="cursor-pointer duration-300 hover:scale-110 hover:text-blue-700"/>
+                            <button
+                                onClick={() => navigate('/chat')}
+                                className='cursor-pointer duration-300 hover:scale-110 hover:text-purple-700 relative'
+                                title="Messages"
+                            >
+                                <MessageCircle size={24}/>
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
+                            </button>
                             <button
                                 onClick={handleLogout}
                                 className='cursor-pointer duration-300 hover:scale-110 hover:text-blue-700'
+                                title="Logout"
                             >
-                                <LogOut/>
+                                <LogOut size={24}/>
                             </button>
                     </div>
                 

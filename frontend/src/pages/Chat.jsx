@@ -47,8 +47,8 @@ export const Chat = () => {
         size: 0 // Get all rooms
       });
 
-      // Handle response structure (could be chatRooms or content array)
-      const rooms = response.chatRooms || response.content || [];
+      // Backend returns ChatRoomListResponseDTO with chatRooms array
+      const rooms = response.chatRooms || [];
       setChatRooms(rooms);
 
       console.log('Chat rooms loaded:', rooms.length);
@@ -74,7 +74,7 @@ export const Chat = () => {
         size: 0
       });
 
-      const rooms = response.chatRooms || response.content || [];
+      const rooms = response.chatRooms || [];
       setChatRooms(rooms);
 
       toast.success('Chats refreshed!');

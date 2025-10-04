@@ -115,17 +115,18 @@ export const API_ENDPOINTS = {
   CHAT: {
     // Chat Room Management
     ROOMS: '/chat/rooms',
-    USER_ROOMS: (userId) => `/chat/rooms?userId=${userId}`,
+    USER_ROOMS: (userId, page = 0, size = 0) => `/chat/rooms?userId=${userId}&page=${page}&size=${size}`,
     ROOM_DETAILS: (roomId, userId) => `/chat/rooms/${roomId}?userId=${userId}`,
     CREATE_PRIVATE_CHAT: '/chat/rooms/private',
     CREATE_GROUP_CHAT: '/chat/rooms/group',
     ROOM_PARTICIPANTS: (roomId, userId) => `/chat/rooms/${roomId}/participants?userId=${userId}`,
     ADD_PARTICIPANT: (roomId) => `/chat/rooms/${roomId}/participants`,
-    REMOVE_PARTICIPANT: (roomId, userId) => `/chat/rooms/${roomId}/participants/${userId}`,
+    REMOVE_PARTICIPANT: (roomId, userId, requestingUserId) => `/chat/rooms/${roomId}/participants/${userId}?requestingUserId=${requestingUserId}`,
 
     // Message Management
-    MESSAGES: (roomId, userId) => `/chat/rooms/${roomId}/messages?userId=${userId}`,
+    MESSAGES: (roomId, userId, page = 0, size = 20) => `/chat/rooms/${roomId}/messages?userId=${userId}&page=${page}&size=${size}`,
     RECENT_MESSAGES: (roomId, userId, limit = 50) => `/chat/rooms/${roomId}/messages/recent?userId=${userId}&limit=${limit}`,
+    MESSAGES_AFTER: (roomId, userId, afterTime) => `/chat/rooms/${roomId}/messages/after?userId=${userId}&afterTime=${encodeURIComponent(afterTime)}`,
     UNREAD_MESSAGES: (roomId, userId) => `/chat/rooms/${roomId}/messages/unread?userId=${userId}`,
     MARK_READ: (roomId, userId) => `/chat/rooms/${roomId}/messages/mark-read?userId=${userId}`,
     SEARCH_MESSAGES: (roomId, userId, searchTerm) => `/chat/messages/search?roomId=${roomId}&userId=${userId}&searchTerm=${encodeURIComponent(searchTerm)}`
