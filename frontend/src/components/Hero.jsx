@@ -2,8 +2,11 @@ import {cn} from '@/lib/utils'
 import { useState, useEffect } from 'react';
 import { SignupForm } from '@/components/SignupForm.jsx';
 import { authService } from '@/services/authService';
-import { useGoogleLogin } from "@react-oauth/google";
+import { useAuth } from "@/contexts/AuthContext";
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google";
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
 
 import avatar1 from "@/assets/3D-avatars/1.png"
 import avatar2 from "@/assets/3D-avatars/9.png"
@@ -14,14 +17,48 @@ import herobackground from "@/assets/herobackground.png"
 
 export const Hero = () => {
     const navigate = useNavigate();
+    const { updateUser } = useAuth();
 
-    const googleLogin = useGoogleLogin({    
-        onSuccess: (credentialResponse) => {
-            console.log(credentialResponse);
-            // send token to backend
-            navigate("/dashboard");
+    const handleGoogleSuccess = async (credentialResponse) => {
+        try {
+            const userData = await authService.googleLogin(credentialResponse);
+            if (userData) {
+                updateUser(userData)
+                const userFirstName = userData.name.split(' ')[0];
+                toast.success(`Welcome back, ${userFirstName || "User"}!`);
+                navigate("/dashboard");
+            }
+        } catch (error) {
+            console.log('Google sign-in failed, ', error)
+            toast.error(error.message || "Google sign-in failed.")
+        }
+    }
+    
+    const handleGoogleError = (error) => {
+        console.error("Google login failed:", error);
+        toast.error("Google sign-in failed. Please try again.")
+    }
+
+    const googleLogin = useGoogleLogin({
+        flow: "auth-code", // default, returns credential
+        onSuccess: async (credentialResponse) => {
+            try {
+                // This credential is your JWT
+                const jwtCredential = credentialResponse.credential;
+                const userData = await authService.googleLogin(jwtCredential);
+
+                if (userData) {
+                    updateUser(userData);
+                    const userFirstName = userData.name?.split(" ")[0];
+                    toast.success(`Welcome back, ${userFirstName || "User"}!`);
+                    navigate("/dashboard");
+                }
+            } catch (error) {
+                console.error("Google login failed:", error);
+                toast.error(error.message || "Google login failed.");
+            }
         },
-        onError: () => console.log("Login Failed"),
+        onError: () => toast.error("Google login failed."),  
     });
 
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
@@ -100,12 +137,30 @@ export const Hero = () => {
                 </div>
                 
                 <div className='flex lg:flex-row flex-col items-center justify-center gap-4 mt-10'>
+                    {/* <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        useOneTap
+                        size="large"
+                        shape="pill"
+                        render={({ onClick, disabled }) => (
+                            <button 
+                                className='border-2 border-primary button'
+                                onClick={onClick}
+                                disabled={disabled}
+                            >
+                                Login with Google
+                            </button>
+                        )}
+                    /> */}
+
                     <button 
                         className='border-2 border-primary button'
                         onClick={() => googleLogin()}
                     >
                         Login with Google
                     </button>
+
                     <button 
                         className='border-2 border-primary bg-white text-primary button w-60'
                         onClick={() => setIsSignUpOpen((prev) => !prev)}
