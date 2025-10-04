@@ -13,8 +13,14 @@ export const SignupForm = ({ onClose }) => {
     const { formData, errors, isSubmitting, handleInputChange, handleFormSubmit } = useSignupForm();
 
     const handleGoogleSuccess = async (credentialResponse) => {
+        const credential = credentialResponse?.credential
+        if (!credential) {
+            toast.error("Google credential is required.")
+            console.log("Google credential is required.")
+            return;
+        }
         try {
-            const userData = await authService.googleLogin(credentialResponse);
+            const userData = await authService.googleLogin(credential);
             if (userData) {
                 updateUser(userData)
                 const userFirstName = userData.name.split(' ')[0];

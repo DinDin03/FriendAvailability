@@ -32,7 +32,7 @@ export const ALTDashboard = () => {
     return (
         <>
             <DashboardNav />
-            <main className="h-screen flex bg-gray-50/75 divide-x-2 divide-solid divide-gray-300/30">
+            <main className="h-screen flex bg-gray-50/75 divide-x-2 divide-gray-300/30">
                 <div className='w-[25%]'>
                     <Circles/>
                 </div>

@@ -40,12 +40,10 @@ export const Hero = () => {
     }
 
     const googleLogin = useGoogleLogin({
-        flow: "auth-code", // default, returns credential
         onSuccess: async (credentialResponse) => {
+            const credential = credentialResponse?.credential
             try {
-                // This credential is your JWT
-                const jwtCredential = credentialResponse.credential;
-                const userData = await authService.googleLogin(jwtCredential);
+                const userData = await authService.googleLogin(credential);
 
                 if (userData) {
                     updateUser(userData);
@@ -58,7 +56,8 @@ export const Hero = () => {
                 toast.error(error.message || "Google login failed.");
             }
         },
-        onError: () => toast.error("Google login failed."),  
+        onError: () => toast.error("Google login failed."),
+        flow: "auth-code"  
     });
 
     const [isSignUpOpen, setIsSignUpOpen] = useState(false);
