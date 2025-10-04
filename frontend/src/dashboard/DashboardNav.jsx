@@ -43,7 +43,7 @@ export const DashboardNav = () => {
             <nav
                 className={cn(
                     "bg-white fixed w-full z-50 transition-all duration-300", 
-                    isScrolled ? "py-2 bg-background/80 backdrop-blur-md shadow-xs" : "py-2.5"
+                    isScrolled ? "py-1.5 bg-background/80 backdrop-blur-md shadow-xs" : "py-2 shadow-xs"
                 )}
             >
                 <div className="container flex items-center justify-between">

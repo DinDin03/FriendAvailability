@@ -41,11 +41,11 @@ export const ALTDashboard = () => {
                         <FriendsCalendar/>
                     </div>
 
-                    <div className='flex-[1.5]'>
+                    <div className='flex-[1.5] h-full'>
                         <Availability/>
                     </div>
                 </div>
-                <div className='w-[25%]'>
+                <div className='w-[25%] h-full'>
                     <Profile/>
                 </div>
             </main>

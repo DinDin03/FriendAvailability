@@ -52,7 +52,7 @@ export const Profile = () => {
     const { user } = useAuth();
     return (
         <section className="flex flex-col pt-30">
-            <div className='flex flex-row justify-center gap-10 h-[20%]'>
+            <div className='flex flex-row justify-start px-6 gap-10 h-[20%]'>
                 <img src={ProfilePlaceholder} alt="profile-picture" className="lg:size-40 size-28"/>
                 <div className="flex flex-col items-start justify-start gap-4">
                     <span className="text-2xl font-bold text-primary">
@@ -104,7 +104,7 @@ export const Profile = () => {
                                 <p className='font-bold'>{item.name}</p>
                             </div>
 
-                            {/* Right group: icons */}
+                            {/* right group: icons */}
                             <div className='flex items-center gap-7'>
                                 <a
                                     href={item.messageLink}
