@@ -241,58 +241,6 @@ export const Chat = () => {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Create New Chat Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-center space-x-3 mb-4">
-            <UserPlus className="w-6 h-6 text-blue-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Create New Chat</h3>
-              <p className="text-sm text-gray-600">Start a conversation with a user</p>
-            </div>
-          </div>
-
-          <div className="flex space-x-4">
-            <div className="flex-1">
-              <label htmlFor="targetUserId" className="block text-sm font-medium text-gray-700 mb-2">
-                User ID
-              </label>
-              <input
-                id="targetUserId"
-                type="text"
-                value={targetUserId}
-                onChange={(e) => setTargetUserId(e.target.value)}
-                onKeyPress={handleCreateChatKeyPress}
-                placeholder="Enter user ID"
-                disabled={isCreatingChat}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-            </div>
-            <div className="flex items-end">
-              <button
-                onClick={handleCreatePrivateChat}
-                disabled={isCreatingChat || !targetUserId.trim()}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-              >
-                {isCreatingChat ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    <span>Creating...</span>
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4" />
-                    <span>Create</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <p className="text-sm text-gray-500 mt-3">
-            Enter a user ID to create a private chat. Press Enter or click Create.
-          </p>
-        </div>
-
         {/* Error State */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
