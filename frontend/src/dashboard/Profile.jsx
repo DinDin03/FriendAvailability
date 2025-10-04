@@ -1,25 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext';
-import { SquarePen, ChevronDown, Plus, MessageSquare, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { SquarePen, ChevronDown, Plus, MessageSquare, Calendar, Loader } from 'lucide-react';
+import { activityService } from '@/services/activityService';
+import { getActivityIcon, formatActivityMessage } from '@/lib/activityFormatters';
 import ProfilePlaceholder from '@/assets/3D-avatars/1.png'
-import placeholder1 from '@/assets/gmail_groups.png'
 import placeholder2 from '@/assets/3D-avatars/9.png'
 import placeholder3 from "@/assets/3D-avatars/16.png"
 import placeholder4 from "@/assets/3D-avatars/10.png"
-
-const itemUpdates = [
-    {
-        img: placeholder1, 
-        description: `You've been added to "Meetups"`
-    },
-    {
-        img: ProfilePlaceholder, 
-        description: `Dineth just updated their availability!`
-    },
-    {
-        img: placeholder2, 
-        description: `Samantha added you as a friend!`
-    },
-];
 
 const friendsItems = [
     {
@@ -50,6 +37,41 @@ const friendsItems = [
 
 export const Profile = () => {
     const { user } = useAuth();
+    const [activities, setActivities] = useState([]);
+    const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+    const [activityError, setActivityError] = useState(null);
+
+    // Load activities on mount
+    useEffect(() => {
+        const loadActivities = async () => {
+            if (!user?.id) return;
+
+            try {
+                setIsLoadingActivities(true);
+                setActivityError(null);
+
+                const response = await activityService.getActivityFeed(user.id, {
+                    limit: 5, // Only show 5 most recent
+                    sort: 'recent',
+                    dateRange: 'week' // Last week's activities
+                });
+
+                setActivities(response.activities || []);
+            } catch (error) {
+                console.error('Failed to load activities:', error);
+                setActivityError(error.message);
+            } finally {
+                setIsLoadingActivities(false);
+            }
+        };
+
+        loadActivities();
+
+        // Refresh every minute
+        const interval = setInterval(loadActivities, 60000);
+        return () => clearInterval(interval);
+    }, [user?.id]);
+
     return (
         <section className="flex flex-col pt-30">
             <div className='flex flex-row justify-start px-6 gap-10 h-[20%]'>
@@ -75,16 +97,43 @@ export const Profile = () => {
                     <h1 className='text-xl font-bold'>Updates</h1>
                     <ChevronDown size={30}/>
                 </span>
-                <div className='flex flex-col'> 
-                    {itemUpdates.map((item, key) => (
-                        <span 
-                            key={key}
-                            className='flex justify-start items-center py-1.5'
-                        >
-                            <img src={item.img} className='w-8 h-8'/>
-                            <p className='ml-8'>{item.description}</p>
-                        </span> 
-                    ))}
+                <div className='flex flex-col'>
+                    {/* Loading State */}
+                    {isLoadingActivities && (
+                        <div className='flex justify-center items-center py-8'>
+                            <Loader className='w-6 h-6 animate-spin text-gray-400'/>
+                        </div>
+                    )}
+
+                    {/* Error State */}
+                    {activityError && !isLoadingActivities && (
+                        <div className='text-sm text-red-600 py-2'>
+                            Failed to load updates
+                        </div>
+                    )}
+
+                    {/* Empty State */}
+                    {!isLoadingActivities && !activityError && activities.length === 0 && (
+                        <div className='text-sm text-gray-500 py-2'>
+                            No recent updates
+                        </div>
+                    )}
+
+                    {/* Activities List */}
+                    {!isLoadingActivities && activities.length > 0 && activities.map((activity, key) => {
+                        const ActivityIcon = getActivityIcon(activity.type);
+                        return (
+                            <span
+                                key={activity.id || key}
+                                className='flex justify-start items-center py-2 hover:bg-gray-50 rounded-lg px-2 transition-colors'
+                            >
+                                <div className='w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0'>
+                                    <ActivityIcon size={16} className='text-blue-600'/>
+                                </div>
+                                <p className='ml-4 text-sm text-gray-700'>{formatActivityMessage(activity)}</p>
+                            </span>
+                        );
+                    })}
                 </div>
             </div>
             <hr className='my-7 border-1 border-gray-300/30'/>

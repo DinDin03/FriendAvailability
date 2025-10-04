@@ -1,13 +1,22 @@
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
-import { Calendar, Users, MessageCircle, Settings, LogOut } from 'lucide-react';
+import { Calendar, Users, MessageCircle, Settings, LogOut, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { activityService } from '../services/activityService';
+import { chatService } from '../services/chatService';
+import { getActivityIcon, formatActivityMessage } from '../lib/activityFormatters';
 
 export const Dashboard = () => {
     const { user, logout, isLoading } = useAuth();
     const navigate = useNavigate();
+
+    // State for activities and stats
+    const [activities, setActivities] = useState([]);
+    const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+    const [stats, setStats] = useState({ friends: 0, events: 0, messages: 0 });
+    const [isLoadingStats, setIsLoadingStats] = useState(true);
 
     if (isLoading) {
         return <div className='p-8'>Loading...</div>;
@@ -16,6 +25,60 @@ export const Dashboard = () => {
     useEffect(() => {
         if (!user) navigate("/");
     }, [user, navigate]);
+
+    // Load activities
+    useEffect(() => {
+        const loadActivities = async () => {
+            if (!user?.id) return;
+
+            try {
+                setIsLoadingActivities(true);
+                const response = await activityService.getActivityFeed(user.id, {
+                    limit: 5,
+                    sort: 'recent',
+                    dateRange: 'week'
+                });
+
+                setActivities(response.activities || []);
+            } catch (error) {
+                console.error('Failed to load activities:', error);
+            } finally {
+                setIsLoadingActivities(false);
+            }
+        };
+
+        loadActivities();
+    }, [user?.id]);
+
+    // Load stats
+    useEffect(() => {
+        const loadStats = async () => {
+            if (!user?.id) return;
+
+            try {
+                setIsLoadingStats(true);
+
+                // Get activity stats
+                const activityStats = await activityService.getActivityStatistics(user.id);
+
+                // Get unread messages count
+                const chatRooms = await chatService.getUserChatRooms(user.id, { page: 0, size: 0 });
+                const unreadMessages = (chatRooms.chatRooms || []).reduce((sum, room) => sum + (room.unreadCount || 0), 0);
+
+                setStats({
+                    friends: activityStats.totalFriends || 0,
+                    events: activityStats.upcomingEvents || 0,
+                    messages: unreadMessages
+                });
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            } finally {
+                setIsLoadingStats(false);
+            }
+        };
+
+        loadStats();
+    }, [user?.id]);
 
     const handleLogout = async () => {
         try {
@@ -143,34 +206,81 @@ export const Dashboard = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                                <p className="text-sm text-gray-600">Welcome to Link Up! Start by adding friends.</p>
+
+                        {/* Loading State */}
+                        {isLoadingActivities && (
+                            <div className="flex justify-center items-center py-8">
+                                <Loader className="w-6 h-6 animate-spin text-gray-400" />
                             </div>
-                            <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                                <div className="w-2 h-2 bg-green-600 rounded-full"></div>
-                                <p className="text-sm text-gray-600">Your account has been created successfully.</p>
+                        )}
+
+                        {/* Empty State */}
+                        {!isLoadingActivities && activities.length === 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                                    <p className="text-sm text-gray-600">Welcome to Link Up! Start by adding friends.</p>
+                                </div>
+                                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                    <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+                                    <p className="text-sm text-gray-600">Your account has been created successfully.</p>
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Activities List */}
+                        {!isLoadingActivities && activities.length > 0 && (
+                            <div className="space-y-3">
+                                {activities.map((activity, index) => {
+                                    const ActivityIcon = getActivityIcon(activity.type);
+                                    return (
+                                        <div
+                                            key={activity.id || index}
+                                            className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                        >
+                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <ActivityIcon size={16} className="text-blue-600" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm text-gray-700">{formatActivityMessage(activity)}</p>
+                                                {activity.displayTime && (
+                                                    <p className="text-xs text-gray-500 mt-1">{activity.displayTime}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Friends</span>
-                                <span className="font-semibold text-gray-900">0</span>
+
+                        {/* Loading State */}
+                        {isLoadingStats && (
+                            <div className="flex justify-center items-center py-8">
+                                <Loader className="w-6 h-6 animate-spin text-gray-400" />
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Events</span>
-                                <span className="font-semibold text-gray-900">0</span>
+                        )}
+
+                        {/* Stats */}
+                        {!isLoadingStats && (
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">Friends</span>
+                                    <span className="font-semibold text-gray-900">{stats.friends}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">Events</span>
+                                    <span className="font-semibold text-gray-900">{stats.events}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-gray-600">Unread Messages</span>
+                                    <span className="font-semibold text-gray-900">{stats.messages}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-gray-600">Messages</span>
-                                <span className="font-semibold text-gray-900">0</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </main>
