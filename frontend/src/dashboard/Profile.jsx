@@ -118,12 +118,12 @@ export const Profile = () => {
                     <span className='flex flex-row gap-3 items-center cursor-pointer hover:text-blue-600 transition-colors'>
                         <SquarePen size={20}/>edit profile
                     </span>
-                    <span className='pt-4 flex flex-col text-sm text-gray-600'>
+                    <span className='pt-4 flex flex-col text-sm'>
                         {isLoadingFriends ? (
                             <Loader className='w-4 h-4 animate-spin'/>
                         ) : (
                             <>
-                                <span className='font-semibold text-gray-900'>
+                                <span>
                                     {friendsStats.totalFriends} {friendsStats.totalFriends === 1 ? 'friend' : 'friends'}
                                 </span>
                                 <span>

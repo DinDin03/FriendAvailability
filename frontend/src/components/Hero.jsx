@@ -40,21 +40,8 @@ export const Hero = () => {
     }
 
     const googleLogin = useGoogleLogin({
-        onSuccess: async (credentialResponse) => {
-            const credential = credentialResponse?.credential
-            try {
-                const userData = await authService.googleLogin(credential);
-
-                if (userData) {
-                    updateUser(userData);
-                    const userFirstName = userData.name?.split(" ")[0];
-                    toast.success(`Welcome back, ${userFirstName || "User"}!`);
-                    navigate("/dashboard");
-                }
-            } catch (error) {
-                console.error("Google login failed:", error);
-                toast.error(error.message || "Google login failed.");
-            }
+        onSuccess: async credentialResponse => {
+            console.log(credentialResponse)
         },
         onError: () => toast.error("Google login failed."),
         flow: "auth-code"  
@@ -155,7 +142,7 @@ export const Hero = () => {
 
                     <button 
                         className='border-2 border-primary button'
-                        onClick={() => googleLogin()}
+                        onClick={googleLogin}
                     >
                         Login with Google
                     </button>

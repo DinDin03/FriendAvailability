@@ -33,15 +33,15 @@ class AuthService {
     }
   }
 
-  async googleLogin(credential) {
-    if (!credential) throw new Error('Auth service: Google credential is required');
+  async googleLogin(credentialResponse) {
+    if (!credentialResponse) throw new Error('Auth service: Google credentialResponse is required');
     try {
         const response = await fetch('/api/auth/google-signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            credentialResponses: 'include',
             body: JSON.stringify({
-                credential
+                credentialResponse
             })
         });
 
